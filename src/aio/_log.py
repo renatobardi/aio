@@ -1,4 +1,5 @@
 """Structured stderr logging for AIO. Never writes to stdout."""
+
 from __future__ import annotations
 
 import logging

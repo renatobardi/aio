@@ -1,4 +1,5 @@
 """Integration tests for `aio commands` subcommands (US7)."""
+
 from __future__ import annotations
 
 from typer.testing import CliRunner

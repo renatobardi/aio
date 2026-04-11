@@ -1,4 +1,5 @@
 """Tests for the root CLI (US2)."""
+
 from __future__ import annotations
 
 import logging

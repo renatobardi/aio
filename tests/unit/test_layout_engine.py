@@ -1,4 +1,5 @@
 """Tests for the Layout Template Engine and CompositionEngine (US3)."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -24,9 +25,22 @@ class TestLayoutRegistry:
 
     def test_expected_layout_names_present(self) -> None:
         expected = {
-            "hero-title", "content", "two-column", "three-column", "full-image",
-            "code", "quote", "timeline", "comparison", "gallery", "data",
-            "icon-grid", "narrative", "diagram", "custom", "interactive",
+            "hero-title",
+            "content",
+            "two-column",
+            "three-column",
+            "full-image",
+            "code",
+            "quote",
+            "timeline",
+            "comparison",
+            "gallery",
+            "data",
+            "icon-grid",
+            "narrative",
+            "diagram",
+            "custom",
+            "interactive",
         }
         assert set(LAYOUT_REGISTRY.keys()) == expected
 
@@ -154,9 +168,7 @@ class TestLayoutInheritance:
         env = make_jinja_env()
         # Create an ad-hoc child template that extends content.j2
         child_src = (  # noqa: E501
-            '{% extends "content.j2" %}'
-            "{% block title %}My Title{% endblock %}"
-            "{% block body %}My Body{% endblock %}"
+            '{% extends "content.j2" %}{% block title %}My Title{% endblock %}{% block body %}My Body{% endblock %}'
         )
         tmpl = env.from_string(child_src)
         rendered = tmpl.render()

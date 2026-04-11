@@ -1,4 +1,5 @@
 """AIO `extract` command stub — web scraper to DESIGN.md (M1)."""
+
 # NOTE: NO from __future__ import annotations — breaks Typer runtime introspection
 import typer
 

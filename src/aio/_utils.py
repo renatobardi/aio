@@ -1,4 +1,5 @@
 """Utility functions for AIO."""
+
 from __future__ import annotations
 
 import re

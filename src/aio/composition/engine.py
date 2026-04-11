@@ -2,6 +2,7 @@
 CompositionEngine: stateless layout inference and rendering.
 Every slide passes through infer_layout() before rendering (Art. III).
 """
+
 from __future__ import annotations
 
 import difflib
@@ -31,9 +32,7 @@ class CompositionEngine:
         )
 
     def _suggest(self, name: str) -> str | None:
-        matches = difflib.get_close_matches(
-            name, list(self.layout_registry.keys()), n=1, cutoff=0.6
-        )
+        matches = difflib.get_close_matches(name, list(self.layout_registry.keys()), n=1, cutoff=0.6)
         return matches[0] if matches else None
 
     def infer_layout(self, slide: Any) -> str:

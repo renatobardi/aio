@@ -1,4 +1,5 @@
 """Agent command template loading — vendored, offline-only (Art. XI)."""
+
 from __future__ import annotations
 
 import importlib.resources
@@ -110,13 +111,9 @@ def load_agent_template(
         FileNotFoundError: if template file is missing
     """
     if agent not in SUPPORTED_AGENTS:
-        raise ValueError(
-            f"Unknown agent '{agent}'. Supported: {', '.join(sorted(SUPPORTED_AGENTS))}"
-        )
+        raise ValueError(f"Unknown agent '{agent}'. Supported: {', '.join(sorted(SUPPORTED_AGENTS))}")
     if command not in SUPPORTED_COMMANDS:
-        raise ValueError(
-            f"Unknown command '{command}'. Supported: {', '.join(SUPPORTED_COMMANDS.keys())}"
-        )
+        raise ValueError(f"Unknown command '{command}'. Supported: {', '.join(SUPPORTED_COMMANDS.keys())}")
 
     pkg_root = importlib.resources.files("aio.agent_commands")
 
@@ -136,9 +133,7 @@ def load_agent_template(
         user_ref = pkg_root / f"{command}.md"
         user_content = user_ref.read_text(encoding="utf-8")
     except Exception as exc:
-        raise FileNotFoundError(
-            f"Template '{command}.md' not found in agent_commands/"
-        ) from exc
+        raise FileNotFoundError(f"Template '{command}.md' not found in agent_commands/") from exc
 
     # Apply format converter
     converter = FORMAT_CONVERTERS.get(agent, _fmt_user_only)

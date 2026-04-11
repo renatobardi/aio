@@ -1,6 +1,7 @@
 # NOTE: NO `from __future__ import annotations` in this file.
 # Typer relies on runtime type introspection; postponed evaluation breaks it.
 """AIO root CLI — `aio` entry point."""
+
 import importlib.metadata
 import logging
 

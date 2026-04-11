@@ -1,4 +1,5 @@
 """Jinja2 environment factory. Uses PackageLoader for all dist modes (Art. XII)."""
+
 from __future__ import annotations
 
 import jinja2

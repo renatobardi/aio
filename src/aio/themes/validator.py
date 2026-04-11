@@ -1,4 +1,5 @@
 """DESIGN.md schema validation for AIO themes (Art. V — 11 sections mandatory)."""
+
 from __future__ import annotations
 
 import importlib.resources

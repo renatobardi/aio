@@ -43,10 +43,7 @@ class ProjectConfig:
             object.__setattr__(self, "theme", "minimal")
         # Validate agent
         if self.agent not in SUPPORTED_AGENTS:
-            raise ConfigError(
-                f"Unknown agent '{self.agent}'. "
-                f"Supported: {', '.join(sorted(SUPPORTED_AGENTS))}"
-            )
+            raise ConfigError(f"Unknown agent '{self.agent}'. Supported: {', '.join(sorted(SUPPORTED_AGENTS))}")
 
     @classmethod
     def load(cls, dir_path: str | Path) -> "ProjectConfig":
@@ -188,7 +185,9 @@ app = typer.Typer()
 def init(
     name: str = typer.Argument(None, help="Project name (defaults to current directory name)"),
     theme: str = typer.Option("minimal", "--theme", "-t", help="Theme ID (must exist in registry)"),
-    agent: str = typer.Option("claude", "--agent", "-a", help="AI agent (claude, gemini, copilot, windsurf, devin, chatgpt, cursor, generic)"),  # noqa: E501
+    agent: str = typer.Option(
+        "claude", "--agent", "-a", help="AI agent (claude, gemini, copilot, windsurf, devin, chatgpt, cursor, generic)"
+    ),  # noqa: E501
     force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing project"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show planned structure without creating files"),
 ) -> None:

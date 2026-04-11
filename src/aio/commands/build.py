@@ -72,7 +72,7 @@ def _split_slides(content: str) -> tuple[dict[str, Any], list[str]]:
             except ParseError:
                 raise
             # Remaining content after frontmatter
-            content = content[end + 4:].strip()  # skip the closing ---
+            content = content[end + 4 :].strip()  # skip the closing ---
 
     # Split remaining content on slide separators
     # A separator is either "---" alone on a line surrounded by blank lines,
@@ -200,6 +200,7 @@ def build(
             overrides["agent"] = agent
         if overrides:
             from aio.exceptions import ConfigError
+
             try:
                 cfg = dataclasses.replace(cfg, **overrides)
             except ConfigError as exc:

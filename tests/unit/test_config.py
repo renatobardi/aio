@@ -1,4 +1,5 @@
 """Tests for ProjectConfig (US1 + US5)."""
+
 from __future__ import annotations
 
 import time

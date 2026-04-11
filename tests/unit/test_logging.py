@@ -1,4 +1,5 @@
 """Tests for logging infrastructure (US6)."""
+
 from __future__ import annotations
 
 import logging
