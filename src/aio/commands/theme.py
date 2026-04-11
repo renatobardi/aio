@@ -27,10 +27,10 @@ def list_themes() -> None:
     table.add_column("Source")
     for entry in registry:
         table.add_row(
-            entry.get("id", ""),
-            entry.get("name", ""),
-            ", ".join(entry.get("tags", [])),
-            entry.get("source", ""),
+            entry.id,
+            entry.name,
+            ", ".join(entry.categories),
+            "builtin" if entry.is_builtin else (entry.source_url or ""),
         )
     console.print(table)
     _log.info("Command complete")

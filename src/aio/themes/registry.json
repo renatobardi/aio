@@ -3,33 +3,60 @@
     "id": "minimal",
     "name": "Minimal",
     "description": "Clean, distraction-free design for technical presentations",
-    "tags": ["minimal", "clean", "technical"],
+    "version": "1.0.0",
     "author": "AIO",
-    "source": "builtin",
-    "path": "themes/minimal",
-    "created_at": "2026-04-11T00:00:00Z",
-    "updated_at": "2026-04-11T00:00:00Z"
+    "source_url": null,
+    "categories": ["minimal", "clean", "technical"],
+    "colors": {
+      "primary": "#1a1a1a",
+      "accent": "#0066cc",
+      "background": "#ffffff",
+      "text": "#1a1a1a"
+    },
+    "typography": {
+      "heading_font": "Inter",
+      "body_font": "Inter"
+    },
+    "is_builtin": true
   },
   {
     "id": "modern",
     "name": "Modern",
     "description": "Contemporary design with bold typography and clear hierarchy",
-    "tags": ["modern", "bold", "corporate"],
+    "version": "1.0.0",
     "author": "AIO",
-    "source": "builtin",
-    "path": "themes/modern",
-    "created_at": "2026-04-11T00:00:00Z",
-    "updated_at": "2026-04-11T00:00:00Z"
+    "source_url": null,
+    "categories": ["modern", "bold", "corporate"],
+    "colors": {
+      "primary": "#0f172a",
+      "accent": "#6366f1",
+      "background": "#ffffff",
+      "text": "#0f172a"
+    },
+    "typography": {
+      "heading_font": "Plus Jakarta Sans",
+      "body_font": "DM Sans"
+    },
+    "is_builtin": true
   },
   {
     "id": "vibrant",
     "name": "Vibrant",
     "description": "Energetic design with rich colors for creative presentations",
-    "tags": ["vibrant", "colorful", "creative"],
+    "version": "1.0.0",
     "author": "AIO",
-    "source": "builtin",
-    "path": "themes/vibrant",
-    "created_at": "2026-04-11T00:00:00Z",
-    "updated_at": "2026-04-11T00:00:00Z"
+    "source_url": null,
+    "categories": ["vibrant", "colorful", "creative"],
+    "colors": {
+      "primary": "#1e1b4b",
+      "accent": "#a855f7",
+      "background": "#0f0a1e",
+      "text": "#e2e8f0"
+    },
+    "typography": {
+      "heading_font": "Cabinet Grotesk",
+      "body_font": "Satoshi"
+    },
+    "is_builtin": true
   }
 ]

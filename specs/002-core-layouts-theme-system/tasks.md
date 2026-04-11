@@ -81,21 +81,21 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 
 ### US3 — DESIGN.md Parser (prerequisite tasks, complete before US2 import script)
 
-- [ ] T025 [US2] Write tests/unit/test_theme_parser.py — test parse_design_md() with fixture_theme DESIGN.md: assert 11 DesignSection objects returned; assert section numbers 1–11 all present; assert section 2 parsed_data contains hex colors; assert missing-section case raises DesignSectionParseError listing missing numbers
-- [ ] T026 [US2] Implement DesignSection dataclass (section_number, heading, raw_content, parsed_data, char_count) in src/aio/themes/parser.py
-- [ ] T027 [US2] Implement parse_design_md(text: str) -> list[DesignSection] using compiled SECTION_RE regex (re.MULTILINE | re.DOTALL) and yaml.safe_load() for fenced ```yaml blocks in src/aio/themes/parser.py
-- [ ] T028 [US2] Implement extract_css_vars(sections: list[DesignSection]) -> str that produces :root { --color-*: hex; --font-*: name; } CSS from Color Palette and Typography sections in src/aio/themes/parser.py
-- [ ] T028a [US2] Implement extract_layout_css(sections: list[DesignSection]) -> str that generates `.layout-*` CSS class stubs from Components (§4) and Layout System (§5) sections; each class stub maps semantic tokens to CSS vars (e.g., `.layout-stat-highlight .stat { color: var(--color-accent); }`); used by import script and theme create scaffold in src/aio/themes/parser.py
-- [ ] T029 [US2] Update src/aio/themes/validator.py — replace stub with call to parse_design_md(); validate all 11 sections non-empty; validate section 2 hex values and section 11 char count ≥ 200; return list[str] of errors
+- [x] T025 [US2] Write tests/unit/test_theme_parser.py — test parse_design_md() with fixture_theme DESIGN.md: assert 11 DesignSection objects returned; assert section numbers 1–11 all present; assert section 2 parsed_data contains hex colors; assert missing-section case raises DesignSectionParseError listing missing numbers
+- [x] T026 [US2] Implement DesignSection dataclass (section_number, heading, raw_content, parsed_data, char_count) in src/aio/themes/parser.py
+- [x] T027 [US2] Implement parse_design_md(text: str) -> list[DesignSection] using compiled SECTION_RE regex (re.MULTILINE | re.DOTALL) and yaml.safe_load() for fenced ```yaml blocks in src/aio/themes/parser.py
+- [x] T028 [US2] Implement extract_css_vars(sections: list[DesignSection]) -> str that produces :root { --color-*: hex; --font-*: name; } CSS from Color Palette and Typography sections in src/aio/themes/parser.py
+- [x] T028a [US2] Implement extract_layout_css(sections: list[DesignSection]) -> str that generates `.layout-*` CSS class stubs from Components (§4) and Layout System (§5) sections; each class stub maps semantic tokens to CSS vars (e.g., `.layout-stat-highlight .stat { color: var(--color-accent); }`); used by import script and theme create scaffold in src/aio/themes/parser.py
+- [x] T029 [US2] Update src/aio/themes/validator.py — replace stub with call to parse_design_md(); validate all 11 sections non-empty; validate section 2 hex values and section 11 char count ≥ 200; return list[str] of errors
 
 ### US2 — Theme System (import script + loader + registry)
 
-- [ ] T030 [US2] Write unit tests for ThemeRecord loading in tests/unit/test_theme.py — test ThemeRecord.from_dict() with valid and invalid meta.json; assert ThemeValidationError on missing required color keys; assert path resolution uses base_dir correctly
-- [ ] T031 [US2] Implement ThemeRecord dataclass with from_dict(d: dict, base_dir: Path) -> ThemeRecord factory, all fields per data-model.md, and validation raising ThemeValidationError on bad data in src/aio/themes/loader.py
-- [ ] T032 [US2] Update load_registry() in src/aio/themes/loader.py to produce list[ThemeRecord] instead of list[dict]; resolve all paths relative to registry.json location; return partial list (log warning, skip) for entries with missing CSS files
-- [ ] T033 [US2] Create scripts/import-awesome-designs.py — CLI with --dry-run, --limit N, --output DIR flags; git clone --depth 1 https://github.com/nicholasgasior/awesome-design-md into tempdir (or git pull --ff-only if already cloned); walk for DESIGN.md + .css pairs; validate via parse_design_md(); copy valid themes to src/aio/themes/{slug}/; regenerate meta.json from parsed sections; append to src/aio/themes/registry.json; exit 0 on partial success, exit 1 if zero themes imported
+- [x] T030 [US2] Write unit tests for ThemeRecord loading in tests/unit/test_theme.py — test ThemeRecord.from_dict() with valid and invalid meta.json; assert ThemeValidationError on missing required color keys; assert path resolution uses base_dir correctly
+- [x] T031 [US2] Implement ThemeRecord dataclass with from_dict(d: dict, base_dir: Path) -> ThemeRecord factory, all fields per data-model.md, and validation raising ThemeValidationError on bad data in src/aio/themes/loader.py
+- [x] T032 [US2] Update load_registry() in src/aio/themes/loader.py to produce list[ThemeRecord] instead of list[dict]; resolve all paths relative to registry.json location; return partial list (log warning, skip) for entries with missing CSS files
+- [x] T033 [US2] Create scripts/import-awesome-designs.py — CLI with --dry-run, --limit N, --output DIR flags; git clone --depth 1 https://github.com/nicholasgasior/awesome-design-md into tempdir (or git pull --ff-only if already cloned); walk for DESIGN.md + .css pairs; validate via parse_design_md(); copy valid themes to src/aio/themes/{slug}/; regenerate meta.json from parsed sections; append to src/aio/themes/registry.json; exit 0 on partial success, exit 1 if zero themes imported
 - [ ] T034 [US2] Update .github/workflows/3-sync-themes.yml to add a nightly scheduled job (cron: '0 3 * * *') that runs python scripts/import-awesome-designs.py and commits any changes with message "chore(themes): nightly sync from awesome-design-md"
-- [ ] T035 [US2] Write integration test in tests/integration/test_theme_e2e.py — test load_registry() returns ≥ 1 theme (fixture_theme); test ThemeRecord css_path and layout_css_path resolve to existing files; test validate_theme('fixture_theme') returns empty list
+- [x] T035 [US2] Write integration test in tests/integration/test_theme_e2e.py — test load_registry() returns ≥ 1 theme (fixture_theme); test ThemeRecord css_path and layout_css_path resolve to existing files; test validate_theme('fixture_theme') returns empty list
 
 ---
 

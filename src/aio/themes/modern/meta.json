@@ -2,10 +2,19 @@
   "id": "modern",
   "name": "Modern",
   "description": "Contemporary design with bold typography and clear hierarchy",
-  "tags": ["modern", "bold", "corporate"],
+  "version": "1.0.0",
   "author": "AIO",
-  "source": "builtin",
-  "path": "themes/modern",
-  "created_at": "2026-04-11T00:00:00Z",
-  "updated_at": "2026-04-11T00:00:00Z"
+  "source_url": null,
+  "categories": ["modern", "bold", "corporate"],
+  "colors": {
+    "primary": "#0f172a",
+    "accent": "#6366f1",
+    "background": "#ffffff",
+    "text": "#0f172a"
+  },
+  "typography": {
+    "heading_font": "Plus Jakarta Sans",
+    "body_font": "DM Sans"
+  },
+  "is_builtin": true
 }

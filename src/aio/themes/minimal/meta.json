@@ -2,10 +2,19 @@
   "id": "minimal",
   "name": "Minimal",
   "description": "Clean, distraction-free design for technical presentations",
-  "tags": ["minimal", "clean", "technical"],
+  "version": "1.0.0",
   "author": "AIO",
-  "source": "builtin",
-  "path": "themes/minimal",
-  "created_at": "2026-04-11T00:00:00Z",
-  "updated_at": "2026-04-11T00:00:00Z"
+  "source_url": null,
+  "categories": ["minimal", "clean", "technical"],
+  "colors": {
+    "primary": "#1a1a1a",
+    "accent": "#0066cc",
+    "background": "#ffffff",
+    "text": "#1a1a1a"
+  },
+  "typography": {
+    "heading_font": "Inter",
+    "body_font": "Inter"
+  },
+  "is_builtin": true
 }

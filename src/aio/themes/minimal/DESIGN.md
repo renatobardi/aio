@@ -1,12 +1,12 @@
 # Minimal Theme — DESIGN.md
 
-## Visual Theme
+## 1. Visual Theme
 
 Clean, distraction-free aesthetic for technical and professional presentations.
 Inspiration: Swiss typographic style, editorial design. Target audience: developers,
 architects, engineers who want substance over decoration.
 
-## Color Palette
+## 2. Color Palette
 
 - Primary: `#1a1a1a` — headings, key text
 - Secondary: `#4a4a4a` — body text
@@ -16,7 +16,7 @@ architects, engineers who want substance over decoration.
 - Danger: `#cc0000` — errors, warnings
 - Contrast ratios: Primary on Background = 16.1:1 (AAA); Secondary = 9.4:1 (AAA)
 
-## Typography
+## 3. Typography
 
 - Heading font: Inter, system-ui, sans-serif
 - Body font: Inter, system-ui, sans-serif
@@ -26,7 +26,7 @@ architects, engineers who want substance over decoration.
 - Body: 1.125rem / 1.6 line-height / 400 weight
 - Code: 0.875rem / 1.5 line-height / 400 weight
 
-## Components
+## 4. Components
 
 **Buttons**: Flat, no shadow. Primary: `#0066cc` bg / white text. Secondary: `#f5f5f5` bg / `#1a1a1a` text.
 **Badges**: Inline, `0.75rem`, rounded-sm, `#f5f5f5` bg.
@@ -34,7 +34,7 @@ architects, engineers who want substance over decoration.
 **Callouts**: Left border `4px #0066cc`, `#f0f7ff` bg, `1rem` padding.
 **Code blocks**: `#f5f5f5` bg, `0.25rem` radius, Pygments syntax highlighting.
 
-## Layout System
+## 5. Layout System
 
 - Grid: 12-column, `1.5rem` gutter
 - Spacing scale: 0.25 / 0.5 / 1 / 1.5 / 2 / 3 / 4 / 6rem
@@ -42,7 +42,7 @@ architects, engineers who want substance over decoration.
 - Max content width: 56rem (896px)
 - Breakpoints: mobile < 640px, tablet < 1024px, desktop ≥ 1024px
 
-## Depth & Shadows
+## 6. Depth & Shadows
 
 - Level 0 (flat): no shadow
 - Level 1 (card): `0 1px 3px rgba(0,0,0,0.08)`
@@ -50,7 +50,7 @@ architects, engineers who want substance over decoration.
 - Level 3 (overlay): `0 8px 24px rgba(0,0,0,0.16)`
 - Level 4 (toast): `0 16px 40px rgba(0,0,0,0.20)`
 
-## Do's & Don'ts
+## 7. Do's & Don'ts
 
 **Do:**
 - Use generous whitespace between slide elements
@@ -64,7 +64,7 @@ architects, engineers who want substance over decoration.
 - Apply background textures or gradients
 - Crowd content — prefer fewer words
 
-## Responsive Behavior
+## 8. Responsive Behavior
 
 - Mobile (< 640px): Single column, font sizes scale down 20%, padding halved
 - Tablet (640–1024px): Reduced multi-column; H1 2.25rem
@@ -72,7 +72,7 @@ architects, engineers who want substance over decoration.
 - Two-column layouts stack on mobile
 - Code blocks scroll horizontally on narrow viewports
 
-## Animation & Transitions
+## 9. Animation & Transitions
 
 - Default transition: fade, 300ms ease
 - Slide transitions: fade-in 200ms
@@ -80,7 +80,7 @@ architects, engineers who want substance over decoration.
 - List items: no animation in default mode (add via Reveal.js fragment class)
 - Easing: `cubic-bezier(0.4, 0, 0.2, 1)` (Material Design standard)
 
-## Accessibility
+## 10. Accessibility
 
 - WCAG 2.1 AA compliance for all color combinations
 - All interactive elements have focus indicators (`2px #0066cc` outline)
@@ -90,7 +90,7 @@ architects, engineers who want substance over decoration.
 - Minimum touch target: 44×44px
 - Font size never below 0.875rem (14px)
 
-## Agent Prompt Snippet
+## 11. Agent Prompt Snippet
 
 The **Minimal** theme uses a clean, high-contrast palette centered on `#1a1a1a` text
 on white backgrounds. Typography is Inter at 3rem H1 / 2rem H2 / 1.125rem body.

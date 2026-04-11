@@ -142,10 +142,19 @@ def _create_project_structure(
 
     # per-project themes/registry.json — only the selected theme
     global_registry = load_registry()
-    theme_entry = next((t for t in global_registry if t["id"] == config.theme), None)
-    if theme_entry is None:
+    theme_record = next((t for t in global_registry if t.id == config.theme), None)
+    if theme_record is None:
         # fallback to minimal if theme somehow missing
-        theme_entry = {"id": config.theme, "name": config.theme.capitalize()}
+        theme_entry: dict = {"id": config.theme, "name": config.theme.capitalize()}
+    else:
+        theme_entry = {
+            "id": theme_record.id,
+            "name": theme_record.name,
+            "description": theme_record.description,
+            "colors": theme_record.colors,
+            "typography": theme_record.typography,
+            "categories": theme_record.categories,
+        }
     files[path / ".aio" / "themes" / "registry.json"] = json.dumps([theme_entry], indent=2)
 
     # slides.md
