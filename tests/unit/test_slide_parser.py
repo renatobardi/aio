@@ -1,4 +1,5 @@
 """Tests for the slide parser: SlideAST, parse_slides() (US4)."""
+
 from __future__ import annotations
 
 import time

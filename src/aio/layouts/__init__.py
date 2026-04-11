@@ -2,6 +2,7 @@
 Auto-discover all .j2 layout templates at import time using importlib.resources.
 Works in pip, zipapp, and PyInstaller distribution modes (Art. XII).
 """
+
 from __future__ import annotations
 
 import importlib.resources

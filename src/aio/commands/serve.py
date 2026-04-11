@@ -1,4 +1,5 @@
 """AIO `serve` command stub — hot-reload server implementation is M1."""
+
 # NOTE: NO `from __future__ import annotations` — breaks Typer runtime introspection
 from pathlib import Path
 

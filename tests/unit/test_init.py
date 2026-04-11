@@ -1,4 +1,5 @@
 """Tests for `aio init` command (US1)."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -20,7 +21,9 @@ class TestInitCreatesStructure:
 
     def test_creates_all_8_paths(self, tmp_path: Path) -> None:
         app = _get_app()
-        result = runner.invoke(app, ["init", "myproject", "--agent", "claude", "--theme", "minimal"], catch_exceptions=False)  # noqa: E501
+        result = runner.invoke(
+            app, ["init", "myproject", "--agent", "claude", "--theme", "minimal"], catch_exceptions=False
+        )  # noqa: E501
         project_dir = tmp_path / "myproject"
         # Invoke in tmp_path context
         import os
@@ -28,7 +31,9 @@ class TestInitCreatesStructure:
         cwd = os.getcwd()
         try:
             os.chdir(tmp_path)
-            result = runner.invoke(app, ["init", "myproject", "--agent", "claude", "--theme", "minimal"], catch_exceptions=False)  # noqa: E501
+            result = runner.invoke(
+                app, ["init", "myproject", "--agent", "claude", "--theme", "minimal"], catch_exceptions=False
+            )  # noqa: E501
         finally:
             os.chdir(cwd)
 
@@ -49,7 +54,9 @@ class TestInitCreatesStructure:
         try:
             os.chdir(tmp_path)
             app = _get_app()
-            result = runner.invoke(app, ["init", "myproj", "--agent", "gemini", "--theme", "minimal"], catch_exceptions=False)  # noqa: E501
+            result = runner.invoke(
+                app, ["init", "myproj", "--agent", "gemini", "--theme", "minimal"], catch_exceptions=False
+            )  # noqa: E501
         finally:
             os.chdir(cwd)
 

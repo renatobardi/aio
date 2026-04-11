@@ -1,4 +1,5 @@
 """Tests for agent command template system (US7)."""
+
 from __future__ import annotations
 
 import socket

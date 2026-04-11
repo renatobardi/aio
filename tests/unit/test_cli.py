@@ -1,11 +1,18 @@
 """Tests for the root CLI (US2)."""
+
 from __future__ import annotations
 
 import logging
+import re
 
 from typer.testing import CliRunner
 
 runner = CliRunner()
+
+
+def _strip_ansi(text: str) -> str:
+    """Remove ANSI escape codes so assertions work regardless of Rich version."""
+    return re.sub(r"\x1b\[[0-9;]*[mGKHF]", "", text)
 
 
 def _app():
@@ -32,7 +39,7 @@ class TestHelpOutput:
     def test_build_help_shows_flags(self) -> None:
         result = runner.invoke(_app(), ["build", "--help"])
         assert result.exit_code == 0
-        output = result.output
+        output = _strip_ansi(result.output)
         for flag in ("--output", "--theme", "--enrich"):
             assert flag in output, f"Missing flag '{flag}' in build --help"
 

@@ -1,4 +1,5 @@
 """Shared pytest fixtures for AIO tests."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -59,6 +60,4 @@ def write_config(path: Path, data: dict) -> None:
     """Helper: write a config.yaml inside {path}/.aio/."""
     aio_dir = path / ".aio"
     aio_dir.mkdir(parents=True, exist_ok=True)
-    (aio_dir / "config.yaml").write_text(
-        yaml.dump(data, default_flow_style=False), encoding="utf-8"
-    )
+    (aio_dir / "config.yaml").write_text(yaml.dump(data, default_flow_style=False), encoding="utf-8")

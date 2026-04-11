@@ -1,4 +1,5 @@
 """End-to-end integration tests for `aio init` (US1)."""
+
 from __future__ import annotations
 
 import json

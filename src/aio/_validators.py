@@ -1,4 +1,5 @@
 """Validation utilities. All YAML parsing uses yaml.safe_load() exclusively."""
+
 from __future__ import annotations
 
 from typing import Any

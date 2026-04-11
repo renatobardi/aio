@@ -53,6 +53,7 @@ def validate(
 
 # --- Stub subcommands (M1+) ---
 
+
 @app.command("search")
 def search(
     query: str = typer.Argument(..., help="Search query"),
