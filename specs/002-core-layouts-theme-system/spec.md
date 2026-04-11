@@ -7,6 +7,16 @@
 
 ---
 
+## Clarifications
+
+### Session 2026-04-11
+
+- Q: Should the hot-reload notification channel use SSE or WebSocket? → A: SSE (Server-Sent Events) — unidirectional, simpler, no upgrade handshake needed for a one-way reload signal.
+- Q: How does the import script access awesome-design-md? → A: `git clone https://github.com/nicholasgasior/awesome-design-md` for initial import; `git pull` for incremental nightly syncs; parse the local checkout.
+- Q: What is the default bind address for `aio serve`? → A: `127.0.0.1` (localhost only); users who need LAN access pass `--host 0.0.0.0` explicitly.
+
+---
+
 ## Context & Problem Statement
 
 M0 delivered a working CLI skeleton and project scaffolding, but without concrete layouts and themes the generator produces no usable output. Developers and designers need:
@@ -198,7 +208,7 @@ A developer runs `aio serve slides.md`, edits the file or switches themes, and s
 - **FR-213:** `theme.css` defines CSS custom properties: `--color-primary`, `--color-accent`, `--color-neutral`, `--font-display`, `--font-body`, etc.
 - **FR-214:** `layout.css` defines `.layout-{name}` classes with theme-specific overrides
 - **FR-215:** `meta.json` contains: `id`, `name`, `colors` (hex dict), `typography` (fonts dict), `categories` (list), `author`, `source_url`
-- **FR-216:** `scripts/import-awesome-designs.py` clones/syncs awesome-design-md, creates per-theme directories, generates CSS and meta.json, updates registry.json
+- **FR-216:** `scripts/import-awesome-designs.py` clones `https://github.com/nicholasgasior/awesome-design-md` on first run (or `git pull` if already cloned), parses the local checkout, creates per-theme directories, generates CSS and meta.json, updates registry.json
 - **FR-217:** Nightly GitHub Actions workflow (`.github/workflows/3-sync-themes.yml`) runs the import script and commits changes
 - **FR-218:** Project `.aio/themes/registry.json` contains only the selected theme's metadata (not the full global registry)
 - **FR-219:** `aio theme use {id}` updates `config.yaml` and `.aio/themes/registry.json` within 100ms
@@ -253,14 +263,14 @@ A developer runs `aio serve slides.md`, edits the file or switches themes, and s
 
 ### P6 — Serve with Hot Reload
 
-- **FR-250:** `aio serve {input}` starts an HTTP server with Starlette (minimal ASGI)
+- **FR-250:** `aio serve {input}` starts an HTTP server with Starlette (minimal ASGI); binds to `127.0.0.1` by default; accepts `--host` flag (e.g., `--host 0.0.0.0`) to override the bind address
 - **FR-251:** Server serves the built presentation at `GET /`
-- **FR-252:** SSE or WebSocket endpoint at `/_aio/reload` sends a reload event when source changes
+- **FR-252:** SSE endpoint at `/_aio/reload` (using `text/event-stream`) sends a `reload` event when source changes; Starlette `EventSourceResponse` implementation
 - **FR-253:** Watchdog monitors `slides.md` and `.aio/config.yaml` for changes; triggers rebuild + notify
 - **FR-254:** Rebuild on change completes in under 2 seconds for ≤ 30 slides
 - **FR-255:** Port collision is detected before bind; exits with code 1 and a descriptive error
 - **FR-256:** Graceful shutdown on SIGINT: socket closed, watchdog stopped, exit code 0
-- **FR-257:** Injected JS snippet in the served HTML auto-connects to `/_aio/reload` and calls `location.reload()` on event
+- **FR-257:** Injected JS snippet in the served HTML connects via `EventSource('/_aio/reload')` and calls `location.reload()` on message event; no WebSocket dependency required
 
 ---
 
