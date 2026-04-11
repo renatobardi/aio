@@ -1,6 +1,8 @@
 """AIO `build` command — slide parser (US4) + build pipeline stub (M1)."""
-from __future__ import annotations
+# NOTE: NO `from __future__ import annotations` in this file.
+# Typer relies on runtime type introspection; postponed evaluation breaks it.
 
+import dataclasses
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -189,12 +191,24 @@ def build(
 
         aio_dir = find_aio_dir(input.parent if input.parent != Path(".") else Path.cwd())
         cfg = ProjectConfig.load(aio_dir)
-        # Flag overrides (US5 — T058)
+        # Flag overrides (US5 — T058) — use dataclasses.replace so __post_init__
+        # validation is re-run (validates agent whitelist, resolves "default" alias).
+        overrides: dict[str, Any] = {}
         if theme:
-            object.__setattr__(cfg, "theme", theme)
+            overrides["theme"] = theme
         if agent:
-            object.__setattr__(cfg, "agent", agent)
+            overrides["agent"] = agent
+        if overrides:
+            from aio.exceptions import ConfigError
+            try:
+                cfg = dataclasses.replace(cfg, **overrides)
+            except ConfigError as exc:
+                _log.error("%s", exc)
+                typer.echo(str(exc), err=True)
+                raise typer.Exit(code=1)
         _log.debug("Config loaded: agent=%s, theme=%s", cfg.agent, cfg.theme)
+    except typer.Exit:
+        raise
     except Exception as exc:
         _log.debug("Could not load project config: %s", exc)
 

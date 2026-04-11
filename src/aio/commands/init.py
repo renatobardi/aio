@@ -1,5 +1,6 @@
 """AIO `init` command — scaffold a new project directory."""
-from __future__ import annotations
+# NOTE: NO `from __future__ import annotations` in this file.
+# Typer relies on runtime type introspection; postponed evaluation breaks it.
 
 import json
 from dataclasses import dataclass
@@ -48,7 +49,7 @@ class ProjectConfig:
             )
 
     @classmethod
-    def load(cls, dir_path: str | Path) -> ProjectConfig:
+    def load(cls, dir_path: str | Path) -> "ProjectConfig":
         """Load ProjectConfig from {dir_path}/config.yaml.
 
         Raises ConfigError on missing file or invalid agent.
