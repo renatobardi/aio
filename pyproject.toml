@@ -54,6 +54,7 @@ aio = [
     "themes/**/*",
     "agent_commands/**/*.md",
     "themes/registry.json",
+    "vendor/**/*",
 ]
 
 [tool.ruff]

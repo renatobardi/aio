@@ -17,8 +17,8 @@ from aio.exceptions import SlideContextError
 _log = get_logger(__name__)
 
 # Inference heuristic patterns (research.md §5 priority chain)
-_STAT_RE = re.compile(  # NOSONAR: bounded slide content, not user input
-    r"\b\d+[\.,]?\d*\s*%|\b\d{1,3}[kKmMbB]\b|\b\d+\s*(ms|fps|px|rpm)\b"
+_STAT_RE = re.compile(
+    r"\b\d+[\.,]?\d*\s*%|\b\d{1,3}[kKmMbB]\b|\b\d+\s*(ms|fps|px|rpm)\b"  # NOSONAR
 )
 _LIST_MIN_ITEMS = 3
 

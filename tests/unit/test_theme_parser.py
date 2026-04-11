@@ -31,6 +31,7 @@ def fixture_sections(fixture_text: str) -> list[DesignSection]:
 # parse_design_md — happy path
 # ---------------------------------------------------------------------------
 
+
 def test_returns_11_sections(fixture_sections: list[DesignSection]) -> None:
     assert len(fixture_sections) == 11
 
@@ -55,6 +56,7 @@ def test_section_2_parsed_data_has_colors(fixture_sections: list[DesignSection])
 
 def test_section_2_raw_content_has_hex(fixture_sections: list[DesignSection]) -> None:
     import re
+
     color_section = fixture_sections[1]
     assert re.search(r"#[0-9a-fA-F]{3,6}", color_section.raw_content)
 
@@ -67,9 +69,7 @@ def test_section_3_parsed_data_has_fonts(fixture_sections: list[DesignSection]) 
 
 def test_section_11_char_count_sufficient(fixture_sections: list[DesignSection]) -> None:
     agent_section = fixture_sections[10]  # section_number == 11
-    assert agent_section.char_count >= 200, (
-        f"Section 11 has only {agent_section.char_count} chars; expected >= 200"
-    )
+    assert agent_section.char_count >= 200, f"Section 11 has only {agent_section.char_count} chars; expected >= 200"
 
 
 def test_char_count_property() -> None:
@@ -80,6 +80,7 @@ def test_char_count_property() -> None:
 # ---------------------------------------------------------------------------
 # parse_design_md — error cases
 # ---------------------------------------------------------------------------
+
 
 def test_fewer_than_11_sections_raises() -> None:
     text = "\n".join(f"## {i}. Section {i}\n\nContent {i}." for i in range(1, 8))
@@ -147,6 +148,7 @@ def test_section_11_too_short_raises() -> None:
 # extract_css_vars
 # ---------------------------------------------------------------------------
 
+
 def test_extract_css_vars_returns_root_block(fixture_sections: list[DesignSection]) -> None:
     css = extract_css_vars(fixture_sections)
     assert css.startswith(":root {")
@@ -170,6 +172,7 @@ def test_extract_css_vars_empty_sections() -> None:
 # ---------------------------------------------------------------------------
 # extract_layout_css
 # ---------------------------------------------------------------------------
+
 
 def test_extract_layout_css_contains_hero(fixture_sections: list[DesignSection]) -> None:
     css = extract_layout_css(fixture_sections)

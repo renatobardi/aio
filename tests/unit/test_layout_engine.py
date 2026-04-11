@@ -5,9 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-import pytest
-
-from aio.exceptions import LayoutNotFoundError
 from aio.layouts import LAYOUT_REGISTRY, LayoutRecord
 
 # ---------------------------------------------------------------------------
@@ -107,6 +104,7 @@ class TestCompositionEngineInferLayout:
     def test_unknown_layout_falls_back_to_content(self) -> None:
         # M1 engine: unknown explicit layout logs warning and returns CONTENT
         from aio.composition.layouts import LayoutType
+
         slide = _MockSlide(metadata={"layout": "nonexistent-layout"})
         result = self.engine.infer_layout(slide)
         assert result == LayoutType.CONTENT

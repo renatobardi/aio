@@ -60,9 +60,9 @@ def build_jinja_env(templates_package: str = "aio.layouts") -> jinja2.Environmen
     loader = jinja2.FunctionLoader(
         lambda name: (pkg / name).read_text(encoding="utf-8")
     )
-    env = jinja2.Environment(
+    env = jinja2.Environment(  # NOSONAR: autoescape disabled intentionally; HTML is pre-sanitised upstream
         loader=loader,
-        autoescape=False,  # HTML fragments are pre-sanitised upstream  # NOSONAR
+        autoescape=False,
         undefined=jinja2.Undefined,
     )
     env.filters["escape_script"] = escape_script

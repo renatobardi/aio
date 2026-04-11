@@ -9,13 +9,13 @@ import pytest
 from aio.themes.loader import ThemeRecord, load_registry
 from aio.themes.validator import validate_theme
 
-
 FIXTURE_THEME_DIR = Path(__file__).parent.parent / "fixtures" / "themes" / "fixture_theme"
 
 
 # ---------------------------------------------------------------------------
 # load_registry
 # ---------------------------------------------------------------------------
+
 
 def test_load_registry_returns_list() -> None:
     registry = load_registry()
@@ -42,9 +42,7 @@ def test_load_registry_css_paths_exist() -> None:
 def test_load_registry_layout_css_paths_exist() -> None:
     registry = load_registry()
     for record in registry:
-        assert record.layout_css_path.exists(), (
-            f"layout.css missing for '{record.id}': {record.layout_css_path}"
-        )
+        assert record.layout_css_path.exists(), f"layout.css missing for '{record.id}': {record.layout_css_path}"
 
 
 def test_load_registry_colors_have_primary() -> None:
@@ -56,14 +54,13 @@ def test_load_registry_colors_have_primary() -> None:
 def test_load_registry_typography_has_heading_font() -> None:
     registry = load_registry()
     for record in registry:
-        assert "heading_font" in record.typography, (
-            f"Theme '{record.id}' missing 'heading_font' typography"
-        )
+        assert "heading_font" in record.typography, f"Theme '{record.id}' missing 'heading_font' typography"
 
 
 # ---------------------------------------------------------------------------
 # ThemeRecord path resolution for fixture_theme
 # ---------------------------------------------------------------------------
+
 
 def test_fixture_theme_record_from_dict() -> None:
     meta = {
@@ -105,6 +102,7 @@ def test_fixture_theme_css_path_exists() -> None:
 # ---------------------------------------------------------------------------
 # validate_theme — uses the installed package themes
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("theme_id", ["minimal", "modern", "vibrant"])
 def test_builtin_theme_validates_without_errors(theme_id: str) -> None:

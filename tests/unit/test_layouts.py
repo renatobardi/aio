@@ -7,7 +7,6 @@ import time
 import pytest
 
 from aio._utils import build_jinja_env
-from aio.composition.metadata import SlideRenderContext
 
 LAYOUTS = [
     "hero-title",
@@ -104,6 +103,4 @@ class TestLayoutRenderPerformance:
         tmpl.render(**ctx)
         elapsed_ms = (time.perf_counter() - start) * 1000
 
-        assert elapsed_ms < 10, (
-            f"{layout_id}: render took {elapsed_ms:.2f}ms, must be < 10ms (SC-200)"
-        )
+        assert elapsed_ms < 10, f"{layout_id}: render took {elapsed_ms:.2f}ms, must be < 10ms (SC-200)"
