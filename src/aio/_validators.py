@@ -2,11 +2,18 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 import yaml
 
 from aio.exceptions import ParseError
+
+# Matches external http(s):// URLs in src= or href= HTML attributes
+_EXTERNAL_URL_RE = re.compile(
+    r"""(?:src|href)\s*=\s*["'](https?://[^"']+)["']""",
+    re.IGNORECASE,
+)
 
 
 def yaml_safe_load(content: str, source: str = "") -> dict[str, Any]:
@@ -37,3 +44,12 @@ def validate_json_schema(data: dict[str, Any], schema: dict[str, Any]) -> list[s
         if field not in data:
             errors.append(f"Missing required field: '{field}'")
     return errors
+
+
+def check_external_urls(html: str) -> list[str]:
+    """
+    Return a list of external https?:// URLs found in src= or href= attributes.
+
+    An empty list means the HTML passes the external-URL check (Art. II compliance).
+    """
+    return _EXTERNAL_URL_RE.findall(html)
