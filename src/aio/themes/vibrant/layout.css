@@ -1,0 +1,8 @@
+/* Vibrant Theme — Layout */
+.slide {
+  padding: 3.5rem 4rem;
+  max-width: 64rem;
+  margin: 0 auto;
+  background: var(--color-background);
+  color: #ffffff;
+}
