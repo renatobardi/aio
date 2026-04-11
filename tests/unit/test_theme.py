@@ -9,13 +9,13 @@ import pytest
 from aio.exceptions import ThemeValidationError
 from aio.themes.loader import ThemeRecord, load_registry
 
-
 FIXTURE_THEME_DIR = Path(__file__).parent.parent / "fixtures" / "themes" / "fixture_theme"
 
 
 # ---------------------------------------------------------------------------
 # ThemeRecord.from_dict — happy path
 # ---------------------------------------------------------------------------
+
 
 def test_from_dict_valid_meta() -> None:
     meta = {
@@ -51,7 +51,7 @@ def test_from_dict_css_path_resolved() -> None:
     assert record.design_md_path == FIXTURE_THEME_DIR / "DESIGN.md"
 
 
-def test_from_dict_defaults_for_optional_fields() -> None:
+def test_from_dict_defaults_for_optional_fields(tmp_path: Path) -> None:
     meta = {
         "id": "x",
         "name": "X",
@@ -61,7 +61,7 @@ def test_from_dict_defaults_for_optional_fields() -> None:
         "author": "",
         "source_url": "",
     }
-    record = ThemeRecord.from_dict(meta, base_dir=Path("/tmp"))
+    record = ThemeRecord.from_dict(meta, base_dir=tmp_path)
     assert record.categories == []
     assert record.author == ""
     assert record.source_url is None
@@ -71,7 +71,8 @@ def test_from_dict_defaults_for_optional_fields() -> None:
 # ThemeRecord.from_dict — validation errors
 # ---------------------------------------------------------------------------
 
-def test_from_dict_missing_id_raises() -> None:
+
+def test_from_dict_missing_id_raises(tmp_path: Path) -> None:
     meta = {
         "name": "No ID",
         "colors": {"primary": "#000"},
@@ -81,10 +82,10 @@ def test_from_dict_missing_id_raises() -> None:
         "source_url": "",
     }
     with pytest.raises(ThemeValidationError):
-        ThemeRecord.from_dict(meta, base_dir=Path("/tmp"))
+        ThemeRecord.from_dict(meta, base_dir=tmp_path)
 
 
-def test_from_dict_missing_name_raises() -> None:
+def test_from_dict_missing_name_raises(tmp_path: Path) -> None:
     meta = {
         "id": "x",
         "colors": {"primary": "#000"},
@@ -94,10 +95,10 @@ def test_from_dict_missing_name_raises() -> None:
         "source_url": "",
     }
     with pytest.raises(ThemeValidationError):
-        ThemeRecord.from_dict(meta, base_dir=Path("/tmp"))
+        ThemeRecord.from_dict(meta, base_dir=tmp_path)
 
 
-def test_from_dict_missing_primary_color_raises() -> None:
+def test_from_dict_missing_primary_color_raises(tmp_path: Path) -> None:
     meta = {
         "id": "x",
         "name": "X",
@@ -108,12 +109,13 @@ def test_from_dict_missing_primary_color_raises() -> None:
         "source_url": "",
     }
     with pytest.raises(ThemeValidationError):
-        ThemeRecord.from_dict(meta, base_dir=Path("/tmp"))
+        ThemeRecord.from_dict(meta, base_dir=tmp_path)
 
 
 # ---------------------------------------------------------------------------
 # load_registry
 # ---------------------------------------------------------------------------
+
 
 def test_load_registry_returns_list() -> None:
     registry = load_registry()

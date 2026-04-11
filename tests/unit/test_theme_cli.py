@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 
-import pytest
 from typer.testing import CliRunner
 
 from aio.cli import app
@@ -15,6 +14,7 @@ runner = CliRunner()
 # ---------------------------------------------------------------------------
 # aio theme list
 # ---------------------------------------------------------------------------
+
 
 def test_theme_list_exits_0() -> None:
     result = runner.invoke(app, ["theme", "list"])
@@ -74,6 +74,7 @@ def test_theme_list_search_finds_minimal() -> None:
 # aio theme search
 # ---------------------------------------------------------------------------
 
+
 def test_theme_search_exits_0() -> None:
     result = runner.invoke(app, ["theme", "search", "minimal"])
     assert result.exit_code == 0, result.output
@@ -106,6 +107,7 @@ def test_theme_search_sorted_by_score_desc() -> None:
 # aio theme info
 # ---------------------------------------------------------------------------
 
+
 def test_theme_info_known_theme_exits_0() -> None:
     result = runner.invoke(app, ["theme", "info", "minimal"])
     assert result.exit_code == 0, result.output
@@ -134,6 +136,7 @@ def test_theme_info_unknown_exits_2() -> None:
 # aio theme show
 # ---------------------------------------------------------------------------
 
+
 def test_theme_show_exits_0() -> None:
     result = runner.invoke(app, ["theme", "show", "minimal"])
     assert result.exit_code == 0, result.output
@@ -159,6 +162,7 @@ def test_theme_show_section_out_of_range_exits_3() -> None:
 # ---------------------------------------------------------------------------
 # aio theme use
 # ---------------------------------------------------------------------------
+
 
 def test_theme_use_no_project_dir_exits_3(tmp_path) -> None:
     result = runner.invoke(app, ["theme", "use", "minimal", "--project-dir", str(tmp_path)])
@@ -190,8 +194,9 @@ def test_theme_use_updates_config(tmp_path) -> None:
 # aio theme create
 # ---------------------------------------------------------------------------
 
-def test_theme_create_invalid_name_exits_4() -> None:
-    result = runner.invoke(app, ["theme", "create", "My Theme!!", "--project-dir", "/tmp"])
+
+def test_theme_create_invalid_name_exits_4(tmp_path) -> None:
+    result = runner.invoke(app, ["theme", "create", "My Theme!!", "--project-dir", str(tmp_path)])
     assert result.exit_code == 4
 
 
@@ -210,9 +215,7 @@ def test_theme_create_from_existing(tmp_path) -> None:
     aio_dir.mkdir()
     (aio_dir / "themes").mkdir()
 
-    result = runner.invoke(
-        app, ["theme", "create", "my-stripe", "--from", "minimal", "--project-dir", str(tmp_path)]
-    )
+    result = runner.invoke(app, ["theme", "create", "my-stripe", "--from", "minimal", "--project-dir", str(tmp_path)])
     assert result.exit_code == 0, result.output
     theme_dir = aio_dir / "themes" / "my-stripe"
     assert theme_dir.exists()

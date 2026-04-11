@@ -136,6 +136,6 @@ def test_build_pipeline_no_script_tag_in_slides(tmp_path: Path) -> None:
     # The section wrapper must not contain a live <script> tag
     import re
 
-    sections = re.findall(r"<section[^>]*data-layout[^>]*>.*?</section>", html, re.DOTALL)
+    sections = re.findall(r"<section[^>]*data-layout[^>]*>.*?</section>", html, re.DOTALL)  # NOSONAR: test-only, applied to known-size fixture HTML
     for section in sections:
         assert "<script" not in section.lower(), "Section must not contain <script>"

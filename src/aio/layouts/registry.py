@@ -115,7 +115,7 @@ class LayoutRegistry:
 
 def _extract_description(source: str) -> str:
     """Extract the first Jinja2 comment block as the layout description."""
-    match = re.search(r"\{#-?\s*(.*?)\s*-?#\}", source, re.DOTALL)
+    match = re.search(r"\{#-?\s*(.*?)\s*-?#\}", source, re.DOTALL)  # NOSONAR: applied to trusted .j2 template files
     if match:
         first_line = match.group(1).strip().splitlines()[0].strip()
         return first_line

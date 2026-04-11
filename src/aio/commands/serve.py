@@ -256,7 +256,7 @@ def serve(
     if open_browser:
         import webbrowser
 
-        webbrowser.open(f"http://{host}:{port}")
+        webbrowser.open(f"http://{host}:{port}")  # NOSONAR: intentional HTTP for local dev server
 
     try:
         server.run()

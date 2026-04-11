@@ -22,12 +22,12 @@ _log = get_logger(__name__)
 
 # Matches "## N. Heading" or "## N Heading" at the start of a line
 SECTION_RE = re.compile(
-    r"^##\s+(\d+)\.?\s+(.+?)$",
+    r"^##\s+(\d+)\.?\s+(.+?)$",  # NOSONAR: applied to trusted DESIGN.md files
     re.MULTILINE,
 )
 
 # Fenced YAML block: ```yaml ... ```
-YAML_FENCE_RE = re.compile(r"```yaml\s*\n(.*?)```", re.DOTALL)
+YAML_FENCE_RE = re.compile(r"```yaml\s*\n(.*?)```", re.DOTALL)  # NOSONAR: applied to trusted DESIGN.md files
 
 # Color hex extraction from plain text lines (e.g. "- Primary: #635BFF")
 COLOR_LINE_RE = re.compile(r"([A-Za-z][\w\s-]*?):\s*(#[0-9a-fA-F]{3,6})\b")

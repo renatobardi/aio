@@ -60,7 +60,7 @@ def _asgi_client(app):
 
     return httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app),
-        base_url="http://test",
+        base_url="http://test",  # NOSONAR: test-only httpx base URL, no real network connection
     )
 
 

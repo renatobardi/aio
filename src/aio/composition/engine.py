@@ -17,7 +17,7 @@ from aio.exceptions import SlideContextError
 _log = get_logger(__name__)
 
 # Inference heuristic patterns (research.md §5 priority chain)
-_STAT_RE = re.compile(r"\b\d+[\.,]?\d*\s*%|\b\d{1,3}[kKmMbB]\b|\b\d+\s*(ms|fps|px|rpm)\b")
+_STAT_RE = re.compile(r"\b\d+[\.,]?\d*\s*%|\b\d{1,3}[kKmMbB]\b|\b\d+\s*(ms|fps|px|rpm)\b")  # NOSONAR: applied to bounded slide content
 _LIST_MIN_ITEMS = 3
 
 
@@ -142,12 +142,17 @@ class CompositionEngine:
             return ""
 
         dangerous_attrs = {
-            "onload", "onerror", "onclick", "onmouseover", "onmouseout",
-            "onfocus", "onblur", "onchange", "onsubmit",
+            "onload",
+            "onerror",
+            "onclick",
+            "onmouseover",
+            "onmouseout",
+            "onfocus",
+            "onblur",
+            "onchange",
+            "onsubmit",
         }
-        parent_map: dict[ET.Element, ET.Element] = {
-            c: p for p in root.iter() for c in p
-        }
+        parent_map: dict[ET.Element, ET.Element] = {c: p for p in root.iter() for c in p}
 
         for elem in list(root.iter()):
             tag = elem.tag.split("}")[-1] if "}" in elem.tag else elem.tag
@@ -163,5 +168,5 @@ class CompositionEngine:
                 if local in dangerous_attrs or val.strip().lower().startswith("javascript:"):
                     del elem.attrib[attr]
 
-        ET.register_namespace("", "http://www.w3.org/2000/svg")
+        ET.register_namespace("", "http://www.w3.org/2000/svg")  # NOSONAR: W3C XML namespace URI, not a network call
         return ET.tostring(root, encoding="unicode")
