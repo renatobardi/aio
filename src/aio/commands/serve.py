@@ -20,20 +20,20 @@ import os
 import signal
 import socket
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
-
-# Configurable keep-alive interval — override in tests via env var
-_SSE_PING_INTERVAL: float = float(os.environ.get("AIO_SSE_PING_INTERVAL", "15.0"))
 
 import typer
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import HTMLResponse, Response, StreamingResponse
+from starlette.responses import HTMLResponse, StreamingResponse
 from starlette.routing import Route
 
 from aio._log import get_logger
 from aio.composition.metadata import HotReloadEvent
+
+# Configurable keep-alive interval — override in tests via AIO_SSE_PING_INTERVAL env var
+_SSE_PING_INTERVAL: float = float(os.environ.get("AIO_SSE_PING_INTERVAL", "15.0"))
 
 _log = get_logger(__name__)
 
@@ -58,6 +58,7 @@ def _broadcast(event: HotReloadEvent) -> None:
 # Watchdog file handler
 # ---------------------------------------------------------------------------
 
+
 class _FileModifiedHandler:
     """Minimal watchdog-compatible event handler."""
 
@@ -81,6 +82,7 @@ class _FileModifiedHandler:
 # ASGI app factory
 # ---------------------------------------------------------------------------
 
+
 def create_app(source: Path, build_fn: Callable[[], str] | None = None) -> Starlette:
     """Create and return the Starlette ASGI app.
 
@@ -94,6 +96,7 @@ def create_app(source: Path, build_fn: Callable[[], str] | None = None) -> Starl
 
         def _default_build() -> str:
             import tempfile
+
             with tempfile.NamedTemporaryFile(suffix=".html", delete=False) as f:
                 out = Path(f.name)
             _bp(source, output=out, theme_id="minimal", serve_mode=True)
@@ -112,11 +115,7 @@ def create_app(source: Path, build_fn: Callable[[], str] | None = None) -> Starl
                 _cache["html"] = build_fn()
             except Exception as exc:
                 _log.error("Build failed: %s", exc)
-                _cache["html"] = (
-                    "<!DOCTYPE html><html><body>"
-                    f"<pre>Build error: {exc}</pre>"
-                    "</body></html>"
-                )
+                _cache["html"] = f"<!DOCTYPE html><html><body><pre>Build error: {exc}</pre></body></html>"
         return _cache["html"]
 
     async def _root(request: Request) -> HTMLResponse:
@@ -178,6 +177,7 @@ def create_app(source: Path, build_fn: Callable[[], str] | None = None) -> Starl
 # Port collision check
 # ---------------------------------------------------------------------------
 
+
 def _port_in_use(host: str, port: int) -> bool:
     try:
         with socket.create_connection((host, port), timeout=0.1):
@@ -189,6 +189,7 @@ def _port_in_use(host: str, port: int) -> bool:
 # ---------------------------------------------------------------------------
 # Typer CLI command
 # ---------------------------------------------------------------------------
+
 
 @app.command()
 def serve(
@@ -215,10 +216,8 @@ def serve(
     starlette_app = create_app(input)
 
     # --- watchdog setup ---
-    observer: Observer | None = None
+    observer = None  # type: ignore[var-annotated]
     if not no_reload:
-        loop = asyncio.new_event_loop()
-
         handler = _FileModifiedHandler(input, loop=asyncio.get_event_loop())
 
         from watchdog.events import FileSystemEventHandler
@@ -256,6 +255,7 @@ def serve(
 
     if open_browser:
         import webbrowser
+
         webbrowser.open(f"http://{host}:{port}")
 
     try:

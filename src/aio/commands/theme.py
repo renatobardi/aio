@@ -8,7 +8,6 @@ import os
 import re
 import shutil
 from pathlib import Path
-from typing import Optional
 
 import typer
 import yaml
@@ -49,8 +48,8 @@ def _fuzzy_score(query: str, record: ThemeRecord) -> float:
 
 def _filter_themes(
     registry: list[ThemeRecord],
-    filter_tags: Optional[str],
-    search: Optional[str],
+    filter_tags: str | None,
+    search: str | None,
     limit: int,
 ) -> list[ThemeRecord]:
     """Apply tag filter → fuzzy search → limit."""
@@ -73,11 +72,12 @@ def _filter_themes(
 # list
 # ---------------------------------------------------------------------------
 
+
 @app.command("list")
 def list_themes(
     limit: int = typer.Option(20, "--limit", help="Maximum number of themes to show"),
-    filter_tags: Optional[str] = typer.Option(None, "--filter", help="Comma-separated tag filter"),
-    search: Optional[str] = typer.Option(None, "--search", help="Fuzzy name/id search"),
+    filter_tags: str | None = typer.Option(None, "--filter", help="Comma-separated tag filter"),
+    search: str | None = typer.Option(None, "--search", help="Fuzzy name/id search"),
     output_json: bool = typer.Option(False, "--json", is_flag=True, help="Output JSON"),
 ) -> None:
     """List available themes with optional filtering."""
@@ -123,6 +123,7 @@ def list_themes(
 # search
 # ---------------------------------------------------------------------------
 
+
 @app.command("search")
 def search_themes(
     query: str = typer.Argument(..., help="Search query"),
@@ -164,6 +165,7 @@ def search_themes(
 # info
 # ---------------------------------------------------------------------------
 
+
 @app.command("info")
 def info(
     theme_id: str = typer.Argument(..., help="Theme ID"),
@@ -196,6 +198,7 @@ def info(
     agent_snippet = ""
     if record.design_md_path and record.design_md_path.exists():
         from aio.themes.parser import parse_design_md
+
         try:
             sections = parse_design_md(record.design_md_path.read_text(encoding="utf-8"))
             agent_snippet = sections[10].raw_content[:300]
@@ -224,10 +227,11 @@ def info(
 # show
 # ---------------------------------------------------------------------------
 
+
 @app.command("show")
 def show(
     theme_id: str = typer.Argument(..., help="Theme ID"),
-    section: Optional[int] = typer.Option(None, "--section", help="Section number (1–11)"),
+    section: int | None = typer.Option(None, "--section", help="Section number (1–11)"),
     raw: bool = typer.Option(False, "--raw", is_flag=True, help="Print raw Markdown"),
 ) -> None:
     """Display a theme's DESIGN.md (or a specific section)."""
@@ -248,6 +252,7 @@ def show(
             _log.error("Section %d out of range (1–11).", section)
             raise typer.Exit(code=3)
         from aio.themes.parser import parse_design_md
+
         try:
             sections = parse_design_md(text)
         except Exception as exc:
@@ -268,6 +273,7 @@ def show(
 # ---------------------------------------------------------------------------
 # use
 # ---------------------------------------------------------------------------
+
 
 @app.command("use")
 def use(
@@ -412,7 +418,7 @@ _BLANK_LAYOUT_CSS = """\
 @app.command("create")
 def create(
     name: str = typer.Argument(..., help="New theme name (lowercase letters, digits, hyphens)"),
-    from_theme: Optional[str] = typer.Option(None, "--from", help="Source theme ID to copy from"),
+    from_theme: str | None = typer.Option(None, "--from", help="Source theme ID to copy from"),
     project_dir: str = typer.Option(".", "--project-dir", help="Project root directory"),
     edit: bool = typer.Option(False, "--edit", is_flag=True, help="Open DESIGN.md in $EDITOR after creation"),
 ) -> None:
@@ -449,7 +455,7 @@ def create(
         (dest / "DESIGN.md").write_text(_BLANK_DESIGN_MD.format(name=name), encoding="utf-8")
         (dest / "theme.css").write_text(_BLANK_THEME_CSS, encoding="utf-8")
         (dest / "layout.css").write_text(_BLANK_LAYOUT_CSS, encoding="utf-8")
-        meta = {
+        meta: dict[str, object] = {
             "id": name,
             "name": name.replace("-", " ").title(),
             "description": "",
@@ -481,6 +487,7 @@ def create(
 # ---------------------------------------------------------------------------
 # validate (keep existing)
 # ---------------------------------------------------------------------------
+
 
 @app.command("validate")
 def validate(

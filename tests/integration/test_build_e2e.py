@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from aio._validators import check_external_urls
 from aio.commands.build import build_pipeline, parse_slides
 
@@ -29,6 +27,7 @@ EXPECTED_LAYOUTS = {
 # parse_slides
 # ---------------------------------------------------------------------------
 
+
 def test_parse_slides_returns_10_slides() -> None:
     slides = parse_slides(FIXTURE_SLIDES)
     assert len(slides) == 10
@@ -49,6 +48,7 @@ def test_parse_slides_extracts_stat_metadata() -> None:
 # ---------------------------------------------------------------------------
 # build_pipeline (full pipeline)
 # ---------------------------------------------------------------------------
+
 
 def test_build_pipeline_creates_output_file(tmp_path: Path) -> None:
     out = tmp_path / "output.html"
@@ -83,6 +83,7 @@ def test_build_pipeline_dry_run_does_not_write(tmp_path: Path) -> None:
 
 def test_build_pipeline_returns_build_result(tmp_path: Path) -> None:
     from aio.composition.metadata import BuildResult
+
     out = tmp_path / "output.html"
     result = build_pipeline(FIXTURE_SLIDES, output=out, theme_id="minimal")
     assert isinstance(result, BuildResult)
@@ -134,6 +135,7 @@ def test_build_pipeline_no_script_tag_in_slides(tmp_path: Path) -> None:
     html = out.read_text(encoding="utf-8")
     # The section wrapper must not contain a live <script> tag
     import re
-    sections = re.findall(r'<section[^>]*data-layout[^>]*>.*?</section>', html, re.DOTALL)
+
+    sections = re.findall(r"<section[^>]*data-layout[^>]*>.*?</section>", html, re.DOTALL)
     for section in sections:
         assert "<script" not in section.lower(), "Section must not contain <script>"

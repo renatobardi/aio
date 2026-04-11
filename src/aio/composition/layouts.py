@@ -6,10 +6,10 @@ Maps layout IDs to their required/optional context fields.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 
 
-class LayoutType(str, Enum):
+class LayoutType(StrEnum):
     HERO_TITLE = "hero-title"
     STAT_HIGHLIGHT = "stat-highlight"
     SPLIT_IMAGE_TEXT = "split-image-text"

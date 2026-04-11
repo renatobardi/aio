@@ -9,7 +9,6 @@ http.disconnect to the ASGI app, allowing the SSE generator to stop cleanly.
 
 from __future__ import annotations
 
-import asyncio
 import socket
 import threading
 import time
@@ -23,6 +22,7 @@ FIXTURE_SLIDES = Path(__file__).parent.parent / "fixtures" / "slides" / "sample_
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _free_port() -> int:
     """Return an OS-assigned free TCP port."""
@@ -44,9 +44,11 @@ def _bind_port(port: int) -> socket.socket:
 # App factory tests
 # ---------------------------------------------------------------------------
 
+
 def test_create_app_returns_starlette_app() -> None:
-    from aio.commands.serve import create_app
     from starlette.applications import Starlette
+
+    from aio.commands.serve import create_app
 
     app = create_app(FIXTURE_SLIDES)
     assert isinstance(app, Starlette)
@@ -55,6 +57,7 @@ def test_create_app_returns_starlette_app() -> None:
 def _asgi_client(app):
     """Return an httpx.AsyncClient wired to the given ASGI app (non-streaming only)."""
     import httpx
+
     return httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app),
         base_url="http://test",
@@ -170,9 +173,9 @@ def test_get_sse_first_event_is_connected(live_server: str) -> None:
 # Port collision detection (T059)
 # ---------------------------------------------------------------------------
 
+
 def test_port_collision_exits_2(tmp_path: Path) -> None:
     """serve() must exit with code 2 when the port is already bound."""
-    import typer
     from typer.testing import CliRunner
 
     from aio.commands.serve import app as serve_app
@@ -189,7 +192,6 @@ def test_port_collision_exits_2(tmp_path: Path) -> None:
 
 def test_host_0000_accepted(tmp_path: Path) -> None:
     """--host 0.0.0.0 must not raise an error before binding."""
-    import typer
     from typer.testing import CliRunner
 
     from aio.commands.serve import app as serve_app

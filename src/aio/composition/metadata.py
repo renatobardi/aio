@@ -38,9 +38,9 @@ class SlideRenderContext:
     stat_description: str | None = None
     quote_text: str | None = None
     quote_attribution: str | None = None
-    image_src: str | None = None        # base64 data URI
+    image_src: str | None = None  # base64 data URI
     image_alt: str | None = None
-    image_position: str = "right"       # "left" or "right"
+    image_position: str = "right"  # "left" or "right"
     cta_text: str | None = None
 
     # Comparison layout

@@ -47,7 +47,7 @@ class DesignSection:
     section_number: int
     heading: str
     raw_content: str
-    parsed_data: dict = field(default_factory=dict)
+    parsed_data: dict[str, object] = field(default_factory=dict)
 
     @property
     def char_count(self) -> int:
@@ -68,8 +68,7 @@ def parse_design_md(text: str) -> list[DesignSection]:
         found_numbers = [int(m.group(1)) for m in matches]
         missing = [i for i in range(1, REQUIRED_SECTIONS + 1) if i not in found_numbers]
         raise DesignSectionParseError(
-            f"DESIGN.md has only {len(matches)} sections; expected {REQUIRED_SECTIONS}. "
-            f"Missing: {missing}",
+            f"DESIGN.md has only {len(matches)} sections; expected {REQUIRED_SECTIONS}. Missing: {missing}",
             missing=missing,
         )
 
@@ -84,7 +83,7 @@ def parse_design_md(text: str) -> list[DesignSection]:
         raw_content = text[start:end].strip()
 
         # Parse fenced YAML blocks
-        parsed_data: dict = {}
+        parsed_data: dict[str, object] = {}
         yaml_match = YAML_FENCE_RE.search(raw_content)
         if yaml_match:
             try:
@@ -95,35 +94,36 @@ def parse_design_md(text: str) -> list[DesignSection]:
                 _log.warning("Section %d YAML parse error: %s", number, exc)
                 parsed_data = {"_parse_error": str(exc)}
 
-        sections.append(DesignSection(
-            section_number=number,
-            heading=heading,
-            raw_content=raw_content,
-            parsed_data=parsed_data,
-        ))
+        sections.append(
+            DesignSection(
+                section_number=number,
+                heading=heading,
+                raw_content=raw_content,
+                parsed_data=parsed_data,
+            )
+        )
 
     # Validate non-contiguous section numbers
     numbers = [s.section_number for s in sections[:REQUIRED_SECTIONS]]
     if numbers != list(range(1, REQUIRED_SECTIONS + 1)):
-        raise DesignSectionParseError(
-            f"Section numbers are non-contiguous: {numbers}"
-        )
+        raise DesignSectionParseError(f"Section numbers are non-contiguous: {numbers}")
 
     # Validate minimum content per section (sections 1–10)
     for s in sections[:10]:
         if s.char_count < MIN_CHAR_COUNT:
             _log.warning(
                 "Section %d ('%s') has only %d chars (minimum %d)",
-                s.section_number, s.heading, s.char_count, MIN_CHAR_COUNT,
+                s.section_number,
+                s.heading,
+                s.char_count,
+                MIN_CHAR_COUNT,
             )
 
     # Validate section 2 — Color Palette must have at least one hex value
     color_section = sections[1]  # section_number == 2
     has_hex = bool(re.search(r"#[0-9a-fA-F]{3,6}", color_section.raw_content))
     if not has_hex and not color_section.parsed_data:
-        raise DesignSectionValidationError(
-            "Section 2 (Color Palette) must contain at least one hex color value."
-        )
+        raise DesignSectionValidationError("Section 2 (Color Palette) must contain at least one hex color value.")
 
     # Validate section 11 — Agent Prompt Snippet must be >= 200 chars
     agent_section = sections[10]  # section_number == 11
@@ -175,7 +175,7 @@ def extract_css_vars(sections: list[DesignSection]) -> str:
             lines.append(f"  --font-mono: '{data['mono_font']}', monospace;")
 
         # Fallback: plain text font lines
-        if not any("--font-" in l for l in lines):
+        if not any("--font-" in ln for ln in lines):
             for match in FONT_LINE_RE.finditer(typo_section.raw_content):
                 font_name = match.group(1).strip().rstrip(".")
                 keyword = match.group(0).lower()
@@ -231,10 +231,7 @@ def extract_layout_css(sections: list[DesignSection]) -> str:
         css_class = f".layout-{layout_id}"
         if layout_id == "hero-title":
             blocks.append(
-                f"{css_class} h1.hero-title {{\n"
-                f"  color: var({color_primary});\n"
-                f"  font-family: var({font_display});\n"
-                f"}}"
+                f"{css_class} h1.hero-title {{\n  color: var({color_primary});\n  font-family: var({font_display});\n}}"
             )
         elif layout_id == "stat-highlight":
             blocks.append(
@@ -252,10 +249,6 @@ def extract_layout_css(sections: list[DesignSection]) -> str:
                 f"}}"
             )
         else:
-            blocks.append(
-                f"{css_class} {{\n"
-                f"  font-family: var({font_body});\n"
-                f"}}"
-            )
+            blocks.append(f"{css_class} {{\n  font-family: var({font_body});\n}}")
 
     return "\n\n".join(blocks) + "\n"

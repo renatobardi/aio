@@ -145,7 +145,7 @@ def _create_project_structure(
     theme_record = next((t for t in global_registry if t.id == config.theme), None)
     if theme_record is None:
         # fallback to minimal if theme somehow missing
-        theme_entry: dict = {"id": config.theme, "name": config.theme.capitalize()}
+        theme_entry: dict[str, object] = {"id": config.theme, "name": config.theme.capitalize()}
     else:
         theme_entry = {
             "id": theme_record.id,

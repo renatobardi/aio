@@ -5,7 +5,7 @@ from __future__ import annotations
 import importlib.resources
 import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from aio._log import get_logger
@@ -41,7 +41,7 @@ class ThemeRecord:
     base_dir: Path
 
     @classmethod
-    def from_dict(cls, d: dict, base_dir: Path) -> "ThemeRecord":
+    def from_dict(cls, d: dict[str, object], base_dir: Path) -> "ThemeRecord":
         """
         Deserialise a registry.json entry dict into a ThemeRecord.
 
@@ -104,7 +104,7 @@ def load_registry() -> list[ThemeRecord]:
     try:
         themes_ref = importlib.resources.files("aio.themes")
         data = themes_ref.joinpath("registry.json").read_text(encoding="utf-8")
-        raw_entries: list[dict] = json.loads(data)
+        raw_entries: list[dict[str, object]] = json.loads(data)
     except Exception as exc:
         _log.error("Failed to load theme registry: %s", exc)
         return []
@@ -129,9 +129,7 @@ def load_registry() -> list[ThemeRecord]:
             _log.warning("Skipping theme '%s': theme.css not found at %s", theme_id, record.css_path)
             continue
         if not record.layout_css_path.exists():
-            _log.warning(
-                "Skipping theme '%s': layout.css not found at %s", theme_id, record.layout_css_path
-            )
+            _log.warning("Skipping theme '%s': layout.css not found at %s", theme_id, record.layout_css_path)
             continue
 
         records.append(record)

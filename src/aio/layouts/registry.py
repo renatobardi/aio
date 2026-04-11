@@ -74,14 +74,14 @@ class LayoutRegistry:
         pkg = importlib.resources.files("aio.layouts")
         found: list[LayoutTemplate] = []
 
-        for resource in pkg.iterdir():  # type: ignore[attr-defined]
-            name = resource.name  # type: ignore[attr-defined]
+        for resource in pkg.iterdir():
+            name = resource.name
             if not name.endswith(".j2") or name == "base.j2":
                 continue
 
             path = Path(str(resource))
             try:
-                source = resource.read_text(encoding="utf-8")  # type: ignore[attr-defined]
+                source = resource.read_text(encoding="utf-8")
             except Exception as exc:
                 raise LayoutDefinitionError(f"Cannot read layout '{name}': {exc}") from exc
 

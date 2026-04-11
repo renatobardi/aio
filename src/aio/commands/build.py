@@ -8,7 +8,7 @@ import re
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import mistune
 import typer
@@ -17,7 +17,6 @@ from aio._log import get_logger
 from aio._utils import base64_inline, build_jinja_env, escape_script
 from aio._validators import check_external_urls, yaml_safe_load
 from aio.composition.engine import CompositionEngine
-from aio.composition.layouts import LayoutType
 from aio.composition.metadata import BuildResult, ComposedSlide, SlideRenderContext
 from aio.exceptions import ExternalURLError, ParseError
 
@@ -79,7 +78,7 @@ def _split_slides(content: str) -> tuple[dict[str, Any], list[str]]:
                 frontmatter = yaml_safe_load(yaml_block, source="slides.md frontmatter") or {}
             except ParseError:
                 raise
-            content = content[end + 4:].strip()
+            content = content[end + 4 :].strip()
 
     blocks = re.split(r"\n---\n", content)
     blocks = [b.strip() for b in blocks if b.strip()]
@@ -188,9 +187,8 @@ def analyze_slides(
                 image_src = base64_inline(Path(image_path_str))
             except FileNotFoundError:
                 _log.warning("Image not found: %s — using placeholder", image_path_str)
-                image_src = (
-                    "data:image/svg+xml;charset=utf-8,"
-                    + _MISSING_IMAGE_SVG.replace("<", "%3C").replace(">", "%3E")
+                image_src = "data:image/svg+xml;charset=utf-8," + _MISSING_IMAGE_SVG.replace("<", "%3C").replace(
+                    ">", "%3E"
                 )
 
         ctx = SlideRenderContext(
@@ -216,9 +214,7 @@ def analyze_slides(
             right_content=ast.metadata.get("right-content"),
         )
         contexts.append(ctx)
-        _log.debug(
-            "Slide %d: layout=%s (inferred=%s)", ast.index, layout_type.value, ctx.is_inferred
-        )
+        _log.debug("Slide %d: layout=%s (inferred=%s)", ast.index, layout_type.value, ctx.is_inferred)
 
     return contexts
 
@@ -465,9 +461,7 @@ def build_pipeline(
     if not dry_run:
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(html, encoding="utf-8")
-        _log.info(
-            "Built: %s (%d slides, %.1f KB)", output, len(composed), byte_size / 1024
-        )
+        _log.info("Built: %s (%d slides, %.1f KB)", output, len(composed), byte_size / 1024)
 
     return result
 
@@ -483,11 +477,11 @@ app = typer.Typer()
 def build(
     input: Path = typer.Argument(Path("slides.md"), help="Input slides.md path"),
     output: Path = typer.Option(Path("build/slides.html"), "--output", "-o", help="Output HTML path"),
-    theme: Optional[str] = typer.Option(None, "--theme", "-t", help="Theme override"),
+    theme: str | None = typer.Option(None, "--theme", "-t", help="Theme override"),
     enrich: bool = typer.Option(False, "--enrich", help="Enable AI image generation"),
     provider: str = typer.Option("pollinations", "--provider", help="Image generation provider"),
     skip_existing: bool = typer.Option(False, "--skip-existing", help="Skip already-generated images"),
-    agent: Optional[str] = typer.Option(None, "--agent", "-a", help="Agent override"),
+    agent: str | None = typer.Option(None, "--agent", "-a", help="Agent override"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show planned output without writing"),
 ) -> None:
     """Compile slides.md → build/slides.html."""
@@ -518,11 +512,7 @@ def build(
         raise typer.Exit(code=1)
 
     if dry_run:
-        typer.echo(
-            f"[dry-run] Would write {result.slide_count} slides ({result.byte_size / 1024:.1f} KB) to {output}"
-        )
+        typer.echo(f"[dry-run] Would write {result.slide_count} slides ({result.byte_size / 1024:.1f} KB) to {output}")
     else:
-        typer.echo(
-            f"Built: {output} ({result.slide_count} slides, {result.byte_size / 1024:.1f} KB)"
-        )
+        typer.echo(f"Built: {output} ({result.slide_count} slides, {result.byte_size / 1024:.1f} KB)")
     _log.info("Command complete")
