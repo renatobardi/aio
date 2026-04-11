@@ -26,7 +26,7 @@ M0 delivered a working CLI skeleton and project scaffolding, but without concret
 3. **DESIGN.md structured format** with 11 mandatory sections (visual, colors, typography, components, layout, depth, do/don't, responsive, accessibility, visual composition, layout components)
 4. **Advanced Theme CLI** (list with filters, search, info, use, show, create)
 5. **Build pipeline v2** with Parse → Analyze → Compose → Render → Inline steps and automatic layout inference
-6. **Serve with hot reload** — theme changes reflected instantly via WebSocket/SSE
+6. **Serve with hot reload** — theme changes reflected instantly via SSE (Server-Sent Events at `/__sse__`)
 
 ---
 
@@ -132,7 +132,7 @@ A developer can manage all theme lifecycle operations from the terminal without 
 
 8. **Given** `aio theme create my-theme --from stripe`, **When** executed, **Then** `src/aio/themes/my-theme/` is created with copies of `DESIGN.md`, `theme.css`, `layout.css`, `meta.json`; the new theme is added to the global registry; stdout says `✓ Created custom theme 'my-theme' based on 'stripe'`.
 
-9. **Given** `aio theme use unknown-id` in a project, **When** executed, **Then** exit code is 1; stderr says `Theme 'unknown-id' not found in registry`.
+9. **Given** `aio theme use unknown-id` in a project, **When** executed, **Then** exit code is 2; stderr says `Theme 'unknown-id' not found in registry`.
 
 10. **Given** `aio theme search "design"`, **When** executed, **Then** at least 40 themes match via fuzzy match; results include Apple, Stripe, Linear, Figma; runs in under 1 second.
 
@@ -160,7 +160,7 @@ The build command executes 5 clearly-logged steps, infers layouts automatically,
 
 6. **Given** `slides.md` contains a `<!-- @layout: split-image-text -->` with `@image: /assets/photo.jpg` (file exists), **When** the Inline step runs, **Then** the image is read, converted to base64, and embedded as a `data:image/jpeg;base64,...` URI; no file path reference remains in the HTML.
 
-7. **Given** the build encounters a CSS inlining error (e.g., theme file missing), **When** it fails, **Then** exit code is 1; stderr clearly names Step 5 (INLINE) as the failing step and names the missing file.
+7. **Given** the build encounters a missing theme CSS file, **When** it fails, **Then** exit code is 2 (theme not found or invalid); stderr clearly names the missing file and the failing step.
 
 ---
 
@@ -174,13 +174,13 @@ A developer runs `aio serve slides.md`, edits the file or switches themes, and s
 
 **Acceptance Scenarios**:
 
-1. **Given** `aio serve slides.md --port 8080`, **When** executed, **Then** the server starts; `GET http://localhost:8080` returns 200 with HTML body containing the presentation; a SSE or WebSocket endpoint exists at `/_aio/ws` or `/_aio/reload`.
+1. **Given** `aio serve slides.md --port 8080`, **When** executed, **Then** the server starts; `GET http://localhost:8080` returns 200 with HTML body containing the presentation; `GET http://localhost:8080/__sse__` returns `text/event-stream` with an initial `{"type":"connected"}` event.
 
 2. **Given** the server is running and `slides.md` is saved, **When** the file changes, **Then** the server detects the change via watchdog in under 500ms and sends a reload signal; the connected browser refreshes within 2 seconds.
 
 3. **Given** `aio serve` is running and the user runs `aio theme use stripe` in a second terminal, **Then** the config change is detected and the browser reloads with the Stripe theme applied.
 
-4. **Given** port 8080 is already in use, **When** `aio serve --port 8080` runs, **Then** the command detects the conflict, logs a clear error naming the port, and exits with code 1 without starting a server.
+4. **Given** port 8080 is already in use, **When** `aio serve --port 8080` runs, **Then** the command detects the conflict, logs a clear error naming the port, and exits with code 2 without starting a server.
 
 5. **Given** `aio serve` is running and the user presses Ctrl+C, **When** SIGINT is received, **Then** the server shuts down gracefully (no zombie processes, clean port release); exit code 0.
 
@@ -197,7 +197,7 @@ A developer runs `aio serve slides.md`, edits the file or switches themes, and s
 - **FR-204:** Images in `split-image-text` are base64-inlined during the Inline step (max 3 MB per image)
 - **FR-205:** Layout registry is auto-discovered by scanning `.j2` files in `src/aio/layouts/`
 - **FR-206:** Each layout supports 0–10 metadata blocks; missing blocks use per-layout defaults
-- **FR-207:** Markdown body content inside layout blocks is rendered via mistune
+- **FR-207:** Markdown body content is rendered to HTML via mistune *before* being injected into layout context variables (`title`, `body_html`, etc.); Jinja2 templates receive pre-rendered HTML strings, never raw Markdown
 - **FR-208:** Layout CSS is scoped to `.layout-{name}` selectors (no cross-layout leakage)
 
 ### P2 — Theme System
@@ -241,12 +241,12 @@ A developer runs `aio serve slides.md`, edits the file or switches themes, and s
 - **FR-231:** `aio theme list [--limit N] [--filter tag,...] [--search query]` with rich table output
 - **FR-232:** `aio theme info {id} [--json]` shows metadata + colors + typography + layout count
 - **FR-233:** `aio theme use {id}` validates theme, updates `config.yaml` and `.aio/themes/registry.json`
-- **FR-234:** `aio theme show {id} [--section N] [--all]` outputs DESIGN.md or a specific section
+- **FR-234:** `aio theme show {id} [--section N] [--raw]` outputs the full DESIGN.md (Rich Markdown-rendered) when no `--section` is given, or only section N when specified; `--raw` prints plain text instead of Rich-rendered output (omitting `--section` already shows the full document — no `--all` flag is needed or exposed)
 - **FR-235:** `aio theme create {name} [--from template-id]` scaffolds a new theme (copies template if `--from` given)
 - **FR-236:** Theme search uses fuzzy matching (Levenshtein distance or `difflib.SequenceMatcher`)
-- **FR-237:** `--filter` supports comma-separated tags (OR semantics for single tag, AND for multiple)
+- **FR-237:** `--filter` supports comma-separated tags with AND semantics — a theme must have ALL specified tags to match (e.g., `--filter dark,minimal` returns only themes tagged with both `dark` AND `minimal`)
 - **FR-238:** `--json` flag available on `list`, `info`, `search`; output is valid JSON
-- **FR-239:** All theme subcommands validate the theme ID against registry.json; exit 1 with error if unknown
+- **FR-239:** All theme subcommands validate the theme ID against registry.json; exit 2 if the theme ID is not found (exit 1 is reserved for system-level errors such as registry file not found or malformed)
 
 ### P5 — Build Pipeline v2
 
@@ -265,12 +265,12 @@ A developer runs `aio serve slides.md`, edits the file or switches themes, and s
 
 - **FR-250:** `aio serve {input}` starts an HTTP server with Starlette (minimal ASGI); binds to `127.0.0.1` by default; accepts `--host` flag (e.g., `--host 0.0.0.0`) to override the bind address
 - **FR-251:** Server serves the built presentation at `GET /`
-- **FR-252:** SSE endpoint at `/_aio/reload` (using `text/event-stream`) sends a `reload` event when source changes; Starlette `EventSourceResponse` implementation
+- **FR-252:** SSE endpoint at `/__sse__` (using `text/event-stream`) sends a `reload` event when source changes; Starlette `EventSourceResponse` implementation
 - **FR-253:** Watchdog monitors `slides.md` and `.aio/config.yaml` for changes; triggers rebuild + notify
 - **FR-254:** Rebuild on change completes in under 2 seconds for ≤ 30 slides
-- **FR-255:** Port collision is detected before bind; exits with code 1 and a descriptive error
+- **FR-255:** Port collision is detected before bind; exits with code 2 and a descriptive error
 - **FR-256:** Graceful shutdown on SIGINT: socket closed, watchdog stopped, exit code 0
-- **FR-257:** Injected JS snippet in the served HTML connects via `EventSource('/_aio/reload')` and calls `location.reload()` on message event; no WebSocket dependency required
+- **FR-257:** Injected JS snippet in the served HTML connects via `EventSource('/__sse__')` and calls `location.reload()` on message event; no WebSocket dependency required
 
 ---
 
@@ -317,7 +317,7 @@ A developer runs `aio serve slides.md`, edits the file or switches themes, and s
 ### P6 Serve
 - **SC-250:** Server starts in under 2 seconds and serves HTTP 200 at `/`
 - **SC-251:** Reload event delivered to browser within 2 seconds of file change
-- **SC-252:** Port collision detected and reported before bind; clean exit code 1
+- **SC-252:** Port collision detected and reported before bind; clean exit code 2
 - **SC-253:** Graceful SIGINT shutdown completes in under 3 seconds
 
 ---

@@ -2,7 +2,7 @@
 
 **Feature**: 002-core-layouts-theme-system
 **Branch**: `feat/002-core-layouts-theme-system`
-**Total tasks**: 68
+**Total tasks**: 72
 **Generated**: 2026-04-11
 
 ---
@@ -48,6 +48,7 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 - [ ] T010 Add base64_inline(image_path: Path) -> str function using stdlib base64 + mimetypes (returns data URI string; handles SVG as raw inline) in src/aio/_utils.py
 - [ ] T011 Create tests/fixtures/slides/sample_all_layouts.md — 10-slide fixture file with one slide per layout type (hero-title, stat-highlight, split-image-text, content-with-icons, comparison-2col, quote, key-takeaways, closing, auto, content) each using correct @layout and @metadata tags
 - [ ] T012 Create tests/fixtures/themes/fixture_theme/ with DESIGN.md (all 11 sections, minimal valid content), theme.css (--color-primary, --color-bg, --color-text, --font-display, --font-body), layout.css (.layout-hero-title, .layout-content), meta.json
+- [ ] T012a Define SlideRenderContext and ComposedSlide dataclasses (per data-model.md §4 and §5 field tables and validation rules) in src/aio/composition/metadata.py — must exist in Phase 2 because CompositionEngine.apply_layout() (T024) returns SlideRenderContext and COMPOSE step (T046) produces ComposedSlide
 
 ---
 
@@ -84,6 +85,7 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 - [ ] T026 [US2] Implement DesignSection dataclass (section_number, heading, raw_content, parsed_data, char_count) in src/aio/themes/parser.py
 - [ ] T027 [US2] Implement parse_design_md(text: str) -> list[DesignSection] using compiled SECTION_RE regex (re.MULTILINE | re.DOTALL) and yaml.safe_load() for fenced ```yaml blocks in src/aio/themes/parser.py
 - [ ] T028 [US2] Implement extract_css_vars(sections: list[DesignSection]) -> str that produces :root { --color-*: hex; --font-*: name; } CSS from Color Palette and Typography sections in src/aio/themes/parser.py
+- [ ] T028a [US2] Implement extract_layout_css(sections: list[DesignSection]) -> str that generates `.layout-*` CSS class stubs from Components (§4) and Layout System (§5) sections; each class stub maps semantic tokens to CSS vars (e.g., `.layout-stat-highlight .stat { color: var(--color-accent); }`); used by import script and theme create scaffold in src/aio/themes/parser.py
 - [ ] T029 [US2] Update src/aio/themes/validator.py — replace stub with call to parse_design_md(); validate all 11 sections non-empty; validate section 2 hex values and section 11 char count ≥ 200; return list[str] of errors
 
 ### US2 — Theme System (import script + loader + registry)
@@ -120,7 +122,7 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 **Independent test**: `pytest tests/integration/test_build_e2e.py`
 
 - [ ] T043 [US5] Write integration tests in tests/integration/test_build_e2e.py — test build of sample_all_layouts.md exits 0; assert out.html exists and is non-empty; assert no external https:// URLs (run _validators.check_external_urls); assert all 8 data-layout values present in output; test --dry-run exits 0 and does not write file; test unknown layout falls back to content with WARNING; test missing image file substitutes SVG placeholder
-- [ ] T044 [US5] Define SlideRenderContext, ComposedSlide, BuildResult, HotReloadEvent dataclasses (per data-model.md field tables and validation rules) in src/aio/composition/metadata.py
+- [ ] T044 [US5] Define BuildResult and HotReloadEvent dataclasses (per data-model.md §6 and §7 field tables and validation rules) in src/aio/composition/metadata.py; confirm SlideRenderContext and ComposedSlide (defined in T012a) have all fields required by the build pipeline
 - [ ] T045 [US5] Implement ANALYZE step as analyze_slides(asts: list[SlideAST], theme: ThemeRecord) -> list[SlideRenderContext] — resolves layout per slide (explicit @layout tag overrides; CompositionEngine.infer_layout() as fallback); logs WARNING for unknown explicit layout IDs and substitutes CONTENT; populates all SlideRenderContext fields in src/aio/commands/build.py
 - [ ] T046 [US5] Implement COMPOSE step as compose_slides(contexts: list[SlideRenderContext], env: jinja2.Environment) -> list[ComposedSlide] — renders each slide via env.get_template(layout_id + ".j2").render(**context); validates html_fragment starts with <section and ends with </section>; calls sanitize_svg() on embedded SVG; accumulates warnings in src/aio/commands/build.py
 - [ ] T047 [US5] Implement RENDER step as render_document(slides: list[ComposedSlide], theme: ThemeRecord, title: str) -> str — assembles full Reveal.js HTML document: <html><head> with theme.css + layout.css as <style> blocks, Reveal.js vendor JS as <script> block (escape </script>), </head><body class="reveal"><div class="slides">{slide sections}</div></body></html>; reads vendor JS from src/aio/vendor/revealjs/ in src/aio/commands/build.py
@@ -159,6 +161,8 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 - [ ] T066 Create tests/fixtures/expected/hero_title_output.html — run build with hero_title fixture and save snapshot; add test in test_layouts.py asserting output matches snapshot within 5% edit distance
 - [ ] T067 Add src/aio/themes/parser.py module to package-data in pyproject.toml and verify import works in zipapp mode via: python -c "import zipfile; z=zipfile.ZipFile('dist/aio.pyz'); print([f for f in z.namelist() if 'parser' in f])"
 - [ ] T068 Run full integration test suite (pytest tests/integration/ -v) on clean venv (pip install -e ".[dev]" in fresh dir) to verify no dependency issues introduced in M1
+- [ ] T068a Add per-layout render-time assertion to tests/unit/test_layouts.py — using time.perf_counter(), assert each of the 8 layout renders completes in under 10ms (SC-200 gate); run as a separate parametrized test class so it can be skipped in slow CI environments
+- [ ] T068b Add import script timing smoke test to tests/integration/test_theme_e2e.py — run `python scripts/import-awesome-designs.py --limit 5 --output /tmp/aio-theme-test/` and assert wall-clock time < 30s (scales to < 2 min for full 64-theme import per SC-212); skip if network not available (pytest.mark.network)
 
 ---
 
@@ -179,7 +183,8 @@ T025-T029 (US3 parser) → T030-T035 (US2 import + loader)
 
 Within Phase 6 (US5):
 ```
-T044 (metadata dataclasses) → T045 (ANALYZE) → T046 (COMPOSE) → T047 (RENDER) → T048 (INLINE) → T050 (wire all)
+T012a (SlideRenderContext + ComposedSlide) ──────────────────────────────────────────────────────────► T024 (CompositionEngine)
+T044 (BuildResult + HotReloadEvent) → T045 (ANALYZE) → T046 (COMPOSE) → T047 (RENDER) → T048 (INLINE) → T050 (wire all)
 T049 (check_external_urls) ──────────────────────────────────────────────────────────► T048
 ```
 

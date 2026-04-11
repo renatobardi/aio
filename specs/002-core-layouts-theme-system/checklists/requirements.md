@@ -42,12 +42,12 @@
 - [ ] FR-231: `aio theme list` with `--limit`, `--filter`, `--search` options and rich table output
 - [ ] FR-232: `aio theme info {id} [--json]` shows full metadata
 - [ ] FR-233: `aio theme use {id}` validates theme and updates config + registry
-- [ ] FR-234: `aio theme show {id} [--section N] [--all]` outputs DESIGN.md
+- [ ] FR-234: `aio theme show {id} [--section N] [--raw]` outputs DESIGN.md (full or specific section; `--raw` for plain text)
 - [ ] FR-235: `aio theme create {name} [--from id]` scaffolds new theme
 - [ ] FR-236: `aio theme search` uses fuzzy matching (difflib or Levenshtein)
-- [ ] FR-237: `--filter` supports comma-separated tags
+- [ ] FR-237: `--filter` supports comma-separated tags with AND semantics (theme must have ALL specified tags)
 - [ ] FR-238: `--json` flag on list, info, search; output is valid JSON
-- [ ] FR-239: All subcommands validate theme ID; exit 1 if unknown
+- [ ] FR-239: All subcommands validate theme ID; exit 2 if unknown (exit 1 reserved for registry not found / malformed)
 
 ## P5 — Build Pipeline v2
 
@@ -66,9 +66,9 @@
 
 - [ ] FR-250: `aio serve` starts Starlette ASGI server
 - [ ] FR-251: `GET /` returns 200 with full presentation HTML
-- [ ] FR-252: SSE/WebSocket endpoint at `/_aio/reload`
+- [ ] FR-252: SSE endpoint at `/__sse__` (text/event-stream); sends `reload` event on source change
 - [ ] FR-253: Watchdog monitors slides.md and .aio/config.yaml; triggers rebuild
 - [ ] FR-254: Rebuild on change completes in under 2 seconds for ≤ 30 slides
-- [ ] FR-255: Port collision detected before bind; exit 1 with descriptive error
+- [ ] FR-255: Port collision detected before bind; exit 2 with descriptive error
 - [ ] FR-256: Graceful SIGINT shutdown: socket closed, watchdog stopped, exit 0
-- [ ] FR-257: Injected JS auto-connects to `/_aio/reload` and calls `location.reload()`
+- [ ] FR-257: Injected JS auto-connects to `/__sse__` via EventSource and calls `location.reload()` on message
