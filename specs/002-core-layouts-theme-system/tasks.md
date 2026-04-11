@@ -29,12 +29,12 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 
 **Goal**: Add new dependencies and create package scaffolding.
 
-- [ ] T001 Add starlette>=0.37, uvicorn[standard]>=0.29, watchdog>=4.0 to [project.dependencies] in pyproject.toml
-- [ ] T002 Add httpx>=0.27 to [project.optional-dependencies] dev section in pyproject.toml
-- [ ] T003 Add 10 new exception classes (ExternalURLError, LayoutNotFoundError, LayoutDefinitionError, LayoutRegistryError, RenderValidationError, SlideContextError, DesignSectionParseError, DesignSectionValidationError, ThemeValidationError, BuildResultError) to src/aio/exceptions.py
-- [ ] T004 Create src/aio/layouts/__init__.py (empty package marker)
-- [ ] T005 Create src/aio/composition/__init__.py (empty package marker)
-- [ ] T006 Add *.j2 and *.json entries for src/aio/layouts/ and src/aio/composition/ to [tool.setuptools.package-data] in pyproject.toml so templates are included in all distribution modes
+- [x] T001 Add starlette>=0.37, uvicorn[standard]>=0.29, watchdog>=4.0 to [project.dependencies] in pyproject.toml
+- [x] T002 Add httpx>=0.27 to [project.optional-dependencies] dev section in pyproject.toml
+- [x] T003 Add 10 new exception classes (ExternalURLError, LayoutNotFoundError, LayoutDefinitionError, LayoutRegistryError, RenderValidationError, SlideContextError, DesignSectionParseError, DesignSectionValidationError, ThemeValidationError, BuildResultError) to src/aio/exceptions.py
+- [x] T004 Create src/aio/layouts/__init__.py (empty package marker)
+- [x] T005 Create src/aio/composition/__init__.py (empty package marker)
+- [x] T006 Add *.j2 and *.json entries for src/aio/layouts/ and src/aio/composition/ to [tool.setuptools.package-data] in pyproject.toml so templates are included in all distribution modes
 
 ---
 
@@ -42,13 +42,13 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 
 **Goal**: Shared infrastructure required by all user stories — base template, layout registry, and test fixtures.
 
-- [ ] T007 Create src/aio/layouts/base.j2 — Reveal.js `<section data-layout="{{ layout_id }}">` skeleton with `{% block slide_content %}`, `{% block slide_class %}`, `{% block slide_attrs %}` blocks; escape all inline `</script>` as `<\/script>`
-- [ ] T008 Implement LayoutTemplate frozen dataclass and LayoutRegistry singleton (lazy, importlib.resources discovery) in src/aio/layouts/registry.py
-- [ ] T009 Add escape_script(text: str) -> str Jinja2 filter function and register it in a build_jinja_env() factory in src/aio/_utils.py
-- [ ] T010 Add base64_inline(image_path: Path) -> str function using stdlib base64 + mimetypes (returns data URI string; handles SVG as raw inline) in src/aio/_utils.py
-- [ ] T011 Create tests/fixtures/slides/sample_all_layouts.md — 10-slide fixture file with one slide per layout type (hero-title, stat-highlight, split-image-text, content-with-icons, comparison-2col, quote, key-takeaways, closing, auto, content) each using correct @layout and @metadata tags
-- [ ] T012 Create tests/fixtures/themes/fixture_theme/ with DESIGN.md (all 11 sections, minimal valid content), theme.css (--color-primary, --color-bg, --color-text, --font-display, --font-body), layout.css (.layout-hero-title, .layout-content), meta.json
-- [ ] T012a Define SlideRenderContext and ComposedSlide dataclasses (per data-model.md §4 and §5 field tables and validation rules) in src/aio/composition/metadata.py — must exist in Phase 2 because CompositionEngine.apply_layout() (T024) returns SlideRenderContext and COMPOSE step (T046) produces ComposedSlide
+- [x] T007 Create src/aio/layouts/base.j2 — Reveal.js `<section data-layout="{{ layout_id }}">` skeleton with `{% block slide_content %}`, `{% block slide_class %}`, `{% block slide_attrs %}` blocks; escape all inline `</script>` as `<\/script>`
+- [x] T008 Implement LayoutTemplate frozen dataclass and LayoutRegistry singleton (lazy, importlib.resources discovery) in src/aio/layouts/registry.py
+- [x] T009 Add escape_script(text: str) -> str Jinja2 filter function and register it in a build_jinja_env() factory in src/aio/_utils.py
+- [x] T010 Add base64_inline(image_path: Path) -> str function using stdlib base64 + mimetypes (returns data URI string; handles SVG as raw inline) in src/aio/_utils.py
+- [x] T011 Create tests/fixtures/slides/sample_all_layouts.md — 10-slide fixture file with one slide per layout type (hero-title, stat-highlight, split-image-text, content-with-icons, comparison-2col, quote, key-takeaways, closing, auto, content) each using correct @layout and @metadata tags
+- [x] T012 Create tests/fixtures/themes/fixture_theme/ with DESIGN.md (all 11 sections, minimal valid content), theme.css (--color-primary, --color-bg, --color-text, --font-display, --font-body), layout.css (.layout-hero-title, .layout-content), meta.json
+- [x] T012a Define SlideRenderContext and ComposedSlide dataclasses (per data-model.md §4 and §5 field tables and validation rules) in src/aio/composition/metadata.py — must exist in Phase 2 because CompositionEngine.apply_layout() (T024) returns SlideRenderContext and COMPOSE step (T046) produces ComposedSlide
 
 ---
 
@@ -58,18 +58,18 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 
 **Independent test**: `pytest tests/unit/test_layouts.py tests/unit/test_composition_engine.py`
 
-- [ ] T013 [US1] Write tests/unit/test_layouts.py — 8 parametrized smoke tests, one per layout: render template with minimal context, assert `data-layout="{name}"` in output, assert no `<script>` tag, assert output starts with `<section` and ends with `</section>`
-- [ ] T014 [US1] Write tests/unit/test_composition_engine.py — 9 parametrized inference tests (one per layout type + auto fallback): assert infer_layout(slide) returns correct LayoutType for each pattern; assert unknown layout falls back to CONTENT
-- [ ] T015 [US1] [P] Create src/aio/layouts/hero_title.j2 — extends base.j2; renders title (h1.hero-title), subtitle (p.hero-subtitle), centered; reads title/subtitle from context vars
-- [ ] T016 [US1] [P] Create src/aio/layouts/stat_highlight.j2 — extends base.j2; renders stat_value (span.stat), stat_label (p.stat-label), stat_description (p.stat-description); giant font size via CSS class
-- [ ] T017 [US1] [P] Create src/aio/layouts/split_image_text.j2 — extends base.j2; CSS grid 50/50; left panel uses image_src as background-image (data URI); right panel renders title + body_html
-- [ ] T018 [US1] [P] Create src/aio/layouts/content_with_icons.j2 — extends base.j2; renders 3-column grid from body_html list items; each item renders icon keyword + title + description
-- [ ] T019 [US1] [P] Create src/aio/layouts/comparison_2col.j2 — extends base.j2; renders two columns from left_title/left_content/right_title/right_content context vars; distinct border styling via CSS vars
-- [ ] T020 [US1] [P] Create src/aio/layouts/quote.j2 — extends base.j2; renders blockquote.layout-quote with quote_text and p.quote-author with quote_attribution; large italic with left border accent
-- [ ] T021 [US1] [P] Create src/aio/layouts/key_takeaways.j2 — extends base.j2; renders unordered list from body_html; prepends ✓ glyph to each list item via CSS ::before
-- [ ] T022 [US1] [P] Create src/aio/layouts/closing.j2 — extends base.j2; renders title (h1), optional cta_text as .cta-button; centered layout with prominent CTA block
-- [ ] T023 [US1] Implement LayoutType enum (HERO_TITLE, STAT_HIGHLIGHT, SPLIT_IMAGE_TEXT, CONTENT_WITH_ICONS, COMPARISON_2COL, QUOTE, KEY_TAKEAWAYS, CLOSING, CONTENT) and per-layout SlotSpec dataclasses in src/aio/composition/layouts.py
-- [ ] T024 [US1] Implement CompositionEngine with infer_layout(slide: SlideAST) -> LayoutType (9-rule priority chain from research.md §5), apply_layout(slide, layout_type) -> SlideRenderContext, and sanitize_svg(svg_text: str) -> str (strip <script> via xml.etree.ElementTree) in src/aio/composition/engine.py
+- [x] T013 [US1] Write tests/unit/test_layouts.py — 8 parametrized smoke tests, one per layout: render template with minimal context, assert `data-layout="{name}"` in output, assert no `<script>` tag, assert output starts with `<section` and ends with `</section>`
+- [x] T014 [US1] Write tests/unit/test_composition_engine.py — 9 parametrized inference tests (one per layout type + auto fallback): assert infer_layout(slide) returns correct LayoutType for each pattern; assert unknown layout falls back to CONTENT
+- [x] T015 [US1] [P] Create src/aio/layouts/hero_title.j2 — extends base.j2; renders title (h1.hero-title), subtitle (p.hero-subtitle), centered; reads title/subtitle from context vars
+- [x] T016 [US1] [P] Create src/aio/layouts/stat_highlight.j2 — extends base.j2; renders stat_value (span.stat), stat_label (p.stat-label), stat_description (p.stat-description); giant font size via CSS class
+- [x] T017 [US1] [P] Create src/aio/layouts/split_image_text.j2 — extends base.j2; CSS grid 50/50; left panel uses image_src as background-image (data URI); right panel renders title + body_html
+- [x] T018 [US1] [P] Create src/aio/layouts/content_with_icons.j2 — extends base.j2; renders 3-column grid from body_html list items; each item renders icon keyword + title + description
+- [x] T019 [US1] [P] Create src/aio/layouts/comparison_2col.j2 — extends base.j2; renders two columns from left_title/left_content/right_title/right_content context vars; distinct border styling via CSS vars
+- [x] T020 [US1] [P] Create src/aio/layouts/quote.j2 — extends base.j2; renders blockquote.layout-quote with quote_text and p.quote-author with quote_attribution; large italic with left border accent
+- [x] T021 [US1] [P] Create src/aio/layouts/key_takeaways.j2 — extends base.j2; renders unordered list from body_html; prepends ✓ glyph to each list item via CSS ::before
+- [x] T022 [US1] [P] Create src/aio/layouts/closing.j2 — extends base.j2; renders title (h1), optional cta_text as .cta-button; centered layout with prominent CTA block
+- [x] T023 [US1] Implement LayoutType enum (HERO_TITLE, STAT_HIGHLIGHT, SPLIT_IMAGE_TEXT, CONTENT_WITH_ICONS, COMPARISON_2COL, QUOTE, KEY_TAKEAWAYS, CLOSING, CONTENT) and per-layout SlotSpec dataclasses in src/aio/composition/layouts.py
+- [x] T024 [US1] Implement CompositionEngine with infer_layout(slide: SlideAST) -> LayoutType (9-rule priority chain from research.md §5), apply_layout(slide, layout_type) -> SlideRenderContext, and sanitize_svg(svg_text: str) -> str (strip <script> via xml.etree.ElementTree) in src/aio/composition/engine.py
 
 ---
 

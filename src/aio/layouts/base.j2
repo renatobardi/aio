@@ -1,0 +1,16 @@
+{#- base.j2 — Reveal.js slide section skeleton inherited by all layout templates.
+    Every layout MUST extend this template.
+    Constitution Art. VIII: </script> escape applied via escape_script filter.
+-#}
+<section
+  data-layout="{{ layout_id }}"
+  class="{% block slide_class %}layout-{{ layout_id }}{% endblock %}"
+  {% block slide_attrs %}{% endblock %}>
+
+  {% block slide_content %}{% endblock %}
+
+  {% if speaker_notes %}
+  <aside class="notes">{{ speaker_notes }}</aside>
+  {% endif %}
+
+</section>

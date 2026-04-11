@@ -1,0 +1,13 @@
+{#- key_takeaways.j2 — Bulleted list with ✓ checkmarks via CSS ::before. -#}
+{% extends "base.j2" %}
+
+{% block slide_content %}
+<div class="layout-content takeaways-content">
+  {% if title %}
+  <h2 class="takeaways-heading">{{ title }}</h2>
+  {% endif %}
+  <div class="takeaways-list">
+    {{ body_html }}
+  </div>
+</div>
+{% endblock %}

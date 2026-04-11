@@ -1,0 +1,14 @@
+{#- stat_highlight.j2 — Giant stat number + label + description. -#}
+{% extends "base.j2" %}
+
+{% block slide_content %}
+<div class="layout-content stat-content">
+  <span class="stat">{{ stat_value }}</span>
+  {% if stat_label %}
+  <p class="stat-label">{{ stat_label }}</p>
+  {% endif %}
+  {% if stat_description %}
+  <p class="stat-description">{{ stat_description }}</p>
+  {% endif %}
+</div>
+{% endblock %}

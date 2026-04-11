@@ -1,4 +1,17 @@
-<section class="slide slide--quote">
-  <blockquote class="slide__quote">{% block quote %}{% endblock %}</blockquote>
-  <cite class="slide__attribution">{% block attribution %}{% endblock %}</cite>
-</section>
+{#- quote.j2 — Large blockquote with attribution. -#}
+{% extends "base.j2" %}
+
+{% block slide_content %}
+<div class="layout-content quote-content">
+  <blockquote class="layout-quote">
+    {% if quote_text %}
+    <p class="quote-text">{{ quote_text }}</p>
+    {% endif %}
+    {% if quote_attribution %}
+    <footer>
+      <p class="quote-author">&#8212; {{ quote_attribution }}</p>
+    </footer>
+    {% endif %}
+  </blockquote>
+</div>
+{% endblock %}

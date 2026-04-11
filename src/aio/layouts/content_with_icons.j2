@@ -1,0 +1,13 @@
+{#- content_with_icons.j2 — 3-column icon + title + description grid. -#}
+{% extends "base.j2" %}
+
+{% block slide_content %}
+<div class="layout-content icons-content">
+  {% if title %}
+  <h2 class="icons-heading">{{ title }}</h2>
+  {% endif %}
+  <div class="icons-grid">
+    {{ body_html }}
+  </div>
+</div>
+{% endblock %}

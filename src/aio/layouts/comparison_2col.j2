@@ -1,0 +1,23 @@
+{#- comparison_2col.j2 — Side-by-side two-column comparison. -#}
+{% extends "base.j2" %}
+
+{% block slide_content %}
+<div class="layout-content comparison-grid">
+  <div class="comparison-col comparison-left">
+    {% if left_title %}
+    <h3 class="comparison-col-title">{{ left_title }}</h3>
+    {% endif %}
+    {% if left_content %}
+    <div class="comparison-col-body">{{ left_content }}</div>
+    {% endif %}
+  </div>
+  <div class="comparison-col comparison-right">
+    {% if right_title %}
+    <h3 class="comparison-col-title">{{ right_title }}</h3>
+    {% endif %}
+    {% if right_content %}
+    <div class="comparison-col-body">{{ right_content }}</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
