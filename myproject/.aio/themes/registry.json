@@ -1,0 +1,17 @@
+[
+  {
+    "id": "minimal",
+    "name": "Minimal",
+    "description": "Clean, distraction-free design for technical presentations",
+    "tags": [
+      "minimal",
+      "clean",
+      "technical"
+    ],
+    "author": "AIO",
+    "source": "builtin",
+    "path": "themes/minimal",
+    "created_at": "2026-04-11T00:00:00Z",
+    "updated_at": "2026-04-11T00:00:00Z"
+  }
+]
