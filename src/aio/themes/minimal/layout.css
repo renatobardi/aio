@@ -1,0 +1,41 @@
+/* Minimal Theme — Layout Grid */
+.slide {
+  padding: 2.5rem 3rem;
+  max-width: 56rem;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.slide--hero-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+}
+
+.slide--content .slide__title {
+  font-size: var(--font-size-h2);
+  margin-bottom: 1.5rem;
+}
+
+.slide--two-column .slide__columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.slide--code pre {
+  background: var(--color-surface);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+}
+
+@media (max-width: 640px) {
+  .slide {
+    padding: 1.25rem 1.5rem;
+  }
+  .slide--two-column .slide__columns {
+    grid-template-columns: 1fr;
+  }
+}

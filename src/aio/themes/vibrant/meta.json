@@ -1,0 +1,11 @@
+{
+  "id": "vibrant",
+  "name": "Vibrant",
+  "description": "Energetic design with rich colors for creative presentations",
+  "tags": ["vibrant", "colorful", "creative"],
+  "author": "AIO",
+  "source": "builtin",
+  "path": "themes/vibrant",
+  "created_at": "2026-04-11T00:00:00Z",
+  "updated_at": "2026-04-11T00:00:00Z"
+}
