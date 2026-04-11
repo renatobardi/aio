@@ -7,6 +7,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from aio._log import get_logger
 from aio.exceptions import ThemeValidationError
@@ -41,7 +42,7 @@ class ThemeRecord:
     base_dir: Path
 
     @classmethod
-    def from_dict(cls, d: dict[str, object], base_dir: Path) -> "ThemeRecord":
+    def from_dict(cls, d: dict[str, Any], base_dir: Path) -> ThemeRecord:
         """
         Deserialise a registry.json entry dict into a ThemeRecord.
 
@@ -104,7 +105,7 @@ def load_registry() -> list[ThemeRecord]:
     try:
         themes_ref = importlib.resources.files("aio.themes")
         data = themes_ref.joinpath("registry.json").read_text(encoding="utf-8")
-        raw_entries: list[dict[str, object]] = json.loads(data)
+        raw_entries: list[dict[str, Any]] = json.loads(data)
     except Exception as exc:
         _log.error("Failed to load theme registry: %s", exc)
         return []
@@ -117,7 +118,7 @@ def load_registry() -> list[ThemeRecord]:
 
     records: list[ThemeRecord] = []
     for entry in raw_entries:
-        theme_id = entry.get("id", "<unknown>")
+        theme_id = str(entry.get("id", "<unknown>"))
         theme_dir = themes_base / theme_id
         try:
             record = ThemeRecord.from_dict(entry, base_dir=theme_dir)

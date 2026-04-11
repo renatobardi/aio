@@ -20,7 +20,7 @@ import os
 import signal
 import socket
 import time
-from collections.abc import Callable
+from collections.abc import AsyncGenerator, Callable
 from pathlib import Path
 
 import typer
@@ -125,7 +125,7 @@ def create_app(source: Path, build_fn: Callable[[], str] | None = None) -> Starl
         q: asyncio.Queue[HotReloadEvent] = asyncio.Queue(maxsize=32)
         _connections.append(q)
 
-        async def _event_stream():
+        async def _event_stream() -> AsyncGenerator[str, None]:
             # Send connected confirmation immediately
             yield f"data: {json.dumps({'type': 'connected'})}\n\n"
             try:
@@ -216,7 +216,7 @@ def serve(
     starlette_app = create_app(input)
 
     # --- watchdog setup ---
-    observer = None  # type: ignore[var-annotated]
+    observer = None
     if not no_reload:
         handler = _FileModifiedHandler(input, loop=asyncio.get_event_loop())
 
@@ -228,8 +228,8 @@ def serve(
 
         observer = Observer()
         watch_dir = str(input.parent.resolve())
-        observer.schedule(_WatchdogBridge(), watch_dir, recursive=False)
-        observer.start()
+        observer.schedule(_WatchdogBridge(), watch_dir, recursive=False)  # type: ignore[no-untyped-call]
+        observer.start()  # type: ignore[no-untyped-call]
         _log.debug("watchdog observer started on %s", watch_dir)
 
     # --- uvicorn config ---
@@ -247,7 +247,7 @@ def serve(
         _log.info("Shutting down serve...")
         server.should_exit = True
         if observer is not None:
-            observer.stop()
+            observer.stop()  # type: ignore[no-untyped-call]
             observer.join(timeout=2.0)
         raise SystemExit(0)
 
@@ -262,5 +262,5 @@ def serve(
         server.run()
     finally:
         if observer is not None and observer.is_alive():
-            observer.stop()
+            observer.stop()  # type: ignore[no-untyped-call]
             observer.join(timeout=2.0)

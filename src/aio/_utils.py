@@ -58,7 +58,7 @@ def build_jinja_env(templates_package: str = "aio.layouts") -> jinja2.Environmen
 
     pkg = importlib.resources.files(templates_package)
     loader = jinja2.FunctionLoader(
-        lambda name: (pkg / name).read_text(encoding="utf-8")  # type: ignore[operator]
+        lambda name: (pkg / name).read_text(encoding="utf-8")
     )
     env = jinja2.Environment(
         loader=loader,
