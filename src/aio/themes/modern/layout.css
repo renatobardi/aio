@@ -4,3 +4,128 @@
   max-width: 60rem;
   margin: 0 auto;
 }
+
+.layout-hero-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+}
+
+.layout-hero-title .hero-title {
+  font-size: var(--font-size-h1, 3.5rem);
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+}
+
+.layout-hero-title .hero-subtitle {
+  font-size: var(--font-size-h3, 1.5rem);
+  color: var(--color-text);
+  opacity: 0.7;
+  margin-top: 0.5rem;
+}
+
+.layout-stat-highlight {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100%;
+  text-align: center;
+}
+
+.layout-stat-highlight .stat {
+  font-size: 7rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.layout-stat-highlight .stat-label {
+  font-size: 1.5rem;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 0.75rem;
+}
+
+.layout-split-image-text .split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  min-height: 100%;
+}
+
+.layout-split-image-text .split-image {
+  width: 100%;
+  border-radius: var(--radius-md, 0.5rem);
+  object-fit: cover;
+}
+
+.layout-comparison-2col .comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+}
+
+.layout-comparison-2col .comparison-col-title {
+  color: var(--color-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.layout-quote .layout-quote {
+  border-left: 6px solid var(--color-accent);
+  padding-left: 2rem;
+  font-style: italic;
+}
+
+.layout-quote .quote-text {
+  font-size: 2rem;
+  line-height: 1.4;
+  color: var(--color-text);
+}
+
+.layout-quote .quote-author {
+  font-size: 1rem;
+  font-style: normal;
+  opacity: 0.6;
+  margin-top: 1.25rem;
+}
+
+.layout-key-takeaways .takeaways-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.layout-key-takeaways .takeaways-list li {
+  padding: 0.4rem 0;
+}
+
+.layout-key-takeaways .takeaways-list li::before {
+  content: "✓ ";
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.layout-code pre {
+  background: var(--color-surface, #1e1e2e);
+  color: var(--color-text, #cdd6f4);
+  padding: 1.5rem;
+  border-radius: var(--radius-md, 0.5rem);
+  overflow-x: auto;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .slide {
+    padding: 1.5rem 2rem;
+  }
+
+  .layout-split-image-text .split-grid,
+  .layout-comparison-2col .comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
