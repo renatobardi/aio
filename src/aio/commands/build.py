@@ -192,6 +192,21 @@ def analyze_slides(
                     ">", "%3E"
                 )
 
+        # Chart rendering: @chart-type + @chart-data → SVG data URI (M2)
+        chart_type_str = ast.metadata.get("chart-type")
+        chart_data_str = ast.metadata.get("chart-data")
+        if chart_type_str and chart_data_str and image_src is None:
+            try:
+                import urllib.parse
+
+                from aio.visuals.dataviz.charts import render_chart
+                from aio.visuals.dataviz.data_parser import parse_chart_data
+
+                svg = render_chart(parse_chart_data(chart_data_str, chart_type=chart_type_str))
+                image_src = "data:image/svg+xml;charset=utf-8," + urllib.parse.quote(svg)
+            except Exception as exc:  # noqa: BLE001
+                _log.warning("Chart rendering failed for slide %d: %s", ast.index, exc)
+
         ctx = SlideRenderContext(
             slide_index=ast.index,
             slide_id=f"slide-{ast.index}",

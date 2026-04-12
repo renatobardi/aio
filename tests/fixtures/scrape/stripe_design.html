@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stripe Design System — Test Fixture</title>
+  <style>
+    :root {
+      --color-primary: #635BFF;
+      --color-accent: #00D084;
+      --color-background: #F6F9FC;
+      --color-text: #1A1A1A;
+      --color-neutral: #6B7280;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F6F9FC;
+      color: #1A1A1A;
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 24px;
+      margin: 0;
+    }
+    h1 { font-family: 'Inter', sans-serif; font-size: 48px; color: #635BFF; }
+    h2 { font-family: 'Inter', sans-serif; font-size: 32px; }
+    .card {
+      background: #FFFFFF;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .btn-primary {
+      background: #635BFF;
+      color: #FFFFFF;
+      padding: 12px 24px;
+      border-radius: 4px;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: #635BFF;
+      border: 1px solid #635BFF;
+      padding: 12px 24px;
+      border-radius: 4px;
+    }
+    .accent { color: #00D084; }
+    .neutral { color: #6B7280; }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1>Stripe Design System</h1>
+    <p class="neutral">Clean, modern financial design system used by millions.</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Color Palette</h2>
+      <ul>
+        <li>Primary: <strong>#635BFF</strong> — Stripe Purple</li>
+        <li>Accent: <strong>#00D084</strong> — Success Green</li>
+        <li>Background: <strong>#F6F9FC</strong> — Light Gray</li>
+        <li>Text: <strong>#1A1A1A</strong> — Near Black</li>
+        <li>Neutral: <strong>#6B7280</strong> — Medium Gray</li>
+        <li>White: <strong>#FFFFFF</strong></li>
+        <li>Error Red: <strong>#DF1B41</strong></li>
+        <li>Warning: <strong>#FFB703</strong></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Typography</h2>
+      <p>Primary font: <strong>Inter</strong> — used for all text</p>
+      <p>Display font: <strong>Inter</strong> — headings and hero text</p>
+      <p>Monospace font: <strong>Roboto Mono</strong> — code samples</p>
+      <p>Base size: 16px. Scale: 12/14/16/20/24/32/48px</p>
+      <p>Line height: 1.5 (body), 1.2 (headings)</p>
+    </section>
+
+    <section class="card">
+      <h2>Spacing</h2>
+      <p>Base unit: <strong>8px</strong></p>
+      <p>Component padding: 16px, 24px</p>
+      <p>Section margin: 32px, 48px</p>
+      <p>Max-width: 1200px</p>
+    </section>
+
+    <section class="card">
+      <h2>Components</h2>
+      <button class="btn-primary">Primary Action</button>
+      <button class="btn-secondary">Secondary</button>
+      <div class="card" style="margin-top:16px">
+        <p>Card with 8px border-radius and subtle shadow</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Accessibility</h2>
+      <p>All color combinations meet WCAG 2.1 AA contrast requirements.</p>
+      <p>Minimum contrast ratio: 4.5:1 for text</p>
+      <p>Focus states: visible 2px outline in primary color</p>
+    </section>
+  </main>
+</body>
+</html>

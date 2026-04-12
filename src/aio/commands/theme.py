@@ -492,9 +492,10 @@ def create(
 @app.command("validate")
 def validate(
     theme_id: str = typer.Argument(..., help="Theme ID to validate"),
+    check_css: bool = typer.Option(False, "--css", help="Also validate theme.css with cssutils and WCAG contrast"),
 ) -> None:
     """Validate a theme's DESIGN.md against the 11-section schema."""
-    errors = validate_theme(theme_id)
+    errors = validate_theme(theme_id, check_css=check_css)
     if errors:
         for err in errors:
             _log.error("%s", err)
