@@ -1,38 +1,38 @@
-name: "3 - Nightly Theme Sync"                                                                                       
-   
-  "on":                                                                                                                
-    schedule:                                                     
-      - cron: "0 3 * * *"
-    workflow_dispatch:                                                                                                 
-   
-  jobs:                                                                                                                
-    sync-themes:                                                  
-      runs-on: ubuntu-latest
-      permissions:
-        contents: write
-      steps:
-        - uses: actions/checkout@v4
+name: "3 - Nightly Theme Sync"
 
-        - uses: actions/setup-python@v5
-          with:
-            python-version: "3.12"                                                                                     
-   
-        - name: Install dependencies                                                                                   
-          run: pip install -e ".[enrich]"                         
+"on":
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
 
-        - name: Run theme import script
-          run: python scripts/import-awesome-designs.py
+jobs:
+  sync-themes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Check for changes                                                                                      
-          id: changes
-          run: |                                                                                                       
-            git diff --quiet src/aio/themes/ || echo "changed=true" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-        - name: Commit updated themes
-          if: steps.changes.outputs.changed == 'true'
-          run: |
-            git config user.name "github-actions[bot]"                                                                 
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add src/aio/themes/                                                                                    
-            git commit -m "chore: sync themes from awesome-design-md [skip ci]"
-            git push          
+      - name: Install dependencies
+        run: pip install -e ".[enrich]"
+
+      - name: Run theme import script
+        run: python scripts/import-awesome-designs.py
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet src/aio/themes/ || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Commit updated themes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/aio/themes/
+          git commit -m "chore: sync themes from awesome-design-md [skip ci]"
+          git push
