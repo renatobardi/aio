@@ -21,13 +21,14 @@ from aio.exceptions import DesignSectionParseError, DesignSectionValidationError
 _log = get_logger(__name__)
 
 # Matches "## N. Heading" or "## N Heading" at the start of a line
+# Anchored at ^ and $ — .+ (greedy) cannot backtrack past the end-of-line anchor
 SECTION_RE = re.compile(
-    r"^##\s+(\d+)\.?\s+(.+?)$",  # NOSONAR: applied to trusted DESIGN.md files
+    r"^##\s+(\d+)\.?\s+(.+)$",
     re.MULTILINE,
 )
 
-# Fenced YAML block: ```yaml ... ```
-YAML_FENCE_RE = re.compile(r"```yaml\s*\n(.*?)```", re.DOTALL)  # NOSONAR: applied to trusted DESIGN.md files
+# [^\n]* matches optional trailing chars on the ```yaml line; avoids \s*\n backtracking
+YAML_FENCE_RE = re.compile(r"```yaml[^\n]*\n(.*?)```", re.DOTALL)
 
 # Color hex extraction from plain text lines (e.g. "- Primary: #635BFF")
 COLOR_LINE_RE = re.compile(r"([A-Za-z][\w\s-]*?):\s*(#[0-9a-fA-F]{3,6})\b")

@@ -53,7 +53,8 @@ class SlideAST:
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-_TAG_RE = re.compile(r"<!--\s*@(\w[\w-]*):\s*(.*?)\s*-->")  # NOSONAR: applied to trusted markdown files
+# Trailing whitespace stripped via .strip() on captured groups — avoids \s*.*?\s* backtracking
+_TAG_RE = re.compile(r"<!--\s*@(\w[\w-]*):\s*(.*?)-->")
 _HEADING_RE = re.compile(r"^#+\s+(.+)$", re.MULTILINE)
 
 # Minimal SVG placeholder for missing images
