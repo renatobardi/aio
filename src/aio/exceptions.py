@@ -100,3 +100,21 @@ class ThemeValidationError(AIOError):
 
 class BuildResultError(AIOError):
     """BuildResult construction failed (e.g. output file not written)."""
+
+
+class ChartDataError(AIOError):
+    """Chart data parsing or rendering failure."""
+
+    def __init__(self, message: str, chart_type: str | None = None) -> None:
+        full_msg = f"Chart error{f' (type: {chart_type})' if chart_type else ''}: {message}"
+        super().__init__(full_msg)
+        self.chart_type = chart_type
+
+
+class ExtractError(AIOError):
+    """Web scraping or DESIGN.md extraction failure."""
+
+    def __init__(self, message: str, url: str | None = None) -> None:
+        full_msg = f"Extract error{f' (url: {url})' if url else ''}: {message}"
+        super().__init__(full_msg)
+        self.url = url
