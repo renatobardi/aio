@@ -348,7 +348,7 @@ def compose_slides(contexts: list[SlideRenderContext]) -> list[ComposedSlide]:
 
         # Phase 2: Add enrich placeholder for slides with image_prompt
         if ctx.image_prompt:
-            html = html.replace("</section>", f'<!-- enrich-img-{ctx.slide_index} --></section>', 1)
+            html = html.replace("</section>", f"<!-- enrich-img-{ctx.slide_index} --></section>", 1)
 
         # Sanitize any embedded SVG
         if "<svg" in html:
@@ -598,13 +598,15 @@ def build_pipeline(
                 body = slide_ctx.body if hasattr(slide_ctx, "body") else ""
                 prompt = infer_prompt(slide_ctx.title if hasattr(slide_ctx, "title") else None, body)
             seed = derive_seed(title, slide_ctx.slide_index)
-            enrich_ctxs.append(EnrichContext(
-                slide_index=slide_ctx.slide_index,
-                prompt=prompt,
-                seed=seed,
-                image_bytes=None,
-                is_placeholder=False,
-            ))
+            enrich_ctxs.append(
+                EnrichContext(
+                    slide_index=slide_ctx.slide_index,
+                    prompt=prompt,
+                    seed=seed,
+                    image_bytes=None,
+                    is_placeholder=False,
+                )
+            )
 
         engine = EnrichEngine()
         enriched = engine.enrich_all(enrich_ctxs)
@@ -612,7 +614,7 @@ def build_pipeline(
 
         # Inject images into HTML via per-slide placeholders
         for ectx in enriched:
-            placeholder_marker = f'<!-- enrich-img-{ectx.slide_index} -->'
+            placeholder_marker = f"<!-- enrich-img-{ectx.slide_index} -->"
             if placeholder_marker not in html:
                 continue
             if ectx.is_placeholder or not ectx.image_bytes:
@@ -620,9 +622,7 @@ def build_pipeline(
             else:
                 b64 = _base64.b64encode(ectx.image_bytes).decode("ascii")
                 img_html = (
-                    f'<div class="slide-image">'
-                    f'<img src="data:image/jpeg;base64,{b64}" alt="slide image" />'
-                    f"</div>"
+                    f'<div class="slide-image"><img src="data:image/jpeg;base64,{b64}" alt="slide image" /></div>'
                 )
             html = html.replace(placeholder_marker, img_html, 1)
 

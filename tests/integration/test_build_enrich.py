@@ -41,16 +41,14 @@ class TestEnrichIntegration:
             build_pipeline(slides, output=out, enrich=True)
 
         html = out.read_text(encoding="utf-8")
-        assert 'data:image/jpeg;base64,' in html
+        assert "data:image/jpeg;base64," in html
 
     def test_no_external_urls_after_enrich(self, tmp_path: pathlib.Path) -> None:
         from aio.commands.build import build_pipeline
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Enrich No URLs\n---\n\n"
-            "<!-- @image-prompt: Minimal blue gradient -->\n\n"
-            "# Title\n\nContent.",
+            "---\ntitle: Enrich No URLs\n---\n\n<!-- @image-prompt: Minimal blue gradient -->\n\n# Title\n\nContent.",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"
@@ -60,6 +58,7 @@ class TestEnrichIntegration:
 
         html = out.read_text(encoding="utf-8")
         import re
+
         external = re.findall(r'(?:href|src)=["\']( https?://[^"\']+)["\']', html)
         assert external == [], f"External URLs found: {external}"
 
@@ -68,9 +67,7 @@ class TestEnrichIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Det Test\n---\n\n"
-            "<!-- @image-prompt: A circle on white -->\n\n"
-            "# Slide\n\nBody.",
+            "---\ntitle: Det Test\n---\n\n<!-- @image-prompt: A circle on white -->\n\n# Slide\n\nBody.",
             encoding="utf-8",
         )
         out1 = tmp_path / "out1.html"
@@ -90,9 +87,7 @@ class TestEnrichIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Fallback Test\n---\n\n"
-            "<!-- @image-prompt: Test prompt -->\n\n"
-            "# Slide\n\nBody.",
+            "---\ntitle: Fallback Test\n---\n\n<!-- @image-prompt: Test prompt -->\n\n# Slide\n\nBody.",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"
@@ -116,9 +111,7 @@ class TestEnrichIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Warn Test\n---\n\n"
-            "<!-- @image-prompt: test -->\n\n"
-            "# Title\n\nText.",
+            "---\ntitle: Warn Test\n---\n\n<!-- @image-prompt: test -->\n\n# Title\n\nText.",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"

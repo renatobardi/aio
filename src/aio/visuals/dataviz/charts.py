@@ -500,14 +500,28 @@ class DonutChart(BaseChart):
         if not data.series or not data.series[0].values:
             # Empty state — grey placeholder ring
             b.add("circle", {"cx": f"{cx:.1f}", "cy": f"{cy:.1f}", "r": f"{r:.1f}", "fill": "#ddd", "stroke": "none"})
-            b.add("circle", {
-                "cx": f"{cx:.1f}", "cy": f"{cy:.1f}", "r": f"{inner_r:.1f}", "fill": "#fff", "stroke": "none",
-            })
-            b.add("text", {
-                "x": f"{cx:.1f}", "y": f"{cy:.1f}",
-                "text-anchor": "middle", "dominant-baseline": "middle",
-                "fill": "#999", "font-size": "14",
-            }, "No data")
+            b.add(
+                "circle",
+                {
+                    "cx": f"{cx:.1f}",
+                    "cy": f"{cy:.1f}",
+                    "r": f"{inner_r:.1f}",
+                    "fill": "#fff",
+                    "stroke": "none",
+                },
+            )
+            b.add(
+                "text",
+                {
+                    "x": f"{cx:.1f}",
+                    "y": f"{cy:.1f}",
+                    "text-anchor": "middle",
+                    "dominant-baseline": "middle",
+                    "fill": "#999",
+                    "font-size": "14",
+                },
+                "No data",
+            )
             return
 
         values = data.series[0].values
@@ -543,11 +557,18 @@ class DonutChart(BaseChart):
 
         # Centre label
         label = self.center_label or f"{len(values)} items"
-        b.add("text", {
-            "x": f"{cx:.1f}", "y": f"{cy:.1f}",
-            "text-anchor": "middle", "dominant-baseline": "middle",
-            "font-size": "14", "fill": "#333",
-        }, label)
+        b.add(
+            "text",
+            {
+                "x": f"{cx:.1f}",
+                "y": f"{cy:.1f}",
+                "text-anchor": "middle",
+                "dominant-baseline": "middle",
+                "font-size": "14",
+                "fill": "#333",
+            },
+            label,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -597,15 +618,23 @@ class SparklineChart(BaseChart):
         # Filled area path
         first_x, first_y = px(0), py(values[0])
         last_x = px(len(values) - 1)
-        area_d = f"M {first_x:.1f} {h} L {first_x:.1f} {first_y:.1f} " + " ".join(
-            f"L {px(i):.1f} {py(v):.1f}" for i, v in enumerate(values)
-        ) + f" L {last_x:.1f} {h} Z"
+        area_d = (
+            f"M {first_x:.1f} {h} L {first_x:.1f} {first_y:.1f} "
+            + " ".join(f"L {px(i):.1f} {py(v):.1f}" for i, v in enumerate(values))
+            + f" L {last_x:.1f} {h} Z"
+        )
 
         b.add("path", {"d": area_d, "fill": self.color, "opacity": str(self.fill_opacity), "stroke": "none"})
-        b.add("polyline", {
-            "points": pts, "fill": "none", "stroke": self.color,
-            "stroke-width": "1.5", "stroke-linejoin": "round",
-        })
+        b.add(
+            "polyline",
+            {
+                "points": pts,
+                "fill": "none",
+                "stroke": self.color,
+                "stroke-width": "1.5",
+                "stroke-linejoin": "round",
+            },
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -640,9 +669,17 @@ class TimelineChart(BaseChart):
             events = events[:_TIMELINE_EVENTS_CAP]
 
         if not events:
-            b.add("text", {
-                "x": "50%", "y": "50%", "text-anchor": "middle", "fill": "#999", "font-size": "14",
-            }, "No events")
+            b.add(
+                "text",
+                {
+                    "x": "50%",
+                    "y": "50%",
+                    "text-anchor": "middle",
+                    "fill": "#999",
+                    "font-size": "14",
+                },
+                "No events",
+            )
             return
 
         row_h = min(40, (h - 40) // max(len(events), 1))
@@ -652,42 +689,76 @@ class TimelineChart(BaseChart):
         # Vertical connector line
         line_y1 = pad_top
         line_y2 = pad_top + len(events) * row_h
-        b.add("line", {
-            "x1": str(col_x), "y1": str(line_y1),
-            "x2": str(col_x), "y2": str(line_y2),
-            "stroke": "var(--color-neutral-300)", "stroke-width": str(self.connector_width),
-        })
+        b.add(
+            "line",
+            {
+                "x1": str(col_x),
+                "y1": str(line_y1),
+                "x2": str(col_x),
+                "y2": str(line_y2),
+                "stroke": "var(--color-neutral-300)",
+                "stroke-width": str(self.connector_width),
+            },
+        )
 
         for i, (date, event) in enumerate(events):
             cy = pad_top + i * row_h + row_h // 2
 
             # Dot
-            b.add("circle", {
-                "cx": str(col_x), "cy": str(cy), "r": str(self.dot_radius),
-                "fill": "var(--color-primary)", "stroke": "#fff", "stroke-width": "2",
-            })
+            b.add(
+                "circle",
+                {
+                    "cx": str(col_x),
+                    "cy": str(cy),
+                    "r": str(self.dot_radius),
+                    "fill": "var(--color-primary)",
+                    "stroke": "#fff",
+                    "stroke-width": "2",
+                },
+            )
 
             # Date label (left of line)
             if date:
-                b.add("text", {
-                    "x": str(col_x - self.dot_radius - 4), "y": str(cy),
-                    "text-anchor": "end", "dominant-baseline": "middle",
-                    "font-size": "11", "fill": "var(--color-neutral-500)",
-                }, date)
+                b.add(
+                    "text",
+                    {
+                        "x": str(col_x - self.dot_radius - 4),
+                        "y": str(cy),
+                        "text-anchor": "end",
+                        "dominant-baseline": "middle",
+                        "font-size": "11",
+                        "fill": "var(--color-neutral-500)",
+                    },
+                    date,
+                )
 
             # Event label (right of line)
-            b.add("text", {
-                "x": str(col_x + self.dot_radius + 8), "y": str(cy),
-                "text-anchor": "start", "dominant-baseline": "middle",
-                "font-size": "13", "fill": "var(--color-text)",
-            }, event)
+            b.add(
+                "text",
+                {
+                    "x": str(col_x + self.dot_radius + 8),
+                    "y": str(cy),
+                    "text-anchor": "start",
+                    "dominant-baseline": "middle",
+                    "font-size": "13",
+                    "fill": "var(--color-text)",
+                },
+                event,
+            )
 
         if overflow:
             cy = pad_top + len(events) * row_h + row_h // 2
-            b.add("text", {
-                "x": str(col_x + self.dot_radius + 8), "y": str(cy),
-                "text-anchor": "start", "font-size": "12", "fill": "#999",
-            }, f"…{overflow} more")
+            b.add(
+                "text",
+                {
+                    "x": str(col_x + self.dot_radius + 8),
+                    "y": str(cy),
+                    "text-anchor": "start",
+                    "font-size": "12",
+                    "fill": "#999",
+                },
+                f"…{overflow} more",
+            )
 
 
 # ---------------------------------------------------------------------------

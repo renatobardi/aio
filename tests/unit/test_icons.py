@@ -42,6 +42,7 @@ class TestRenderIcon:
         from unittest.mock import patch
 
         import aio.visuals.svg.icons as icons_module
+
         with patch.object(icons_module._log, "warning") as mock_warn:
             render_icon("unknown-icon-xyz-does-not-exist")
         mock_warn.assert_called_once()

@@ -27,9 +27,9 @@ _INLINE_TAG_RE = re.compile(r"<!--\s*@([\w-]+)\s*:\s*(.*?)-->", re.DOTALL)
 class InlineMetadata:
     """Value object for a single <!-- @key: value --> directive (Phase 2)."""
 
-    key: str    # lowercase, e.g. "icon"
+    key: str  # lowercase, e.g. "icon"
     value: str  # stripped value string, e.g. "brain"
-    line: int   # 1-based line number in the original slide source
+    line: int  # 1-based line number in the original slide source
 
 
 def extract_inline_metadata(body: str) -> tuple[dict[str, str], str]:
@@ -99,13 +99,13 @@ class SlideRenderContext:
     duration_hint: int | None = None
 
     # Phase 2: Visual Enrichment fields
-    icon_name: str | None = None           # resolved icon name (post-fallback)
-    icon_size: str = "48px"               # CSS size value
-    icon_color: str | None = None         # CSS color; None → inherits theme var
-    chart_svg: str | None = None          # pre-rendered SVG string
-    decoration_class: str | None = None   # e.g. "decoration-gradient-primary"
-    decoration_style: str | None = None   # inline style for the <section> element
-    image_prompt: str | None = None       # raw prompt for enrichment (explicit or inferred)
+    icon_name: str | None = None  # resolved icon name (post-fallback)
+    icon_size: str = "48px"  # CSS size value
+    icon_color: str | None = None  # CSS color; None → inherits theme var
+    chart_svg: str | None = None  # pre-rendered SVG string
+    decoration_class: str | None = None  # e.g. "decoration-gradient-primary"
+    decoration_style: str | None = None  # inline style for the <section> element
+    image_prompt: str | None = None  # raw prompt for enrichment (explicit or inferred)
 
     def __post_init__(self) -> None:
         if self.slide_index < 0:
