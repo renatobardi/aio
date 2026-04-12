@@ -1,0 +1,13 @@
+{#- hero_title.j2 — Full-viewport centered title + subtitle slide. -#}
+{% extends "base.j2" %}
+
+{% block slide_content %}
+<div class="layout-content hero-content">
+  {% if title %}
+  <h1 class="hero-title">{{ title }}</h1>
+  {% endif %}
+  {% if body_html %}
+  <p class="hero-subtitle">{{ body_html | striptags }}</p>
+  {% endif %}
+</div>
+{% endblock %}

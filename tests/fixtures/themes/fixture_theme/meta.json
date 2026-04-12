@@ -1,0 +1,19 @@
+{
+  "id": "fixture_theme",
+  "name": "Fixture Theme",
+  "description": "Minimal theme for automated tests.",
+  "version": "1.0.0",
+  "author": "test",
+  "source_url": null,
+  "categories": ["minimal", "test"],
+  "colors": {
+    "primary": "#1a56db",
+    "accent": "#e74694",
+    "background": "#ffffff",
+    "text": "#111827"
+  },
+  "typography": {
+    "heading_font": "Inter",
+    "body_font": "Inter"
+  }
+}

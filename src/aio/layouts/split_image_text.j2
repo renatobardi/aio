@@ -1,0 +1,22 @@
+{#- split_image_text.j2 — 50/50 CSS grid: image panel + text panel. -#}
+{% extends "base.j2" %}
+
+{% block slide_content %}
+<div class="layout-content split-grid {% if image_position == 'right' %}split-image-right{% else %}split-image-left{% endif %}">
+  <div class="split-image-panel">
+    {% if image_src %}
+    <img src="{{ image_src }}" alt="{{ image_alt or '' }}" class="split-image" />
+    {% else %}
+    <div class="split-image-placeholder" aria-hidden="true"></div>
+    {% endif %}
+  </div>
+  <div class="split-text-panel">
+    {% if title %}
+    <h2 class="split-title">{{ title }}</h2>
+    {% endif %}
+    {% if body_html %}
+    <div class="split-body">{{ body_html }}</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

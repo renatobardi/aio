@@ -1,0 +1,16 @@
+{#- closing.j2 — Thank you / call-to-action closing slide. -#}
+{% extends "base.j2" %}
+
+{% block slide_content %}
+<div class="layout-content closing-content">
+  {% if title %}
+  <h1 class="closing-title">{{ title }}</h1>
+  {% endif %}
+  {% if body_html %}
+  <div class="closing-body">{{ body_html }}</div>
+  {% endif %}
+  {% if cta_text %}
+  <div class="cta-button">{{ cta_text }}</div>
+  {% endif %}
+</div>
+{% endblock %}

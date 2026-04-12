@@ -29,12 +29,12 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 
 **Goal**: Add new dependencies and create package scaffolding.
 
-- [ ] T001 Add starlette>=0.37, uvicorn[standard]>=0.29, watchdog>=4.0 to [project.dependencies] in pyproject.toml
-- [ ] T002 Add httpx>=0.27 to [project.optional-dependencies] dev section in pyproject.toml
-- [ ] T003 Add 10 new exception classes (ExternalURLError, LayoutNotFoundError, LayoutDefinitionError, LayoutRegistryError, RenderValidationError, SlideContextError, DesignSectionParseError, DesignSectionValidationError, ThemeValidationError, BuildResultError) to src/aio/exceptions.py
-- [ ] T004 Create src/aio/layouts/__init__.py (empty package marker)
-- [ ] T005 Create src/aio/composition/__init__.py (empty package marker)
-- [ ] T006 Add *.j2 and *.json entries for src/aio/layouts/ and src/aio/composition/ to [tool.setuptools.package-data] in pyproject.toml so templates are included in all distribution modes
+- [x] T001 Add starlette>=0.37, uvicorn[standard]>=0.29, watchdog>=4.0 to [project.dependencies] in pyproject.toml
+- [x] T002 Add httpx>=0.27 to [project.optional-dependencies] dev section in pyproject.toml
+- [x] T003 Add 10 new exception classes (ExternalURLError, LayoutNotFoundError, LayoutDefinitionError, LayoutRegistryError, RenderValidationError, SlideContextError, DesignSectionParseError, DesignSectionValidationError, ThemeValidationError, BuildResultError) to src/aio/exceptions.py
+- [x] T004 Create src/aio/layouts/__init__.py (empty package marker)
+- [x] T005 Create src/aio/composition/__init__.py (empty package marker)
+- [x] T006 Add *.j2 and *.json entries for src/aio/layouts/ and src/aio/composition/ to [tool.setuptools.package-data] in pyproject.toml so templates are included in all distribution modes
 
 ---
 
@@ -42,13 +42,13 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 
 **Goal**: Shared infrastructure required by all user stories — base template, layout registry, and test fixtures.
 
-- [ ] T007 Create src/aio/layouts/base.j2 — Reveal.js `<section data-layout="{{ layout_id }}">` skeleton with `{% block slide_content %}`, `{% block slide_class %}`, `{% block slide_attrs %}` blocks; escape all inline `</script>` as `<\/script>`
-- [ ] T008 Implement LayoutTemplate frozen dataclass and LayoutRegistry singleton (lazy, importlib.resources discovery) in src/aio/layouts/registry.py
-- [ ] T009 Add escape_script(text: str) -> str Jinja2 filter function and register it in a build_jinja_env() factory in src/aio/_utils.py
-- [ ] T010 Add base64_inline(image_path: Path) -> str function using stdlib base64 + mimetypes (returns data URI string; handles SVG as raw inline) in src/aio/_utils.py
-- [ ] T011 Create tests/fixtures/slides/sample_all_layouts.md — 10-slide fixture file with one slide per layout type (hero-title, stat-highlight, split-image-text, content-with-icons, comparison-2col, quote, key-takeaways, closing, auto, content) each using correct @layout and @metadata tags
-- [ ] T012 Create tests/fixtures/themes/fixture_theme/ with DESIGN.md (all 11 sections, minimal valid content), theme.css (--color-primary, --color-bg, --color-text, --font-display, --font-body), layout.css (.layout-hero-title, .layout-content), meta.json
-- [ ] T012a Define SlideRenderContext and ComposedSlide dataclasses (per data-model.md §4 and §5 field tables and validation rules) in src/aio/composition/metadata.py — must exist in Phase 2 because CompositionEngine.apply_layout() (T024) returns SlideRenderContext and COMPOSE step (T046) produces ComposedSlide
+- [x] T007 Create src/aio/layouts/base.j2 — Reveal.js `<section data-layout="{{ layout_id }}">` skeleton with `{% block slide_content %}`, `{% block slide_class %}`, `{% block slide_attrs %}` blocks; escape all inline `</script>` as `<\/script>`
+- [x] T008 Implement LayoutTemplate frozen dataclass and LayoutRegistry singleton (lazy, importlib.resources discovery) in src/aio/layouts/registry.py
+- [x] T009 Add escape_script(text: str) -> str Jinja2 filter function and register it in a build_jinja_env() factory in src/aio/_utils.py
+- [x] T010 Add base64_inline(image_path: Path) -> str function using stdlib base64 + mimetypes (returns data URI string; handles SVG as raw inline) in src/aio/_utils.py
+- [x] T011 Create tests/fixtures/slides/sample_all_layouts.md — 10-slide fixture file with one slide per layout type (hero-title, stat-highlight, split-image-text, content-with-icons, comparison-2col, quote, key-takeaways, closing, auto, content) each using correct @layout and @metadata tags
+- [x] T012 Create tests/fixtures/themes/fixture_theme/ with DESIGN.md (all 11 sections, minimal valid content), theme.css (--color-primary, --color-bg, --color-text, --font-display, --font-body), layout.css (.layout-hero-title, .layout-content), meta.json
+- [x] T012a Define SlideRenderContext and ComposedSlide dataclasses (per data-model.md §4 and §5 field tables and validation rules) in src/aio/composition/metadata.py — must exist in Phase 2 because CompositionEngine.apply_layout() (T024) returns SlideRenderContext and COMPOSE step (T046) produces ComposedSlide
 
 ---
 
@@ -58,18 +58,18 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 
 **Independent test**: `pytest tests/unit/test_layouts.py tests/unit/test_composition_engine.py`
 
-- [ ] T013 [US1] Write tests/unit/test_layouts.py — 8 parametrized smoke tests, one per layout: render template with minimal context, assert `data-layout="{name}"` in output, assert no `<script>` tag, assert output starts with `<section` and ends with `</section>`
-- [ ] T014 [US1] Write tests/unit/test_composition_engine.py — 9 parametrized inference tests (one per layout type + auto fallback): assert infer_layout(slide) returns correct LayoutType for each pattern; assert unknown layout falls back to CONTENT
-- [ ] T015 [US1] [P] Create src/aio/layouts/hero_title.j2 — extends base.j2; renders title (h1.hero-title), subtitle (p.hero-subtitle), centered; reads title/subtitle from context vars
-- [ ] T016 [US1] [P] Create src/aio/layouts/stat_highlight.j2 — extends base.j2; renders stat_value (span.stat), stat_label (p.stat-label), stat_description (p.stat-description); giant font size via CSS class
-- [ ] T017 [US1] [P] Create src/aio/layouts/split_image_text.j2 — extends base.j2; CSS grid 50/50; left panel uses image_src as background-image (data URI); right panel renders title + body_html
-- [ ] T018 [US1] [P] Create src/aio/layouts/content_with_icons.j2 — extends base.j2; renders 3-column grid from body_html list items; each item renders icon keyword + title + description
-- [ ] T019 [US1] [P] Create src/aio/layouts/comparison_2col.j2 — extends base.j2; renders two columns from left_title/left_content/right_title/right_content context vars; distinct border styling via CSS vars
-- [ ] T020 [US1] [P] Create src/aio/layouts/quote.j2 — extends base.j2; renders blockquote.layout-quote with quote_text and p.quote-author with quote_attribution; large italic with left border accent
-- [ ] T021 [US1] [P] Create src/aio/layouts/key_takeaways.j2 — extends base.j2; renders unordered list from body_html; prepends ✓ glyph to each list item via CSS ::before
-- [ ] T022 [US1] [P] Create src/aio/layouts/closing.j2 — extends base.j2; renders title (h1), optional cta_text as .cta-button; centered layout with prominent CTA block
-- [ ] T023 [US1] Implement LayoutType enum (HERO_TITLE, STAT_HIGHLIGHT, SPLIT_IMAGE_TEXT, CONTENT_WITH_ICONS, COMPARISON_2COL, QUOTE, KEY_TAKEAWAYS, CLOSING, CONTENT) and per-layout SlotSpec dataclasses in src/aio/composition/layouts.py
-- [ ] T024 [US1] Implement CompositionEngine with infer_layout(slide: SlideAST) -> LayoutType (9-rule priority chain from research.md §5), apply_layout(slide, layout_type) -> SlideRenderContext, and sanitize_svg(svg_text: str) -> str (strip <script> via xml.etree.ElementTree) in src/aio/composition/engine.py
+- [x] T013 [US1] Write tests/unit/test_layouts.py — 8 parametrized smoke tests, one per layout: render template with minimal context, assert `data-layout="{name}"` in output, assert no `<script>` tag, assert output starts with `<section` and ends with `</section>`
+- [x] T014 [US1] Write tests/unit/test_composition_engine.py — 9 parametrized inference tests (one per layout type + auto fallback): assert infer_layout(slide) returns correct LayoutType for each pattern; assert unknown layout falls back to CONTENT
+- [x] T015 [US1] [P] Create src/aio/layouts/hero_title.j2 — extends base.j2; renders title (h1.hero-title), subtitle (p.hero-subtitle), centered; reads title/subtitle from context vars
+- [x] T016 [US1] [P] Create src/aio/layouts/stat_highlight.j2 — extends base.j2; renders stat_value (span.stat), stat_label (p.stat-label), stat_description (p.stat-description); giant font size via CSS class
+- [x] T017 [US1] [P] Create src/aio/layouts/split_image_text.j2 — extends base.j2; CSS grid 50/50; left panel uses image_src as background-image (data URI); right panel renders title + body_html
+- [x] T018 [US1] [P] Create src/aio/layouts/content_with_icons.j2 — extends base.j2; renders 3-column grid from body_html list items; each item renders icon keyword + title + description
+- [x] T019 [US1] [P] Create src/aio/layouts/comparison_2col.j2 — extends base.j2; renders two columns from left_title/left_content/right_title/right_content context vars; distinct border styling via CSS vars
+- [x] T020 [US1] [P] Create src/aio/layouts/quote.j2 — extends base.j2; renders blockquote.layout-quote with quote_text and p.quote-author with quote_attribution; large italic with left border accent
+- [x] T021 [US1] [P] Create src/aio/layouts/key_takeaways.j2 — extends base.j2; renders unordered list from body_html; prepends ✓ glyph to each list item via CSS ::before
+- [x] T022 [US1] [P] Create src/aio/layouts/closing.j2 — extends base.j2; renders title (h1), optional cta_text as .cta-button; centered layout with prominent CTA block
+- [x] T023 [US1] Implement LayoutType enum (HERO_TITLE, STAT_HIGHLIGHT, SPLIT_IMAGE_TEXT, CONTENT_WITH_ICONS, COMPARISON_2COL, QUOTE, KEY_TAKEAWAYS, CLOSING, CONTENT) and per-layout SlotSpec dataclasses in src/aio/composition/layouts.py
+- [x] T024 [US1] Implement CompositionEngine with infer_layout(slide: SlideAST) -> LayoutType (9-rule priority chain from research.md §5), apply_layout(slide, layout_type) -> SlideRenderContext, and sanitize_svg(svg_text: str) -> str (strip <script> via xml.etree.ElementTree) in src/aio/composition/engine.py
 
 ---
 
@@ -81,21 +81,21 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 
 ### US3 — DESIGN.md Parser (prerequisite tasks, complete before US2 import script)
 
-- [ ] T025 [US2] Write tests/unit/test_theme_parser.py — test parse_design_md() with fixture_theme DESIGN.md: assert 11 DesignSection objects returned; assert section numbers 1–11 all present; assert section 2 parsed_data contains hex colors; assert missing-section case raises DesignSectionParseError listing missing numbers
-- [ ] T026 [US2] Implement DesignSection dataclass (section_number, heading, raw_content, parsed_data, char_count) in src/aio/themes/parser.py
-- [ ] T027 [US2] Implement parse_design_md(text: str) -> list[DesignSection] using compiled SECTION_RE regex (re.MULTILINE | re.DOTALL) and yaml.safe_load() for fenced ```yaml blocks in src/aio/themes/parser.py
-- [ ] T028 [US2] Implement extract_css_vars(sections: list[DesignSection]) -> str that produces :root { --color-*: hex; --font-*: name; } CSS from Color Palette and Typography sections in src/aio/themes/parser.py
-- [ ] T028a [US2] Implement extract_layout_css(sections: list[DesignSection]) -> str that generates `.layout-*` CSS class stubs from Components (§4) and Layout System (§5) sections; each class stub maps semantic tokens to CSS vars (e.g., `.layout-stat-highlight .stat { color: var(--color-accent); }`); used by import script and theme create scaffold in src/aio/themes/parser.py
-- [ ] T029 [US2] Update src/aio/themes/validator.py — replace stub with call to parse_design_md(); validate all 11 sections non-empty; validate section 2 hex values and section 11 char count ≥ 200; return list[str] of errors
+- [x] T025 [US2] Write tests/unit/test_theme_parser.py — test parse_design_md() with fixture_theme DESIGN.md: assert 11 DesignSection objects returned; assert section numbers 1–11 all present; assert section 2 parsed_data contains hex colors; assert missing-section case raises DesignSectionParseError listing missing numbers
+- [x] T026 [US2] Implement DesignSection dataclass (section_number, heading, raw_content, parsed_data, char_count) in src/aio/themes/parser.py
+- [x] T027 [US2] Implement parse_design_md(text: str) -> list[DesignSection] using compiled SECTION_RE regex (re.MULTILINE | re.DOTALL) and yaml.safe_load() for fenced ```yaml blocks in src/aio/themes/parser.py
+- [x] T028 [US2] Implement extract_css_vars(sections: list[DesignSection]) -> str that produces :root { --color-*: hex; --font-*: name; } CSS from Color Palette and Typography sections in src/aio/themes/parser.py
+- [x] T028a [US2] Implement extract_layout_css(sections: list[DesignSection]) -> str that generates `.layout-*` CSS class stubs from Components (§4) and Layout System (§5) sections; each class stub maps semantic tokens to CSS vars (e.g., `.layout-stat-highlight .stat { color: var(--color-accent); }`); used by import script and theme create scaffold in src/aio/themes/parser.py
+- [x] T029 [US2] Update src/aio/themes/validator.py — replace stub with call to parse_design_md(); validate all 11 sections non-empty; validate section 2 hex values and section 11 char count ≥ 200; return list[str] of errors
 
 ### US2 — Theme System (import script + loader + registry)
 
-- [ ] T030 [US2] Write unit tests for ThemeRecord loading in tests/unit/test_theme.py — test ThemeRecord.from_dict() with valid and invalid meta.json; assert ThemeValidationError on missing required color keys; assert path resolution uses base_dir correctly
-- [ ] T031 [US2] Implement ThemeRecord dataclass with from_dict(d: dict, base_dir: Path) -> ThemeRecord factory, all fields per data-model.md, and validation raising ThemeValidationError on bad data in src/aio/themes/loader.py
-- [ ] T032 [US2] Update load_registry() in src/aio/themes/loader.py to produce list[ThemeRecord] instead of list[dict]; resolve all paths relative to registry.json location; return partial list (log warning, skip) for entries with missing CSS files
-- [ ] T033 [US2] Create scripts/import-awesome-designs.py — CLI with --dry-run, --limit N, --output DIR flags; git clone --depth 1 https://github.com/nicholasgasior/awesome-design-md into tempdir (or git pull --ff-only if already cloned); walk for DESIGN.md + .css pairs; validate via parse_design_md(); copy valid themes to src/aio/themes/{slug}/; regenerate meta.json from parsed sections; append to src/aio/themes/registry.json; exit 0 on partial success, exit 1 if zero themes imported
+- [x] T030 [US2] Write unit tests for ThemeRecord loading in tests/unit/test_theme.py — test ThemeRecord.from_dict() with valid and invalid meta.json; assert ThemeValidationError on missing required color keys; assert path resolution uses base_dir correctly
+- [x] T031 [US2] Implement ThemeRecord dataclass with from_dict(d: dict, base_dir: Path) -> ThemeRecord factory, all fields per data-model.md, and validation raising ThemeValidationError on bad data in src/aio/themes/loader.py
+- [x] T032 [US2] Update load_registry() in src/aio/themes/loader.py to produce list[ThemeRecord] instead of list[dict]; resolve all paths relative to registry.json location; return partial list (log warning, skip) for entries with missing CSS files
+- [x] T033 [US2] Create scripts/import-awesome-designs.py — CLI with --dry-run, --limit N, --output DIR flags; git clone --depth 1 https://github.com/nicholasgasior/awesome-design-md into tempdir (or git pull --ff-only if already cloned); walk for DESIGN.md + .css pairs; validate via parse_design_md(); copy valid themes to src/aio/themes/{slug}/; regenerate meta.json from parsed sections; append to src/aio/themes/registry.json; exit 0 on partial success, exit 1 if zero themes imported
 - [ ] T034 [US2] Update .github/workflows/3-sync-themes.yml to add a nightly scheduled job (cron: '0 3 * * *') that runs python scripts/import-awesome-designs.py and commits any changes with message "chore(themes): nightly sync from awesome-design-md"
-- [ ] T035 [US2] Write integration test in tests/integration/test_theme_e2e.py — test load_registry() returns ≥ 1 theme (fixture_theme); test ThemeRecord css_path and layout_css_path resolve to existing files; test validate_theme('fixture_theme') returns empty list
+- [x] T035 [US2] Write integration test in tests/integration/test_theme_e2e.py — test load_registry() returns ≥ 1 theme (fixture_theme); test ThemeRecord css_path and layout_css_path resolve to existing files; test validate_theme('fixture_theme') returns empty list
 
 ---
 
@@ -105,13 +105,13 @@ US3 (DESIGN.md parser) ──► US2 (theme import) ──► US4 (theme CLI) �
 
 **Independent test**: `pytest tests/unit/test_theme_cli.py tests/integration/test_theme_e2e.py`
 
-- [ ] T036 [US4] Write tests/unit/test_theme_cli.py — test `aio theme list` shows ID/Name/Tags columns; test `--json` output is valid JSON array; test `--filter design-system` reduces result set; test `aio theme search "minimal"` returns Score column ≥ 0.6; test `aio theme use unknown-id` exits 2; test `aio theme use fixture_theme` outside project dir exits 3
-- [ ] T037 [US4] Update aio theme list in src/aio/commands/theme.py — add --limit (int, default 20), --filter (str, comma-separated tags), --search (str, fuzzy via difflib.SequenceMatcher ratio ≥ 0.6 with id boost +0.1), --json (flag) options; apply filters in order: tag filter → fuzzy search → limit; Rich table with ID/Name/Tags/Source/Description columns
-- [ ] T038 [US4] Implement aio theme search QUERY in src/aio/commands/theme.py — reuse list logic with --search forced; add Score column (0.0–1.0, two decimal places) sorted descending; --limit default 10; --json emits array with score field
-- [ ] T039 [US4] [P] Implement aio theme info ID [--json] in src/aio/commands/theme.py — load ThemeRecord by exact id match; print Rich panel with name/id/source/categories/colors/typography/agent-prompt snippet (truncated at 300 chars); --json emits object; exit 2 if not found
-- [ ] T040 [US4] [P] Implement aio theme show ID [--section N] [--raw] in src/aio/commands/theme.py — load ThemeRecord.design_md_path; Rich Markdown render or raw text; --section N filters to that section number using parse_design_md(); exit 2 if not found; exit 3 if section N out of range 1–11; exit 4 if no DESIGN.md
-- [ ] T041 [US4] [P] Implement aio theme use ID [--project-dir DIR] in src/aio/commands/theme.py — validate theme exists in global registry (exit 2 if not); check .aio/ dir exists in project_dir (exit 3 if not); copy theme dir to .aio/themes/{id}/; update theme: key in .aio/config.yaml; stdout: "Theme '{id}' activated. Rebuild with: aio build slides.md"
-- [ ] T042 [US4] Implement aio theme create NAME [--from ID] [--edit] in src/aio/commands/theme.py — validate NAME is [a-z0-9-]+ (exit 4 if invalid); check no collision in .aio/themes/ (exit 3); copy from existing theme if --from given (exit 2 if source not found), else scaffold from blank template files; print file listing; open $EDITOR on DESIGN.md if --edit; log warning if $EDITOR not set
+- [x] T036 [US4] Write tests/unit/test_theme_cli.py — test `aio theme list` shows ID/Name/Tags columns; test `--json` output is valid JSON array; test `--filter design-system` reduces result set; test `aio theme search "minimal"` returns Score column ≥ 0.6; test `aio theme use unknown-id` exits 2; test `aio theme use fixture_theme` outside project dir exits 3
+- [x] T037 [US4] Update aio theme list in src/aio/commands/theme.py — add --limit (int, default 20), --filter (str, comma-separated tags), --search (str, fuzzy via difflib.SequenceMatcher ratio ≥ 0.6 with id boost +0.1), --json (flag) options; apply filters in order: tag filter → fuzzy search → limit; Rich table with ID/Name/Tags/Source/Description columns
+- [x] T038 [US4] Implement aio theme search QUERY in src/aio/commands/theme.py — reuse list logic with --search forced; add Score column (0.0–1.0, two decimal places) sorted descending; --limit default 10; --json emits array with score field
+- [x] T039 [US4] [P] Implement aio theme info ID [--json] in src/aio/commands/theme.py — load ThemeRecord by exact id match; print Rich panel with name/id/source/categories/colors/typography/agent-prompt snippet (truncated at 300 chars); --json emits object; exit 2 if not found
+- [x] T040 [US4] [P] Implement aio theme show ID [--section N] [--raw] in src/aio/commands/theme.py — load ThemeRecord.design_md_path; Rich Markdown render or raw text; --section N filters to that section number using parse_design_md(); exit 2 if not found; exit 3 if section N out of range 1–11; exit 4 if no DESIGN.md
+- [x] T041 [US4] [P] Implement aio theme use ID [--project-dir DIR] in src/aio/commands/theme.py — validate theme exists in global registry (exit 2 if not); check .aio/ dir exists in project_dir (exit 3 if not); copy theme dir to .aio/themes/{id}/; update theme: key in .aio/config.yaml; stdout: "Theme '{id}' activated. Rebuild with: aio build slides.md"
+- [x] T042 [US4] Implement aio theme create NAME [--from ID] [--edit] in src/aio/commands/theme.py — validate NAME is [a-z0-9-]+ (exit 4 if invalid); check no collision in .aio/themes/ (exit 3); copy from existing theme if --from given (exit 2 if source not found), else scaffold from blank template files; print file listing; open $EDITOR on DESIGN.md if --edit; log warning if $EDITOR not set
 
 ---
 

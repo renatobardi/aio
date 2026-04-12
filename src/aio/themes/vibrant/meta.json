@@ -2,10 +2,19 @@
   "id": "vibrant",
   "name": "Vibrant",
   "description": "Energetic design with rich colors for creative presentations",
-  "tags": ["vibrant", "colorful", "creative"],
+  "version": "1.0.0",
   "author": "AIO",
-  "source": "builtin",
-  "path": "themes/vibrant",
-  "created_at": "2026-04-11T00:00:00Z",
-  "updated_at": "2026-04-11T00:00:00Z"
+  "source_url": null,
+  "categories": ["vibrant", "colorful", "creative"],
+  "colors": {
+    "primary": "#1e1b4b",
+    "accent": "#a855f7",
+    "background": "#0f0a1e",
+    "text": "#e2e8f0"
+  },
+  "typography": {
+    "heading_font": "Cabinet Grotesk",
+    "body_font": "Satoshi"
+  },
+  "is_builtin": true
 }

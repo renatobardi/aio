@@ -1,4 +1,4 @@
-<section class="slide slide--content">
+<section data-layout="{{ layout_id | default('content') }}" class="slide slide--content layout-{{ layout_id | default('content') }}">
   <h2 class="slide__title">{% block title %}{% endblock %}</h2>
   <div class="slide__body">{% block body %}{% endblock %}</div>
 </section>
