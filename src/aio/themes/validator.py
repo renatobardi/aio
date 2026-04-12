@@ -133,7 +133,8 @@ def validate_theme(theme_id: str, check_css: bool = False) -> list[str]:
             errors.extend(css_errors)
 
             # WCAG contrast check on --color-* CSS custom properties in :root
-            _hex_re = re.compile(r"--(color-[\w-]+)\s*:\s*(#[0-9A-Fa-f]{3,6})")  # NOSONAR — limited character class, no backtracking risk
+            # NOSONAR: [\w-] character class has no backtracking risk
+            _hex_re = re.compile(r"--(color-[\w-]+)\s*:\s*(#[0-9A-Fa-f]{3,6})")
             color_vars: dict[str, str] = {}
             for m in _hex_re.finditer(css_text):
                 color_vars[m.group(1)] = m.group(2)
