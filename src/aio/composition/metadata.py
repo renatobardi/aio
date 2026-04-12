@@ -1,6 +1,7 @@
 """
 Core dataclasses for the AIO build pipeline.
 
+InlineMetadata      — value object for a single <!-- @key: value --> directive.
 SlideRenderContext  — context dict passed to Jinja2 layout templates (COMPOSE step).
 ComposedSlide       — output of the COMPOSE step for a single slide.
 BuildResult         — returned by the build command after the full pipeline.
@@ -10,9 +11,48 @@ HotReloadEvent      — internal event passed via asyncio.Queue in serve hot-rel
 from __future__ import annotations
 
 import dataclasses
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: Inline metadata
+# ---------------------------------------------------------------------------
+
+_INLINE_TAG_RE = re.compile(r"<!--\s*@([\w-]+)\s*:\s*(.*?)-->", re.DOTALL)
+
+
+@dataclass(frozen=True)
+class InlineMetadata:
+    """Value object for a single <!-- @key: value --> directive (Phase 2)."""
+
+    key: str    # lowercase, e.g. "icon"
+    value: str  # stripped value string, e.g. "brain"
+    line: int   # 1-based line number in the original slide source
+
+
+def extract_inline_metadata(body: str) -> tuple[dict[str, str], str]:
+    """Extract <!-- @key: value --> tags from a slide body string.
+
+    Returns (metadata_dict, cleaned_body) where:
+    - metadata_dict: lowercase keys → stripped values
+    - cleaned_body: original body with all @-comment tags removed and whitespace stripped
+    """
+    metadata: dict[str, str] = {}
+    for match in _INLINE_TAG_RE.finditer(body):
+        key = match.group(1).strip().lower()
+        value = match.group(2).strip()
+        if key:
+            metadata[key] = value
+    cleaned = _INLINE_TAG_RE.sub("", body).strip()
+    return metadata, cleaned
+
+
+# ---------------------------------------------------------------------------
+# Pipeline dataclasses
+# ---------------------------------------------------------------------------
 
 
 @dataclass
@@ -59,6 +99,15 @@ class SlideRenderContext:
     tags: list[str] = field(default_factory=list)
     duration_hint: int | None = None
 
+    # Phase 2: Visual Enrichment fields
+    icon_name: str | None = None           # resolved icon name (post-fallback)
+    icon_size: str = "48px"               # CSS size value
+    icon_color: str | None = None         # CSS color; None → inherits theme var
+    chart_svg: str | None = None          # pre-rendered SVG string
+    decoration_class: str | None = None   # e.g. "decoration-gradient-primary"
+    decoration_style: str | None = None   # inline style for the <section> element
+    image_prompt: str | None = None       # raw prompt for enrichment (explicit or inferred)
+
     def __post_init__(self) -> None:
         if self.slide_index < 0:
             raise ValueError(f"slide_index must be >= 0, got {self.slide_index}")
@@ -102,6 +151,8 @@ class BuildResult:
     layout_histogram: dict[str, int] = field(default_factory=dict)
     warning_count: int = 0
     enrich_used: bool = False
+    steps_total: int = 5
+    enrich_contexts: list[object] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.slide_count < 1:
