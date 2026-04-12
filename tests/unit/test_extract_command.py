@@ -1,4 +1,8 @@
-"""Unit tests for aio extract command — all network calls mocked (TDD — 15+ cases)."""
+"""Unit tests for aio extract command — all network calls mocked (TDD — 15+ cases).
+
+Tests that require BeautifulSoup (optional [enrich] dep) are skipped automatically
+when bs4 is not installed. Install with: pip install aio[enrich]
+"""
 
 from __future__ import annotations
 
@@ -10,6 +14,8 @@ import pytest
 from typer.testing import CliRunner
 
 from aio.commands.extract import app
+
+bs4 = pytest.importorskip("bs4", reason="bs4 not installed — install aio[enrich] to run extract tests")
 
 FIXTURE_HTML = Path(__file__).parent.parent / "fixtures" / "scrape" / "stripe_design.html"
 _runner = CliRunner()
