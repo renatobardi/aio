@@ -224,9 +224,18 @@ def serve(
     import uvicorn
     from watchdog.observers import Observer
 
-    if _port_in_use(host, port):
-        _log.error("Port %d is already in use", port)
-        raise typer.Exit(code=2)
+    original_port = port
+    while _port_in_use(host, port):
+        if port - original_port >= 10:
+            _log.error(
+                "Could not find a free port in range %d-%d", original_port, port
+            )
+            raise typer.Exit(code=2)
+        port += 1
+    if port != original_port:
+        _log.info(
+            "Port %d in use — using port %d instead", original_port, port
+        )
 
     if not input.exists():
         _log.error("Input file not found: %s", input)

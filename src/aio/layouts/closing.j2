@@ -3,14 +3,10 @@
 
 {% block slide_content %}
 <div class="layout-content closing-content">
-  {% if title %}
-  <h1 class="closing-title">{{ title }}</h1>
-  {% endif %}
-  {% if body_html %}
-  <div class="closing-body">{{ body_html }}</div>
-  {% endif %}
+  <h1 class="closing-title">{% block closing_title %}{{ title | default("Thank You") }}{% endblock %}</h1>
+  <div class="closing-body">{% block closing_body %}{{ body_html | default("") }}{% endblock %}</div>
   {% if cta_text %}
-  <div class="cta-button">{{ cta_text }}</div>
+  <div class="cta-button">{% block cta %}{{ cta_text }}{% endblock %}</div>
   {% endif %}
 </div>
 {% endblock %}

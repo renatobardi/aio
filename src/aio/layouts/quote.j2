@@ -4,12 +4,10 @@
 {% block slide_content %}
 <div class="layout-content quote-content">
   <blockquote class="layout-quote">
-    {% if quote_text %}
-    <p class="quote-text">{{ quote_text }}</p>
-    {% endif %}
-    {% if quote_attribution %}
+    <p class="quote-text">{% block quote_text %}{{ quote_text | default("") }}{% endblock %}</p>
+    {% if quote_attribution or not quote_attribution is defined %}
     <footer>
-      <p class="quote-author">&#8212; {{ quote_attribution }}</p>
+      <p class="quote-author">&#8212; {% block quote_author %}{{ quote_attribution | default("") }}{% endblock %}</p>
     </footer>
     {% endif %}
   </blockquote>

@@ -3,11 +3,7 @@
 
 {% block slide_content %}
 <div class="layout-content hero-content">
-  {% if title %}
-  <h1 class="hero-title">{{ title }}</h1>
-  {% endif %}
-  {% if body_html %}
-  <p class="hero-subtitle">{{ body_html | striptags }}</p>
-  {% endif %}
+  <h1 class="hero-title">{% block hero_title %}{{ title | default("Untitled") }}{% endblock %}</h1>
+  <p class="hero-subtitle">{% block hero_subtitle %}{{ body_html | striptags | default("") }}{% endblock %}</p>
 </div>
 {% endblock %}
