@@ -60,13 +60,24 @@ def _broadcast(event: HotReloadEvent) -> None:
 
 
 class _FileModifiedHandler:
-    """Minimal watchdog-compatible event handler."""
+    """Minimal watchdog-compatible event handler.
 
-    def __init__(self, source: Path, loop: asyncio.AbstractEventLoop) -> None:
+    The event loop is injected via set_loop() from within the running async context
+    (Starlette on_startup), not at construction time. This avoids calling
+    asyncio.get_event_loop() before uvicorn has created its own loop (Python 3.12+ crash).
+    """
+
+    def __init__(self, source: Path) -> None:
         self._source = source
+        self._loop: asyncio.AbstractEventLoop | None = None
+
+    def set_loop(self, loop: asyncio.AbstractEventLoop) -> None:
+        """Called from Starlette on_startup once the event loop is running."""
         self._loop = loop
 
     def dispatch(self, event: object) -> None:
+        if self._loop is None:
+            return
         src = getattr(event, "src_path", "")
         if Path(src).resolve() == self._source.resolve():
             reload_event = HotReloadEvent(
@@ -83,13 +94,18 @@ class _FileModifiedHandler:
 # ---------------------------------------------------------------------------
 
 
-def create_app(source: Path, build_fn: Callable[[], str] | None = None) -> Starlette:
+def create_app(
+    source: Path,
+    build_fn: Callable[[], str] | None = None,
+    file_handler: _FileModifiedHandler | None = None,
+) -> Starlette:
     """Create and return the Starlette ASGI app.
 
     Args:
         source: Path to the input slides.md file.
         build_fn: Optional callable returning built HTML string. If None, the
                   default build_pipeline is used.
+        file_handler: Optional _FileModifiedHandler whose loop is set on startup.
     """
     if build_fn is None:
         from aio.commands.build import build_pipeline as _bp
@@ -165,11 +181,16 @@ def create_app(source: Path, build_fn: Callable[[], str] | None = None) -> Starl
             },
         )
 
+    async def _on_startup() -> None:
+        if file_handler is not None:
+            file_handler.set_loop(asyncio.get_running_loop())
+
     return Starlette(
         routes=[
             Route("/", _root),
             Route("/__sse__", _sse),
-        ]
+        ],
+        on_startup=[_on_startup],
     )
 
 
@@ -213,18 +234,19 @@ def serve(
 
     _log.info("Starting serve on http://%s:%d", host, port)
 
-    starlette_app = create_app(input)
-
     # --- watchdog setup ---
-    observer = None
-    if not no_reload:
-        handler = _FileModifiedHandler(input, loop=asyncio.get_event_loop())
+    handler = _FileModifiedHandler(input) if not no_reload else None
+    starlette_app = create_app(input, file_handler=handler)
 
+    observer = None
+    if handler is not None:
         from watchdog.events import FileSystemEventHandler
+
+        _handler = handler  # narrow type for mypy inside nested class
 
         class _WatchdogBridge(FileSystemEventHandler):
             def on_modified(self, event: object) -> None:
-                handler.dispatch(event)
+                _handler.dispatch(event)
 
         observer = Observer()
         watch_dir = str(input.parent.resolve())

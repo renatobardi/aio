@@ -53,38 +53,39 @@ print('FAIL:', bad) if bad else print('PASS')
 
 ## Architecture
 
-### Build Pipeline (4 steps, `src/aio/commands/build.py`)
+### Build Pipeline (5 steps, `src/aio/commands/build.py`)
 
 ```
 Markdown file
     │
-    ▼ Step 1: parse()     — mistune AST + yaml.safe_load() frontmatter → SlideAST[]
-    ▼ Step 2: resolve()   — load theme, validate CSS, merge settings → SlideMetadata[]
-    ▼ Step 3: render()    — Jinja2 per-slide with theme vars → HTML fragments + inline SVG
-    ▼ Step 4: inline()    — embed ALL assets (CSS, JS, reveal.js, fonts, images) → single .html
-                           ← FAILS HERE if any external URL detected
+    ▼ Step 1: parse_slides()    — mistune AST + yaml.safe_load() frontmatter → SlideAST[]
+    ▼ Step 2: analyze_slides()  — CompositionEngine.infer_layout() → SlideRenderContext[]
+    ▼ Step 3: compose_slides()  — Jinja2 layout templates → ComposedSlide[] (HTML fragments)
+    ▼ Step 4: render_document() — assemble Reveal.js HTML + inline CSS/JS → full HTML string
+    ▼ Step 5: inline_assets()   — verify no external URLs; append SSE snippet (serve mode)
+                                 ← FAILS HERE (exit 3) if any external URL detected
 ```
-
-Every slide passes through `CompositionEngine.infer_layout()` between Steps 1 and 3.
 
 ### Module Map
 
 | Module | Responsibility |
 |--------|---------------|
 | `src/aio/cli.py` | Typer root — **NO** `from __future__ import annotations` |
-| `src/aio/composition/engine.py` | `CompositionEngine`: `infer_layout()`, `apply_layout()`, `validate_structure()` |
-| `src/aio/composition/layouts.py` | 16 layout classes (Title → Interactive) |
-| `src/aio/composition/metadata.py` | `SlideMetadata`, `NoteMetadata`, `TimingMetadata`, `AnimationMetadata` |
-| `src/aio/visuals/dataviz/charts.py` | Pure-Python SVG chart engine (Bar, Line, Pie, Scatter, Heatmap) |
-| `src/aio/visuals/svg/composites.py` | SVG Composite engine (flowcharts, decorations, illustrations) |
-| `src/aio/visuals/svg/icons.py` | ~200 Lucide icons + `render_icon()` |
-| `src/aio/visuals/enrichment.py` | Image generation: Pollinations.ai (default, free) + paid stubs |
-| `src/aio/agents/prompts.py` | `load_agent_template(agent, phase, version)`, `list_agents()` |
-| `src/aio/themes/loader.py` | Theme loading + path resolution |
-| `src/aio/themes/validator.py` | JSON schema validation of DESIGN.md (11 sections required) |
+| `src/aio/commands/build.py` | 5-step pipeline: `parse_slides`, `analyze_slides`, `compose_slides`, `render_document`, `inline_assets` + `BuildResult` |
+| `src/aio/commands/serve.py` | Starlette ASGI + SSE hot-reload + watchdog — **NO** `from __future__ import annotations` |
+| `src/aio/commands/theme.py` | `theme list/search/info/use/show/create/validate` subcommands |
+| `src/aio/commands/init.py` | `aio init` — scaffold `.aio/` project directory |
+| `src/aio/composition/engine.py` | `CompositionEngine`: `infer_layout()`, `apply_layout()`, `sanitize_svg()` |
+| `src/aio/composition/layouts.py` | 8 M1 layout types (LayoutType enum) |
+| `src/aio/composition/metadata.py` | `SlideAST`, `SlideRenderContext`, `ComposedSlide`, `BuildResult`, `HotReloadEvent` |
+| `src/aio/layouts/` | Jinja2 layout templates (`*.j2`) + `registry.py` (LayoutRegistry) |
+| `src/aio/themes/loader.py` | `ThemeRecord` + `load_registry()` |
+| `src/aio/themes/parser.py` | `parse_design_md()` — 11-section DESIGN.md parser |
 | `src/aio/vendor/revealjs/` | Static Reveal.js 5.x UMD build (never update to v6) |
 | `src/aio/_log.py` | Structured stderr logging — **use this, never `print()`** |
-| `src/aio/_validators.py` | `yaml.safe_load()` wrapper, JSON schema, external-URL checker |
+| `src/aio/_utils.py` | `build_jinja_env`, `base64_inline`, `escape_script`, `find_aio_dir` |
+| `src/aio/_validators.py` | `yaml.safe_load()` wrapper, external-URL checker (`check_external_urls`) |
+| `src/aio/exceptions.py` | `AIOError`, `ExternalURLError`, `ParseError`, `ThemeValidationError` |
 
 ### Key Paths
 

@@ -234,9 +234,9 @@ def compose_slides(contexts: list[SlideRenderContext]) -> list[ComposedSlide]:
     env = build_jinja_env("aio.layouts")
     engine = CompositionEngine()
     composed: list[ComposedSlide] = []
-    warnings: list[str] = []
 
     for ctx in contexts:
+        warnings: list[str] = []
         template_name = ctx.layout_id.replace("-", "_") + ".j2"
         try:
             tmpl = env.get_template(template_name)
@@ -387,8 +387,7 @@ def inline_assets(
             "  __sse.onmessage = function(e) {\n"
             "    var d = JSON.parse(e.data);\n"
             "    if (d.type === 'reload') window.location.reload();\n"
-            "  };\n"
-            "<\\/script>\n"
+            "  };\n" + "<" + "/script>\n"
         )
         html = html.replace("</body>", sse_snippet + "</body>")
 
