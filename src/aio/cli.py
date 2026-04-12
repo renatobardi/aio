@@ -11,11 +11,11 @@ from aio._log import setup_logging
 from aio.commands.build import build
 from aio.commands.commands import app as commands_app
 from aio.commands.extract import extract
+from aio.commands.icons import app as icons_app
 
 # Import command functions directly (not as sub-Typers for leaf commands)
 from aio.commands.init import init
 from aio.commands.serve import serve
-from aio.commands.icons import app as icons_app
 from aio.commands.theme import app as theme_app
 
 app = typer.Typer(

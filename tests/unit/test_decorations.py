@@ -3,10 +3,8 @@
 TDD: all tests should FAIL before T033–T040 are implemented.
 """
 
-import pytest
 
 from aio.themes.parser import parse_design_md
-
 
 # ---------------------------------------------------------------------------
 # Minimal DESIGN.md with 11 sections (valid baseline)
@@ -102,7 +100,6 @@ _DESIGN_WITH_DECORATIONS = (
 class TestParseDesignMdWithDecorations:
     def test_parse_returns_decoration_specs(self):
         """parse_design_md() with section 12 returns DecorationSpec list via ThemeRecord."""
-        from aio.themes.parser import parse_design_md
         result = parse_design_md(_DESIGN_WITH_DECORATIONS)
         # The function must return something that has decorations
         # Either as a return value with decorations attr, or as the last section
@@ -112,7 +109,6 @@ class TestParseDesignMdWithDecorations:
 
     def test_missing_section_12_returns_empty_decorations(self):
         """parse_design_md() without section 12 raises no error and returns empty decorations."""
-        from aio.themes.parser import parse_design_md
         result = parse_design_md(_BASE_DESIGN)
         # Should not raise — 11 sections is valid
         section_numbers = [s.section_number for s in result]
@@ -120,7 +116,6 @@ class TestParseDesignMdWithDecorations:
 
     def test_decoration_spec_gradient_extracted(self):
         """DecorationSpec for primary-gradient has correct css_value."""
-        from aio.themes.parser import parse_design_md, DecorationSpec
         result = parse_design_md(_DESIGN_WITH_DECORATIONS)
         section12 = next(s for s in result if s.section_number == 12)
         decorations = section12.parsed_data.get("decorations", [])
@@ -130,14 +125,16 @@ class TestParseDesignMdWithDecorations:
 
     def test_decoration_spec_is_dataclass(self):
         """DecorationSpec is importable and is a dataclass."""
-        from aio.themes.parser import DecorationSpec
         import dataclasses
+
+        from aio.themes.parser import DecorationSpec
         assert dataclasses.is_dataclass(DecorationSpec)
 
     def test_decoration_spec_fields(self):
         """DecorationSpec has required fields: name, css_class, css_value."""
-        from aio.themes.parser import DecorationSpec
         import dataclasses
+
+        from aio.themes.parser import DecorationSpec
         field_names = {f.name for f in dataclasses.fields(DecorationSpec)}
         assert "name" in field_names
         assert "css_class" in field_names
@@ -222,14 +219,16 @@ class TestGenerateDecorationCss:
 
 class TestThemeRecordDecorations:
     def test_theme_record_has_decorations_field(self):
-        from aio.themes.loader import ThemeRecord
         import dataclasses
+
+        from aio.themes.loader import ThemeRecord
         field_names = {f.name for f in dataclasses.fields(ThemeRecord)}
         assert "decorations" in field_names
 
     def test_theme_record_decorations_default_empty(self):
-        from aio.themes.loader import ThemeRecord
         import dataclasses
+
+        from aio.themes.loader import ThemeRecord
         # Check the decorations field has a default of []
         fields_by_name = {f.name: f for f in dataclasses.fields(ThemeRecord)}
         decorations_field = fields_by_name["decorations"]

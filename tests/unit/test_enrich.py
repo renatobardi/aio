@@ -3,9 +3,6 @@
 TDD: all tests should FAIL before T043–T052 are implemented.
 """
 
-import hashlib
-
-import pytest
 
 
 # ---------------------------------------------------------------------------
@@ -19,13 +16,15 @@ class TestEnrichContext:
         assert EnrichContext is not None
 
     def test_is_dataclass(self):
-        from aio._enrich import EnrichContext
         import dataclasses
+
+        from aio._enrich import EnrichContext
         assert dataclasses.is_dataclass(EnrichContext)
 
     def test_required_fields(self):
-        from aio._enrich import EnrichContext
         import dataclasses
+
+        from aio._enrich import EnrichContext
         field_names = {f.name for f in dataclasses.fields(EnrichContext)}
         assert "slide_index" in field_names
         assert "prompt" in field_names
@@ -150,9 +149,9 @@ class TestDeriveSeed:
 
 class TestJpegValidation:
     def test_valid_jpeg_magic_bytes_accepted(self):
-        from aio._enrich import EnrichContext
         # Load actual mock JPEG
         import pathlib
+
         jpeg_path = pathlib.Path(__file__).parent.parent / "fixtures" / "mock_pollinations_response.jpg"
         if jpeg_path.exists():
             valid_jpeg = jpeg_path.read_bytes()
@@ -197,8 +196,9 @@ class TestMakePlaceholderSvg:
         assert len(svg.encode("utf-8")) < 200
 
     def test_no_external_resources(self):
-        from aio._enrich import make_placeholder_svg
         import re
+
+        from aio._enrich import make_placeholder_svg
         svg = make_placeholder_svg()
         # Must not have any src= or href= pointing to an external URL
         external = re.findall(r'(?:src|href)=["\']https?://', svg)

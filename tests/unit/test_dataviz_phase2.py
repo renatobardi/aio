@@ -3,14 +3,10 @@
 TDD: all tests should FAIL before T023/T024/T025 are implemented.
 """
 
-import re
 import time
-
-import pytest
 
 from aio.visuals.dataviz.charts import render_chart
 from aio.visuals.dataviz.data_parser import parse_chart_data
-
 
 # ---------------------------------------------------------------------------
 # DonutChart
@@ -77,6 +73,7 @@ class TestSparklineChart:
 
     def test_fewer_than_2_points_logs_warning(self):
         from unittest.mock import patch
+
         import aio.visuals.dataviz.charts as charts_module
         data = parse_chart_data("42", chart_type="sparkline")
         with patch.object(charts_module, "_log") as mock_log:

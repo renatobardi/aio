@@ -3,10 +3,7 @@
 TDD: all tests should FAIL before T012–T014 are implemented.
 """
 
-import re
 import time
-
-import pytest
 
 from aio.visuals.svg.icons import list_icons, render_icon
 
@@ -43,6 +40,7 @@ class TestRenderIcon:
 
     def test_unknown_icon_logs_warning(self):
         from unittest.mock import patch
+
         import aio.visuals.svg.icons as icons_module
         with patch.object(icons_module._log, "warning") as mock_warn:
             render_icon("unknown-icon-xyz-does-not-exist")
@@ -112,8 +110,6 @@ class TestAdvisory:
     def test_50_plus_icons_advisory_is_in_compose(self):
         """This advisory is tested at the compose level (test_build_phase2.py).
         Here we simply verify list_icons and render_icon don't emit it themselves."""
-        import logging
-        import io
         # render 51 icons — no advisory from the icons module itself
         for i, (name, _) in enumerate(list_icons()[:51]):
             render_icon(name)

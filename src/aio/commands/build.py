@@ -23,8 +23,8 @@ from aio.composition.metadata import (
     SlideRenderContext,
     extract_inline_metadata,
 )
-from aio.visuals.svg.icons import render_icon
 from aio.exceptions import ExternalURLError, ParseError
+from aio.visuals.svg.icons import render_icon
 
 _log = get_logger(__name__)
 
@@ -589,7 +589,7 @@ def build_pipeline(
     enrich_contexts: list[object] = []
     if enrich:
         _log.info("Step 4.5/%d: ENRICH", steps_total)
-        from aio._enrich import EnrichContext, EnrichEngine, infer_prompt, derive_seed, make_placeholder_svg
+        from aio._enrich import EnrichContext, EnrichEngine, derive_seed, infer_prompt, make_placeholder_svg
 
         enrich_ctxs: list[EnrichContext] = []
         for slide_ctx in contexts:
@@ -619,7 +619,11 @@ def build_pipeline(
                 img_html = f'<div class="slide-image">{make_placeholder_svg()}</div>'
             else:
                 b64 = _base64.b64encode(ectx.image_bytes).decode("ascii")
-                img_html = f'<div class="slide-image"><img src="data:image/jpeg;base64,{b64}" alt="slide image" /></div>'
+                img_html = (
+                    f'<div class="slide-image">'
+                    f'<img src="data:image/jpeg;base64,{b64}" alt="slide image" />'
+                    f"</div>"
+                )
             html = html.replace(placeholder_marker, img_html, 1)
 
     # Step 5: INLINE

@@ -10,10 +10,6 @@ import re
 import time
 from pathlib import Path
 
-import pytest
-
-from aio._validators import check_external_urls
-
 FIXTURE_PHASE2 = Path(__file__).parent.parent / "fixtures" / "slides_phase2.md"
 FIXTURE_MINIMAL_DESIGN_MD = Path(__file__).resolve().parents[2] / "src" / "aio" / "themes" / "minimal" / "DESIGN.md"
 
@@ -162,8 +158,9 @@ class TestDecorationIntegration:
         assert "decoration-gradient-primary" in html
 
     def test_decoration_css_in_style_block(self, tmp_path: Path) -> None:
-        from aio.commands.build import build_pipeline
         import shutil
+
+        from aio.commands.build import build_pipeline
 
         design_src = FIXTURE_MINIMAL_DESIGN_MD
         design_content = design_src.read_text(encoding="utf-8")
@@ -240,6 +237,7 @@ class TestCombinedPhase2Integration:
 
     def test_dry_run_completes_fast_and_no_output(self, tmp_path: Path) -> None:
         import time as _time
+
         from aio.commands.build import build_pipeline
 
         out = tmp_path / "out.html"

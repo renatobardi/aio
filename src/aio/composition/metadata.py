@@ -16,7 +16,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
-
 # ---------------------------------------------------------------------------
 # Phase 2: Inline metadata
 # ---------------------------------------------------------------------------

@@ -85,6 +85,7 @@ class TestEnrichIntegration:
 
     def test_api_failure_uses_placeholder(self, tmp_path: pathlib.Path) -> None:
         import urllib.error
+
         from aio.commands.build import build_pipeline
 
         slides = tmp_path / "slides.md"
@@ -107,11 +108,11 @@ class TestEnrichIntegration:
         assert out.exists()
 
     def test_warning_logged_on_api_failure(self, tmp_path: pathlib.Path) -> None:
-        import logging
         import urllib.error
         from unittest.mock import patch as mock_patch
-        from aio.commands.build import build_pipeline
+
         import aio._enrich as enrich_module
+        from aio.commands.build import build_pipeline
 
         slides = tmp_path / "slides.md"
         slides.write_text(
@@ -133,6 +134,7 @@ class TestEnrichIntegration:
     @pytest.mark.slow
     def test_build_time_under_30s(self, tmp_path: pathlib.Path) -> None:
         import time
+
         from aio.commands.build import build_pipeline
 
         slides = tmp_path / "slides.md"
