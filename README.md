@@ -32,7 +32,7 @@ aio build slides.md -o out.html --enrich
 # Serve with hot-reload
 aio serve slides.md --port 3000
 
-# Browse available themes (58 themes)
+# Browse available themes (57 themes)
 aio theme list
 aio theme info stripe
 
@@ -62,7 +62,7 @@ The build pipeline runs 5 steps:
 
 ## Themes
 
-58 themes modelled after real product design systems: `stripe`, `linear-app`, `vercel`, `notion`, `figma`, `cursor`, `supabase`, `airbnb`, and more.
+57 themes modelled after real product design systems: `stripe`, `linear-app`, `vercel`, `notion`, `figma`, `cursor`, `supabase`, `airbnb`, and more.
 
 Each theme ships with `DESIGN.md` (11-section design spec), `theme.css`, `layout.css`, and `meta.json`.
 
@@ -95,7 +95,7 @@ ruff check src/ tests/ && ruff format src/ tests/
 mypy src/aio/
 pytest tests/unit/ -v
 pytest tests/integration/ -v
-pytest --cov=src/aio --cov-report=term-missing   # target ≥ 80%
+pytest --cov=src/aio --cov-report=term-missing   # CI gate: ≥ 20%; aspirational target: 80%
 pytest -k "test_infer_title_layout" -v            # single test
 ```
 
@@ -105,9 +105,9 @@ pytest -k "test_infer_title_layout" -v            # single test
 
 | Milestone | Status |
 |-----------|--------|
-| M0 — CLI, parser, config, logging | Complete (99.4%) |
-| M1 — Layouts, themes, build, serve | Complete (100%) |
-| M2 — SVG charts, icons, extract, 58 themes | Complete |
+| M0 — CLI, parser, config, logging | Complete |
+| M1 — Layouts, themes, build, serve | Complete |
+| M2 — SVG charts, icons, extract, 57 themes | Complete |
 | M2.5 — SVG composites, AI image gen, 8 agents | Pending |
 | M3 — Coverage gates, perf hardening | Pending |
 | M4 — 4 distribution modes, 64+ themes | Pending |
