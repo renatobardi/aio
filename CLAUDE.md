@@ -38,7 +38,7 @@ aio build slides.md -o out.html --enrich       # with image generation
 aio serve slides.md --port 3000
 aio theme list
 aio theme validate minimal
-aio extract https://stripe.com -o DESIGN.md
+aio extract https://stripe.com -o DESIGN.md  # requires pip install -e ".[enrich]"
 
 # Check for external URL leaks in output HTML (Art. II compliance)
 python -c "
@@ -98,8 +98,10 @@ Markdown file
 ### Key Paths
 
 - Agent command prompts: `src/aio/agent_commands/{agent}/v{N}/` (frozen at release — add new version dir, never edit existing)
+  - Agents: `claude`, `gemini`, `copilot`, `windsurf`, `devin`, `chatgpt`, `cursor`, `generic`
+  - Generic commands (agent-agnostic): `outline`, `generate`, `refine`, `visual`, `theme`, `extract`, `build`
 - Theme directory: `src/aio/themes/{id}/` with `DESIGN.md`, `theme.css`, `layout.css`, `meta.json`, `fonts/`
-- Global theme registry: `src/aio/themes/registry.json`
+- Global theme registry: `src/aio/themes/registry.json` (currently 3 themes: minimal, modern, vibrant)
 - Per-project config: `.aio/config.yaml`, `.aio/meta.json`, `.aio/themes/registry.json`
 
 ---
@@ -174,6 +176,13 @@ Validate with: `aio theme validate {id}`
 | Serve hot-reload | < 2s |
 | Markdown parse — 100 slides | < 500ms |
 | New code regression | must not exceed baseline by > 5% |
+
+---
+
+## CI
+
+`.github/workflows/1-lint-test.yml` runs 3 stages sequentially: **lint → typecheck → test**.
+SonarCloud quality gate runs on every PR — security hotspots flagged by SonarCloud must be resolved before merge (see `sonar-project.properties` for exclusion config).
 
 ---
 
