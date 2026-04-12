@@ -76,8 +76,9 @@ Markdown file
 | `src/aio/commands/serve.py` | Starlette ASGI + SSE hot-reload + watchdog — **NO** `from __future__ import annotations` |
 | `src/aio/commands/theme.py` | `theme list/search/info/use/show/create/validate` subcommands |
 | `src/aio/commands/init.py` | `aio init` — scaffold `.aio/` project directory |
+| `src/aio/commands/commands.py` | `aio commands` — list/show agent prompt templates by agent + command |
 | `src/aio/composition/engine.py` | `CompositionEngine`: `infer_layout()`, `apply_layout()`, `sanitize_svg()` |
-| `src/aio/composition/layouts.py` | 8 M1 layout types (LayoutType enum) |
+| `src/aio/composition/layouts.py` | 9 layout types (LayoutType enum) |
 | `src/aio/composition/metadata.py` | `SlideAST`, `SlideRenderContext`, `ComposedSlide`, `BuildResult`, `HotReloadEvent` |
 | `src/aio/layouts/` | Jinja2 layout templates (`*.j2`) + `registry.py` (LayoutRegistry) |
 | `src/aio/themes/loader.py` | `ThemeRecord` + `load_registry()` |
@@ -125,7 +126,6 @@ Markdown file
 ```
 tests/unit/        → isolated functions, mock I/O allowed
 tests/integration/ → real temp dirs, full pipeline, no mocks for core pipeline
-tests/visual/      → HTML snapshot comparison, SVG well-formedness
 tests/fixtures/    → shared sample slides, themes, expected outputs, mock API responses
 ```
 
@@ -139,7 +139,7 @@ TDD is mandatory: write tests first, confirm they fail, then implement.
 
 | Category | Allowed | Forbidden |
 |----------|---------|-----------|
-| Core | 9 deps listed in `pyproject.toml [project.dependencies]` | Django, numpy, pandas, tensorflow, any ORM |
+| Core | 10 deps listed in `pyproject.toml [project.dependencies]` | Django, numpy, pandas, tensorflow, any ORM |
 | Enrich | pillow, beautifulsoup4, lxml, cssutils | Any web framework beyond minimal ASGI |
 | Web in serve | Starlette (minimal ASGI) | Flask, FastAPI, Django |
 | Charts | Pure Python SVG generation | D3.js, Chart.js, matplotlib, plotly |
@@ -182,7 +182,8 @@ Validate with: `aio theme validate {id}`
 ## CI
 
 `.github/workflows/1-lint-test.yml` runs 3 stages sequentially: **lint → typecheck → test**.
-SonarCloud quality gate runs on every PR — security hotspots flagged by SonarCloud must be resolved before merge (see `sonar-project.properties` for exclusion config).
+`.github/workflows/3-sync-themes.yml` handles nightly theme sync.
+SonarCloud quality gate is planned but not yet wired in CI.
 
 ---
 
@@ -205,5 +206,5 @@ specs/main/
 
 ## Active Technologies
 - **Runtime**: Python 3.12+ (primary; 3.10+ tolerated)
-- **Core deps**: typer 0.12.0, jinja2 3.1.2, mistune 3.0.2, pyyaml 6.0.1, rich 13.7.0, click 8.1.7
+- **Core deps**: typer 0.12.0, jinja2 3.1.2, mistune 3.0.2, pyyaml 6.0.1, rich 13.7.0, click 8.1.7, pygments, watchdog, starlette, uvicorn
 - **Storage**: Local filesystem — `.aio/` config dir, `~/.aio/logs/`
