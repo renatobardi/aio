@@ -27,7 +27,8 @@ def test_icon_names_is_frozenset() -> None:
 
 
 def test_icon_names_consistent_with_list_icons() -> None:
-    assert set(list_icons()) == ICON_NAMES
+    # list_icons() now returns list[tuple[str, list[str]]] — extract names
+    assert {name for name, _ in list_icons()} == ICON_NAMES
 
 
 def test_all_icon_names_are_strings() -> None:
@@ -113,9 +114,11 @@ def test_render_icon_has_viewbox() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_render_icon_unknown_raises() -> None:
-    with pytest.raises((KeyError, ValueError)):
-        render_icon("does-not-exist-xyzzy")
+def test_render_icon_unknown_falls_back() -> None:
+    # Phase 2: unknown icons now return fallback help-circle SVG instead of raising
+    svg = render_icon("does-not-exist-xyzzy")
+    assert "<svg" in svg  # fallback rendered
+    assert "help-circle" in svg or "icon-help-circle" in svg
 
 
 # ---------------------------------------------------------------------------

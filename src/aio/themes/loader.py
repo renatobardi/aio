@@ -5,12 +5,13 @@ from __future__ import annotations
 import importlib.resources
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from aio._log import get_logger
 from aio.exceptions import ThemeValidationError
+from aio.themes.parser import DecorationSpec
 
 _log = get_logger(__name__)
 
@@ -40,6 +41,7 @@ class ThemeRecord:
     design_md_path: Path | None
     is_builtin: bool
     base_dir: Path
+    decorations: list[DecorationSpec] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, d: dict[str, Any], base_dir: Path) -> ThemeRecord:

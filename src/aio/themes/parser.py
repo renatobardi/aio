@@ -42,6 +42,17 @@ MIN_AGENT_PROMPT_CHARS = 200
 
 
 @dataclass
+class DecorationSpec:
+    """One CSS decoration rule extracted from DESIGN.md section 12."""
+
+    name: str
+    css_class: str
+    css_value: str
+    css_property: str
+    responsive_value: str | None = None
+
+
+@dataclass
 class DesignSection:
     """One parsed section from a DESIGN.md file."""
 
@@ -134,7 +145,95 @@ def parse_design_md(text: str) -> list[DesignSection]:
             f"minimum is {MIN_AGENT_PROMPT_CHARS}."
         )
 
+    # Include optional section 12 (Decorations) if present
+    if len(sections) > REQUIRED_SECTIONS and sections[REQUIRED_SECTIONS].section_number == 12:
+        section12 = sections[REQUIRED_SECTIONS]
+        decorations = _parse_decoration_section(section12.raw_content)
+        section12.parsed_data["decorations"] = decorations
+        return sections[:REQUIRED_SECTIONS] + [section12]
+
     return sections[:REQUIRED_SECTIONS]
+
+
+# Regex for "- name: value" decoration lines inside section 12
+_DECORATION_LINE_RE = re.compile(r"^\s*-\s+([\w-]+)\s*:\s*(.+)$", re.MULTILINE)
+
+# Map decoration category keywords → CSS property
+_DECORATION_CSS_PROPERTY: dict[str, str] = {
+    "gradient": "background",
+    "glow": "box-shadow",
+    "divider": "border",
+    "accent": "border-left",
+}
+
+# Default fallback decoration classes when section 12 is absent
+_DEFAULT_DECORATION_CSS = (
+    ".decoration-gradient-primary {"
+    " background: linear-gradient(135deg, var(--color-primary, #635BFF) 0%, var(--color-accent, #00D084) 100%);"
+    " }\n"
+    ".decoration-glow-primary { box-shadow: 0 0 30px rgba(99, 91, 255, 0.4); }\n"
+    ".decoration-divider-thin { border-top: 1px solid var(--color-neutral-300, #d1d5db); }\n"
+    ".decoration-accent-left { border-left: 4px solid var(--color-primary, #635BFF); padding-left: 1rem; }\n"
+)
+
+
+def _parse_decoration_section(raw_content: str) -> list[DecorationSpec]:
+    """Parse the raw content of DESIGN.md section 12 into DecorationSpec objects."""
+    specs: list[DecorationSpec] = []
+    current_category = "general"
+
+    for line in raw_content.splitlines():
+        # Track sub-heading to infer CSS property
+        stripped = line.strip()
+        if stripped.startswith("###"):
+            current_category = stripped.lstrip("#").strip().lower()
+            continue
+
+        m = _DECORATION_LINE_RE.match(line)
+        if not m:
+            continue
+
+        name = m.group(1).strip()
+        value = m.group(2).strip()
+
+        # Infer CSS property from category heading
+        css_property = "background"
+        for keyword, prop in _DECORATION_CSS_PROPERTY.items():
+            if keyword in current_category:
+                css_property = prop
+                break
+
+        # Build CSS class name: decoration-{category_keyword}-{name}
+        category_slug = next(
+            (k for k in _DECORATION_CSS_PROPERTY if k in current_category),
+            current_category.split()[0] if current_category.split() else "decoration",
+        )
+        css_class = f"decoration-{category_slug}-{name}"
+
+        specs.append(DecorationSpec(
+            name=name,
+            css_class=css_class,
+            css_value=value,
+            css_property=css_property,
+        ))
+
+    return specs
+
+
+def generate_decoration_css(specs: list[DecorationSpec], *, enabled: bool = True) -> str:
+    """Emit `.decoration-{name} { {property}: {value}; }` CSS from DecorationSpec list.
+
+    If ``specs`` is empty, emits four default fallback classes.
+    If ``enabled`` is False, returns empty string (decorations disabled).
+    """
+    if not enabled:
+        return ""
+    if not specs:
+        return _DEFAULT_DECORATION_CSS
+    lines: list[str] = []
+    for spec in specs:
+        lines.append(f".{spec.css_class} {{ {spec.css_property}: {spec.css_value}; }}")
+    return "\n".join(lines) + "\n"
 
 
 def extract_css_vars(sections: list[DesignSection]) -> str:

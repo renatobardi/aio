@@ -181,7 +181,7 @@ def test_missing_chart_type_raises() -> None:
 
 def test_invalid_chart_type_raises() -> None:
     with pytest.raises(ChartDataError, match="chart_type"):
-        parse_chart_data({"series": [{"name": "A", "values": [1]}]}, chart_type="donut")
+        parse_chart_data({"series": [{"name": "A", "values": [1]}]}, chart_type="radar")
 
 
 def test_series_missing_values_raises() -> None:

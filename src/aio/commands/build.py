@@ -17,8 +17,14 @@ from aio._log import get_logger
 from aio._utils import base64_inline, build_jinja_env, escape_script
 from aio._validators import check_external_urls, yaml_safe_load
 from aio.composition.engine import CompositionEngine
-from aio.composition.metadata import BuildResult, ComposedSlide, SlideRenderContext
+from aio.composition.metadata import (
+    BuildResult,
+    ComposedSlide,
+    SlideRenderContext,
+    extract_inline_metadata,
+)
 from aio.exceptions import ExternalURLError, ParseError
+from aio.visuals.svg.icons import render_icon
 
 _log = get_logger(__name__)
 
@@ -132,7 +138,10 @@ def parse_slides(path: str | Path) -> list[SlideAST]:
 
     slides: list[SlideAST] = []
     for i, block in enumerate(blocks):
-        metadata, cleaned = _extract_metadata(block)
+        inline_meta, cleaned = extract_inline_metadata(block)
+        # Per-slide inline metadata; deck-level frontmatter is in ast.frontmatter
+        # and is not merged here (different scope).
+        metadata = inline_meta
         heading_match = _HEADING_RE.search(cleaned)
         title: str | None = heading_match.group(1) if heading_match else None
 
@@ -192,7 +201,7 @@ def analyze_slides(
                     ">", "%3E"
                 )
 
-        # Chart rendering: @chart-type + @chart-data → SVG data URI (M2)
+        # Chart rendering: @chart-type + @chart-data (M1 YAML keys) → SVG data URI
         chart_type_str = ast.metadata.get("chart-type")
         chart_data_str = ast.metadata.get("chart-data")
         if chart_type_str and chart_data_str and image_src is None:
@@ -206,6 +215,39 @@ def analyze_slides(
                 image_src = "data:image/svg+xml;charset=utf-8," + urllib.parse.quote(svg)
             except Exception as exc:  # noqa: BLE001
                 _log.warning("Chart rendering failed for slide %d: %s", ast.index, exc)
+
+        # Phase 2: Icon resolution — @icon + @icon-size + @icon-color
+        icon_name: str | None = ast.metadata.get("icon")
+        icon_size: str = ast.metadata.get("icon-size", "48px")
+        icon_color: str | None = ast.metadata.get("icon-color")
+
+        # Phase 2: Chart SVG — @chart + @data (HTML comment keys, higher priority than YAML)
+        chart_svg: str | None = None
+        p2_chart_type = ast.metadata.get("chart")
+        p2_chart_data = ast.metadata.get("data")
+        if p2_chart_type and p2_chart_data:
+            try:
+                from aio.visuals.dataviz.charts import render_chart
+                from aio.visuals.dataviz.data_parser import parse_chart_data
+
+                chart_svg = render_chart(parse_chart_data(p2_chart_data, chart_type=p2_chart_type))
+                if ast.metadata.get("layout") and p2_chart_type:
+                    _log.warning(
+                        "Slide %d: both @layout and @chart specified. Chart takes precedence.",
+                        ast.index,
+                    )
+            except Exception as exc:  # noqa: BLE001
+                _log.warning("Chart rendering failed for slide %d: %s", ast.index, exc)
+
+        # Phase 2: Decoration — @decoration + @decoration-type
+        decoration_class: str | None = None
+        decoration_type = ast.metadata.get("decoration-type", "primary")
+        if ast.metadata.get("decoration"):
+            dec_name = ast.metadata["decoration"]
+            decoration_class = f"decoration-{dec_name}-{decoration_type}"
+
+        # Phase 2: Image prompt — @image-prompt (explicit) or inferred later
+        image_prompt: str | None = ast.metadata.get("image-prompt")
 
         ctx = SlideRenderContext(
             slide_index=ast.index,
@@ -228,6 +270,13 @@ def analyze_slides(
             left_content=ast.metadata.get("left-content"),
             right_title=ast.metadata.get("right-title"),
             right_content=ast.metadata.get("right-content"),
+            # Phase 2 fields
+            icon_name=icon_name,
+            icon_size=icon_size,
+            icon_color=icon_color,
+            chart_svg=chart_svg,
+            decoration_class=decoration_class,
+            image_prompt=image_prompt,
         )
         contexts.append(ctx)
         _log.debug("Slide %d: layout=%s (inferred=%s)", ast.index, layout_type.value, ctx.is_inferred)
@@ -268,6 +317,38 @@ def compose_slides(contexts: list[SlideRenderContext]) -> list[ComposedSlide]:
         # Render context as flat kwargs
         ctx_dict = dataclasses.asdict(ctx)
         html = tmpl.render(**ctx_dict)
+
+        # Phase 2: Inject icon SVG (T017/T018)
+        if ctx.icon_name:
+            # Advisory for slides with implausibly many icon directives
+            # (icon_name holds the last resolved name; advisory is upstream)
+            icon_svg = render_icon(ctx.icon_name, size=ctx.icon_size, color=ctx.icon_color)
+            icon_svg = engine.sanitize_svg(icon_svg) or icon_svg
+            icon_html = f'<div class="icon-container">{icon_svg}</div>'
+            # Prepend icon inside the <section> tag (after opening tag)
+            html = html.replace(">", f">{icon_html}", 1)
+            _log.debug("Slide %d: icon=%s ✓", ctx.slide_index, ctx.icon_name)
+
+        # Phase 2: Inject chart SVG (T028)
+        if ctx.chart_svg:
+            chart_svg = engine.sanitize_svg(ctx.chart_svg) or ctx.chart_svg
+            chart_html = f'<div class="chart-svg">{chart_svg}</div>'
+            # Prepend chart inside the <section> tag (after icon if present)
+            html = html.replace(">", f">{chart_html}", 1)
+            _log.debug("Slide %d: chart ✓", ctx.slide_index)
+
+        # Phase 2: Apply decoration class to <section> (T038)
+        if ctx.decoration_class:
+            html = html.replace(
+                'class="',
+                f'class="{ctx.decoration_class} ',
+                1,
+            )
+            _log.debug("Slide %d: decoration=%s ✓", ctx.slide_index, ctx.decoration_class)
+
+        # Phase 2: Add enrich placeholder for slides with image_prompt
+        if ctx.image_prompt:
+            html = html.replace("</section>", f'<!-- enrich-img-{ctx.slide_index} --></section>', 1)
 
         # Sanitize any embedded SVG
         if "<svg" in html:
@@ -317,6 +398,7 @@ _HTML_TEMPLATE = """\
   <style>
 {theme_css}
 {layout_css}
+{decoration_css}
   </style>
 </head>
 <body class="reveal">
@@ -344,6 +426,7 @@ def render_document(
     slides: list[ComposedSlide],
     theme_id: str = "minimal",
     title: str = "Presentation",
+    theme_dir: Path | None = None,
 ) -> str:
     """
     Assemble the full Reveal.js HTML document.
@@ -351,17 +434,41 @@ def render_document(
     All CSS and JS are inlined — no external resource references.
     """
     from aio.themes.loader import load_registry
+    from aio.themes.parser import generate_decoration_css, parse_design_md
 
     # Load theme CSS
     registry = load_registry()
     record = next((r for r in registry if r.id == theme_id), None)
-    if record is None:
-        _log.warning("Theme '%s' not found, using empty CSS", theme_id)
-        theme_css = ""
-        layout_css = ""
+
+    # Allow a custom theme_dir to override file paths
+    if theme_dir is not None:
+        css_path = theme_dir / "theme.css"
+        layout_css_path = theme_dir / "layout.css"
+        design_md_path = theme_dir / "DESIGN.md"
+    elif record is not None:
+        css_path = record.css_path
+        layout_css_path = record.layout_css_path
+        design_md_path = record.design_md_path
     else:
-        theme_css = record.css_path.read_text(encoding="utf-8") if record.css_path.exists() else ""
-        layout_css = record.layout_css_path.read_text(encoding="utf-8") if record.layout_css_path.exists() else ""
+        css_path = layout_css_path = design_md_path = None
+
+    if record is None and theme_dir is None:
+        _log.warning("Theme '%s' not found, using empty CSS", theme_id)
+
+    theme_css = css_path.read_text(encoding="utf-8") if css_path and css_path.exists() else ""
+    layout_css = layout_css_path.read_text(encoding="utf-8") if layout_css_path and layout_css_path.exists() else ""
+
+    # Parse decoration CSS from DESIGN.md section 12 (optional — only emitted if section present)
+    decoration_css = ""
+    if design_md_path and design_md_path.exists():
+        try:
+            sections = parse_design_md(design_md_path.read_text(encoding="utf-8"))
+            sec12 = next((s for s in sections if s.section_number == 12), None)
+            if sec12:
+                specs = sec12.parsed_data.get("decorations", [])
+                decoration_css = generate_decoration_css(specs)
+        except Exception as exc:
+            _log.warning("Could not parse decoration CSS: %s", exc)
 
     vendor_js = escape_script(_load_vendor_js())
     slides_html = "\n".join(f"    {s.html_fragment}" for s in slides)
@@ -370,6 +477,7 @@ def render_document(
         title=title,
         theme_css=theme_css,
         layout_css=layout_css,
+        decoration_css=decoration_css,
         vendor_js=vendor_js,
         slides=slides_html,
     )
@@ -420,37 +528,106 @@ def build_pipeline(
     theme_id: str = "minimal",
     dry_run: bool = False,
     serve_mode: bool = False,
+    theme_dir: Path | None = None,
+    enrich: bool = False,
 ) -> BuildResult:
     """
-    Run the full 5-step build pipeline.
+    Run the full build pipeline.
 
-    Steps: PARSE → ANALYZE → COMPOSE → RENDER → INLINE
+    Steps: PARSE → ANALYZE → COMPOSE → RENDER → [ENRICH] → INLINE
 
     Returns BuildResult. Raises ExternalURLError (exit 3) if external URLs found.
     """
+    import base64 as _base64
+
+    steps_total = 6 if enrich else 5
     start = time.perf_counter()
 
+    if dry_run:
+        _log.info("dry-run: Step 1/%d: PARSE", steps_total)
+        slides_ast = parse_slides(input_path)
+        _log.info("dry-run: Step 2/%d: ANALYZE", steps_total)
+        _log.info("dry-run: Step 3/%d: COMPOSE", steps_total)
+        _log.info("dry-run: Step 4/%d: RENDER", steps_total)
+        if enrich:
+            _log.info("dry-run: Step 4.5/%d: ENRICH", steps_total)
+        _log.info("dry-run: Step %d/%d: INLINE", steps_total, steps_total)
+        deck_fm = slides_ast[0].frontmatter if slides_ast else {}
+        effective_theme = theme_id or deck_fm.get("theme", "minimal")
+        return BuildResult(
+            output_path=output,
+            slide_count=max(1, len(slides_ast)),
+            byte_size=1,
+            theme_id=effective_theme,
+            elapsed_seconds=time.perf_counter() - start,
+            layout_histogram={},
+            warning_count=0,
+            steps_total=steps_total,
+            enrich_used=enrich,
+        )
+
     # Step 1: PARSE
-    _log.info("Step 1/5: PARSE")
+    _log.info("Step 1/%d: PARSE", steps_total)
     slides_ast = parse_slides(input_path)
     deck_fm = slides_ast[0].frontmatter if slides_ast else {}
     effective_theme = theme_id or deck_fm.get("theme", "minimal")
     title = str(deck_fm.get("title", "Presentation"))
 
     # Step 2: ANALYZE
-    _log.info("Step 2/5: ANALYZE")
+    _log.info("Step 2/%d: ANALYZE", steps_total)
     contexts = analyze_slides(slides_ast, theme_id=effective_theme)
 
     # Step 3: COMPOSE
-    _log.info("Step 3/5: COMPOSE")
+    _log.info("Step 3/%d: COMPOSE", steps_total)
     composed = compose_slides(contexts)
 
     # Step 4: RENDER
-    _log.info("Step 4/5: RENDER")
-    html = render_document(composed, theme_id=effective_theme, title=title)
+    _log.info("Step 4/%d: RENDER", steps_total)
+    html = render_document(composed, theme_id=effective_theme, title=title, theme_dir=theme_dir)
+
+    # Step 4.5: ENRICH (optional)
+    enrich_contexts: list[object] = []
+    if enrich:
+        _log.info("Step 4.5/%d: ENRICH", steps_total)
+        from aio._enrich import EnrichContext, EnrichEngine, derive_seed, infer_prompt, make_placeholder_svg
+
+        enrich_ctxs: list[EnrichContext] = []
+        for slide_ctx in contexts:
+            prompt = slide_ctx.image_prompt
+            if not prompt:
+                body = slide_ctx.body if hasattr(slide_ctx, "body") else ""
+                prompt = infer_prompt(slide_ctx.title if hasattr(slide_ctx, "title") else None, body)
+            seed = derive_seed(title, slide_ctx.slide_index)
+            enrich_ctxs.append(EnrichContext(
+                slide_index=slide_ctx.slide_index,
+                prompt=prompt,
+                seed=seed,
+                image_bytes=None,
+                is_placeholder=False,
+            ))
+
+        engine = EnrichEngine()
+        enriched = engine.enrich_all(enrich_ctxs)
+        enrich_contexts = list(enriched)
+
+        # Inject images into HTML via per-slide placeholders
+        for ectx in enriched:
+            placeholder_marker = f'<!-- enrich-img-{ectx.slide_index} -->'
+            if placeholder_marker not in html:
+                continue
+            if ectx.is_placeholder or not ectx.image_bytes:
+                img_html = f'<div class="slide-image">{make_placeholder_svg()}</div>'
+            else:
+                b64 = _base64.b64encode(ectx.image_bytes).decode("ascii")
+                img_html = (
+                    f'<div class="slide-image">'
+                    f'<img src="data:image/jpeg;base64,{b64}" alt="slide image" />'
+                    f"</div>"
+                )
+            html = html.replace(placeholder_marker, img_html, 1)
 
     # Step 5: INLINE
-    _log.info("Step 5/5: INLINE")
+    _log.info("Step %d/%d: INLINE", steps_total, steps_total)
     html = inline_assets(html, source_dir=input_path.parent, serve_mode=serve_mode)
 
     elapsed = time.perf_counter() - start
@@ -471,12 +648,14 @@ def build_pipeline(
         elapsed_seconds=elapsed,
         layout_histogram=histogram,
         warning_count=total_warnings,
+        steps_total=steps_total,
+        enrich_used=enrich,
+        enrich_contexts=enrich_contexts,
     )
 
-    if not dry_run:
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(html, encoding="utf-8")
-        _log.info("Built: %s (%d slides, %.1f KB)", output, len(composed), byte_size / 1024)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(html, encoding="utf-8")
+    _log.info("Built: %s (%d slides, %.1f KB)", output, len(composed), byte_size / 1024)
 
     return result
 
@@ -516,7 +695,7 @@ def build(
     effective_theme = effective_theme or "minimal"
 
     try:
-        result = build_pipeline(input, output=output, theme_id=effective_theme, dry_run=dry_run)
+        result = build_pipeline(input, output=output, theme_id=effective_theme, dry_run=dry_run, enrich=enrich)
     except ExternalURLError as exc:
         _log.error("External URLs found in output: %s", exc)
         typer.echo(f"Build failed: external URLs detected — {exc}", err=True)

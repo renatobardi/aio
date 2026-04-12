@@ -208,3 +208,8 @@ specs/main/
 - **Runtime**: Python 3.12+ (primary; 3.10+ tolerated)
 - **Core deps**: typer 0.12.0, jinja2 3.1.2, mistune 3.0.2, pyyaml 6.0.1, rich 13.7.0, click 8.1.7, pygments, watchdog, starlette, uvicorn
 - **Storage**: Local filesystem — `.aio/` config dir, `~/.aio/logs/`
+- Python 3.12+ (primary runtime per Art. I) + mistune 3.0.2, Jinja2 3.1.2, typer 0.12.0, pyyaml 6.0.1, rich 13.7.0, watchdog, starlette, uvicorn — no new core deps; `pillow` (already in `[enrich]`) used for JPEG validation in `_enrich.py` (003-visual-enrichment)
+- Local filesystem (`~/.aio/logs/`, project `.aio/`) (003-visual-enrichment)
+
+## Recent Changes
+- 003-visual-enrichment: Added Python 3.12+ (primary runtime per Art. I) + mistune 3.0.2, Jinja2 3.1.2, typer 0.12.0, pyyaml 6.0.1, rich 13.7.0, watchdog, starlette, uvicorn — no new core deps; `pillow` (already in `[enrich]`) used for JPEG validation in `_enrich.py`
