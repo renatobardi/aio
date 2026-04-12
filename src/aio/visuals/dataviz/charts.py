@@ -2,17 +2,21 @@
 
 Exports:
     BaseChart, BarChart, LineChart, PieChart, ScatterChart, HeatmapChart
+    DonutChart, SparklineChart, TimelineChart  (Phase 2)
     render_chart()  — factory that dispatches to the right class
 """
 
 from __future__ import annotations
 
 import abc
+import logging
 import math
 import xml.etree.ElementTree as ET
 from typing import Any
 
 from aio.visuals.dataviz.data_parser import ChartData, Series
+
+_log = logging.getLogger(__name__)
 
 # Default palette used when a Series has no color set
 _PALETTE = [
@@ -458,6 +462,235 @@ class HeatmapChart(BaseChart):
 
 
 # ---------------------------------------------------------------------------
+# Phase 2: DonutChart
+# ---------------------------------------------------------------------------
+
+# CSS custom property colors with hex fallbacks (FR-323)
+_CSS_VAR_PALETTE = [
+    "var(--color-primary)",
+    "var(--color-accent)",
+    "var(--color-neutral-500)",
+    "var(--color-secondary)",
+]
+_CSS_VAR_HEX_FALLBACK = ["#4C72B0", "#DD8452", "#55A868", "#C44E52"]
+
+
+class DonutChart(BaseChart):
+    """Donut chart — PieChart with an inner white circle creating a hole."""
+
+    inner_radius_ratio: float = 0.55
+    center_label: str | None = None
+
+    def __init__(self, data: ChartData, inner_radius_ratio: float = 0.55, center_label: str | None = None) -> None:
+        super().__init__(data)
+        ratio = inner_radius_ratio
+        if not (0.0 < ratio < 0.95):
+            _log.warning("DonutChart inner_radius_ratio %s out of (0, 0.95) — clamping", ratio)
+            ratio = max(0.05, min(0.94, ratio))
+        self.inner_radius_ratio = ratio
+        self.center_label = center_label
+
+    def _draw(self, b: _SVGBuilder) -> None:
+        data = self._data
+        cx = data.width / 2
+        cy = data.height / 2
+        r = min(cx, cy) * 0.75
+        inner_r = r * self.inner_radius_ratio
+
+        if not data.series or not data.series[0].values:
+            # Empty state — grey placeholder ring
+            b.add("circle", {"cx": f"{cx:.1f}", "cy": f"{cy:.1f}", "r": f"{r:.1f}", "fill": "#ddd", "stroke": "none"})
+            b.add("circle", {
+                "cx": f"{cx:.1f}", "cy": f"{cy:.1f}", "r": f"{inner_r:.1f}", "fill": "#fff", "stroke": "none",
+            })
+            b.add("text", {
+                "x": f"{cx:.1f}", "y": f"{cy:.1f}",
+                "text-anchor": "middle", "dominant-baseline": "middle",
+                "fill": "#999", "font-size": "14",
+            }, "No data")
+            return
+
+        values = data.series[0].values
+        total = sum(values) or 1.0
+        start_angle = -math.pi / 2
+
+        for idx, val in enumerate(values):
+            sweep = (val / total) * 2 * math.pi
+            end_angle = start_angle + sweep
+
+            x1 = cx + r * math.cos(start_angle)
+            y1 = cy + r * math.sin(start_angle)
+            x2 = cx + r * math.cos(end_angle)
+            y2 = cy + r * math.sin(end_angle)
+            xi1 = cx + inner_r * math.cos(start_angle)
+            yi1 = cy + inner_r * math.sin(start_angle)
+            xi2 = cx + inner_r * math.cos(end_angle)
+            yi2 = cy + inner_r * math.sin(end_angle)
+
+            large_arc = "1" if sweep > math.pi else "0"
+            color = _CSS_VAR_PALETTE[idx % len(_CSS_VAR_PALETTE)]
+
+            # Donut sector: outer arc → inner arc (reverse)
+            path_d = (
+                f"M {xi1:.1f} {yi1:.1f} "
+                f"L {x1:.1f} {y1:.1f} "
+                f"A {r:.1f} {r:.1f} 0 {large_arc} 1 {x2:.1f} {y2:.1f} "
+                f"L {xi2:.1f} {yi2:.1f} "
+                f"A {inner_r:.1f} {inner_r:.1f} 0 {large_arc} 0 {xi1:.1f} {yi1:.1f} Z"
+            )
+            b.add("path", {"d": path_d, "fill": color, "stroke": "#fff", "stroke-width": "1"})
+            start_angle = end_angle
+
+        # Centre label
+        label = self.center_label or f"{len(values)} items"
+        b.add("text", {
+            "x": f"{cx:.1f}", "y": f"{cy:.1f}",
+            "text-anchor": "middle", "dominant-baseline": "middle",
+            "font-size": "14", "fill": "#333",
+        }, label)
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: SparklineChart
+# ---------------------------------------------------------------------------
+
+
+class SparklineChart(BaseChart):
+    """Minimal inline sparkline chart — no axes, no labels."""
+
+    def __init__(self, data: ChartData, color: str = "var(--color-primary)", fill_opacity: float = 0.15) -> None:
+        super().__init__(data)
+        self.color = color
+        self.fill_opacity = fill_opacity
+
+    def _draw(self, b: _SVGBuilder) -> None:
+        data = self._data
+        w = data.width
+        h = data.height
+
+        # Update SVG root style for inline placement
+        b._root.set("style", "display:inline-block;vertical-align:middle")
+
+        if not data.series or not data.series[0].values:
+            return
+
+        values = data.series[0].values
+        if len(values) < 2:
+            _log.warning("SparklineChart requires at least 2 data points, got %d — rendering placeholder", len(values))
+            return
+
+        min_v = min(values)
+        max_v = max(values)
+        v_range = max_v - min_v or 1.0
+
+        pad = 2
+        step = (w - 2 * pad) / (len(values) - 1)
+
+        def px(i: int) -> float:
+            return pad + i * step
+
+        def py(v: float) -> float:
+            return (h - pad) - ((v - min_v) / v_range) * (h - 2 * pad)
+
+        pts = " ".join(f"{px(i):.1f},{py(v):.1f}" for i, v in enumerate(values))
+
+        # Filled area path
+        first_x, first_y = px(0), py(values[0])
+        last_x = px(len(values) - 1)
+        area_d = f"M {first_x:.1f} {h} L {first_x:.1f} {first_y:.1f} " + " ".join(
+            f"L {px(i):.1f} {py(v):.1f}" for i, v in enumerate(values)
+        ) + f" L {last_x:.1f} {h} Z"
+
+        b.add("path", {"d": area_d, "fill": self.color, "opacity": str(self.fill_opacity), "stroke": "none"})
+        b.add("polyline", {
+            "points": pts, "fill": "none", "stroke": self.color,
+            "stroke-width": "1.5", "stroke-linejoin": "round",
+        })
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: TimelineChart
+# ---------------------------------------------------------------------------
+
+_TIMELINE_EVENTS_CAP = 50
+
+
+class TimelineChart(BaseChart):
+    """Vertical milestone timeline."""
+
+    dot_radius: int = 6
+    connector_width: int = 2
+
+    def _draw(self, b: _SVGBuilder) -> None:
+        data = self._data
+        h = data.height
+
+        events: list[tuple[str, str]] = []
+        for series, label in zip(data.series, data.labels):
+            events.append((label, series.name))
+
+        overflow = 0
+        if len(events) > _TIMELINE_EVENTS_CAP:
+            overflow = len(events) - _TIMELINE_EVENTS_CAP
+            _log.warning(
+                "TimelineChart: %d events exceed cap of %d — truncating",
+                len(events) + overflow,
+                _TIMELINE_EVENTS_CAP,
+            )
+            events = events[:_TIMELINE_EVENTS_CAP]
+
+        if not events:
+            b.add("text", {
+                "x": "50%", "y": "50%", "text-anchor": "middle", "fill": "#999", "font-size": "14",
+            }, "No events")
+            return
+
+        row_h = min(40, (h - 40) // max(len(events), 1))
+        col_x = 80  # x position of the connector line
+        pad_top = 20
+
+        # Vertical connector line
+        line_y1 = pad_top
+        line_y2 = pad_top + len(events) * row_h
+        b.add("line", {
+            "x1": str(col_x), "y1": str(line_y1),
+            "x2": str(col_x), "y2": str(line_y2),
+            "stroke": "var(--color-neutral-300)", "stroke-width": str(self.connector_width),
+        })
+
+        for i, (date, event) in enumerate(events):
+            cy = pad_top + i * row_h + row_h // 2
+
+            # Dot
+            b.add("circle", {
+                "cx": str(col_x), "cy": str(cy), "r": str(self.dot_radius),
+                "fill": "var(--color-primary)", "stroke": "#fff", "stroke-width": "2",
+            })
+
+            # Date label (left of line)
+            if date:
+                b.add("text", {
+                    "x": str(col_x - self.dot_radius - 4), "y": str(cy),
+                    "text-anchor": "end", "dominant-baseline": "middle",
+                    "font-size": "11", "fill": "var(--color-neutral-500)",
+                }, date)
+
+            # Event label (right of line)
+            b.add("text", {
+                "x": str(col_x + self.dot_radius + 8), "y": str(cy),
+                "text-anchor": "start", "dominant-baseline": "middle",
+                "font-size": "13", "fill": "var(--color-text)",
+            }, event)
+
+        if overflow:
+            cy = pad_top + len(events) * row_h + row_h // 2
+            b.add("text", {
+                "x": str(col_x + self.dot_radius + 8), "y": str(cy),
+                "text-anchor": "start", "font-size": "12", "fill": "#999",
+            }, f"…{overflow} more")
+
+
+# ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
 
@@ -467,6 +700,9 @@ _CHART_CLASSES: dict[str, type[BaseChart]] = {
     "pie": PieChart,
     "scatter": ScatterChart,
     "heatmap": HeatmapChart,
+    "donut": DonutChart,
+    "sparkline": SparklineChart,
+    "timeline": TimelineChart,
 }
 
 
