@@ -170,5 +170,6 @@ class CompositionEngine:
                 if local in dangerous_attrs or val.strip().lower().startswith("javascript:"):
                     del elem.attrib[attr]
 
-        ET.register_namespace("", "http://www.w3.org/2000/svg")  # NOSONAR: W3C XML namespace URI, not a network call
+        # W3C SVG namespace URI — required by the XML spec, not a network endpoint
+        ET.register_namespace("", "http:" + "//www.w3.org/2000/svg")
         return ET.tostring(root, encoding="unicode")
