@@ -9,6 +9,10 @@ Icon data sourced from Lucide v0.462 (MIT License — https://lucide.dev).
 
 from __future__ import annotations
 
+import logging
+
+_log = logging.getLogger(__name__)
+
 # Inner SVG element content per icon name (24x24 viewBox, stroke-based)
 _ICON_PATHS: dict[str, str] = {
     "activity": '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
@@ -170,52 +174,406 @@ _ICON_PATHS: dict[str, str] = {
     "zap": '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
     "zoom-in": '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>',
     "zoom-out": '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/>',
+    # Phase 2 additions — Lucide v0.462
+    "brain": '<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.96-3 2.5 2.5 0 0 1-1.32-4.24 3 3 0 0 1 .34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.18-1.98Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.96-3 2.5 2.5 0 0 0 1.32-4.24 3 3 0 0 0-.34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.18-1.98Z"/>',
+    "sparkles": '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/>',
+    "cursor": '<path d="m4 4 7.07 17 2.51-7.39L21 11.07z"/>',
+    "diamond": '<rect width="12" height="12" x="6" y="6" rx="2" ry="2" transform="rotate(45 12 12)"/>',
+    "divide": '<circle cx="12" cy="6" r="1"/><line x1="5" y1="12" x2="19" y2="12"/><circle cx="12" cy="18" r="1"/>',
+    "dumbbell": '<path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829 2 2 0 1 1 2.828 2.829l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>',
+    "ear": '<path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 0 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 0 4 0"/>',
+    "egg": '<path d="M12 22c6.23-.05 7.87-5.57 7.5-10-.36-4.34-3.95-9.96-7.5-10-3.55.04-7.14 5.66-7.5 10-.37 4.43 1.27 9.95 7.5 10z"/>',
+    "equal": '<line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/>',
+    "eraser": '<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
+    "euro": '<path d="M4 10h12"/><path d="M4 14h9"/><path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"/>',
+    "expand": '<path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8"/><path d="M3 16.2V21m0 0h4.8M3 21l6-6"/><path d="M21 7.8V3m0 0h-4.8M21 3l-6 6"/><path d="M3 7.8V3m0 0h4.8M3 3l6 6"/>',
+    "figma": '<path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z"/><path d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z"/><path d="M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z"/><path d="M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z"/><path d="M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z"/>',
+    "film": '<rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/>',
+    "fish": '<path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.53-8.5-6Z"/><path d="M18 12v.5"/><path d="M16 17.93a9.77 9.77 0 0 1 0-11.86"/><path d="M7 10.67C7 8 5.58 5.97 2.73 5.5c-1 3.98-.41 7.27 2.27 9.5C7.27 17.35 7 16.88 7 16.24a5.12 5.12 0 0 0-.12-1.22"/><path d="m14 13 2 2"/><path d="m14 11 2-2"/>',
+    "flag-off": '<path d="M8 2c4 0 6 2 8 2 1.1 0 2.1-.2 3-.5V15"/><path d="M4 22V4"/><path d="m2 2 20 20"/>',
+    "flame": '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/>',
+    "flashlight": '<path d="M18 6c0 2-2 2-2 4v10a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V10c0-2-2-2-2-4V2h12z"/><line x1="6" y1="6" x2="18" y2="6"/><line x1="12" y1="12" x2="12" y2="12"/>',
+    "flip-horizontal": '<path d="M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><line x1="12" y1="20" x2="12" y2="4"/>',
+    "flip-vertical": '<path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"/><line x1="4" y1="12" x2="20" y2="12"/>',
+    "footprints": '<path d="M4 16v-2.38C4 11.5 2.97 10.63 3 8c.07-4.69 1.23-6 4-6 2.81 0 4 1.37 4 6.03v4.97"/><path d="M5 22h6m-3-4v4"/><path d="M20 16v-2.38c0-2.12 1.03-2.99 1-5.62-.07-4.69-1.23-6-4-6-2.81 0-4 1.37-4 6.03v4.97"/><path d="M21 22h-6m3-4v4"/>',
+    "forklift": '<path d="M12 12H5a2 2 0 0 0-2 2v5"/><circle cx="13" cy="19" r="2"/><circle cx="5" cy="19" r="2"/><path d="M8 19h3m5-17v17h6M6 12V7c0-1.1.9-2 2-2h3l5 5"/>',
+    "forward": '<polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/>',
+    "frame": '<line x1="22" y1="6" x2="2" y2="6"/><line x1="22" y1="18" x2="2" y2="18"/><line x1="6" y1="2" x2="6" y2="22"/><line x1="18" y1="2" x2="18" y2="22"/>',
+    "framer": '<path d="M5 16V9h14V2H5l14 7-14 7z"/>',
+    "frown": '<circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>',
+    "gamepad": '<line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/><line x1="15" y1="12" x2="15.01" y2="12"/><line x1="17" y1="10" x2="17.01" y2="10"/><rect x="2" y="6" width="20" height="12" rx="2"/>',
+    "gauge": '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
+    "gavel": '<path d="m14 13-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/>',
+    "gem": '<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
+    "ghost": '<path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/>',
+    "gift-open": '<rect x="2" y="9" width="20" height="12" rx="1"/><path d="M12 9v12"/><path d="M7.5 9a4.5 4.5 0 0 1 0-9c3 0 4.5 3 4.5 3s1.5-3 4.5-3a4.5 4.5 0 0 1 0 9"/><line x1="2" y1="9" x2="22" y2="9"/>',
+    "git-branch-plus": '<path d="M6 3v12"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M15 6a9 9 0 0 1-9 9"/><path d="M18 15v6"/><path d="M21 18h-6"/>',
+    "git-compare": '<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/>',
+    "git-fork": '<circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9"/><path d="M12 12v3"/>',
+    "git-merge": '<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/>',
+    "git-pull-request": '<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/>',
+    "glasses": '<circle cx="6" cy="15" r="4"/><circle cx="18" cy="15" r="4"/><path d="M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/><path d="M2.5 13 5 7c.7-1.3 1.4-2 3-2"/><path d="M21.5 13 19 7c-.7-1.3-1.5-2-3-2"/>',
+    "graduation-cap": '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+    "hand": '<path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
+    "heart-pulse": '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+    "hexagon": '<polygon points="7.86 2 16.14 2 21 12 16.14 22 7.86 22 3 12 7.86 2"/>',
+    "hourglass": '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>',
+    "infinity": '<path d="M12 12c-2-2.5-4-4-6-4a4 4 0 0 0 0 8c2 0 4-1.5 6-4zm0 0c2 2.5 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.5-6 4z"/>',
+    "joystick": '<path d="M21 17a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2z"/><path d="M6 15v-3"/><path d="M12 15V9"/><circle cx="12" cy="6" r="3"/>',
+    "landmark": '<line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/>',
+    "laptop": '<path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/>',
+    "leaf": '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+    "library": '<path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/><path d="M2 20h20"/>',
+    "lightbulb": '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+    "line-chart": '<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>',
+    "locate": '<line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><circle cx="12" cy="12" r="7"/>',
+    "megaphone": '<path d="m3 11 19-9v18L3 13"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+    "milestone": '<path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6z"/><path d="M12 13v8"/><path d="M12 3v3"/>',
+    "network": '<rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/>',
+    "octagon": '<polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/>',
+    "orbit": '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="10" style="opacity:0.3"/><path d="M4.93 4.93C3.12 8.28 3.12 15.72 4.93 19.07"/>',
+    "palette": '<circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+    "pencil": '<line x1="18" y1="2" x2="22" y2="6"/><path d="M7.5 20.5 19 9l-4-4L4 16.5m3.5 4L3 21l.5-4.5"/>',
+    "pin": '<line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"/>',
+    "podcast": '<circle cx="12" cy="11" r="1"/><path d="M11 17a1 1 0 0 1 2 0c0 .5-.34 3-.5 4.5a.5.5 0 0 1-1 0c-.16-1.5-.5-4-.5-4.5z"/><path d="M8 14a5 5 0 1 1 8 0"/><path d="M17 18.5a9 9 0 1 0-10 0"/>',
+    "presentation": '<path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/>',
+    "puzzle": '<path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.23 8.77c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.525-1.525A2.402 2.402 0 0 1 12 2c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02z"/>',
+    "radar": '<path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"/><path d="M4 6h.01"/><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"/><path d="M16.24 7.76A6 6 0 1 0 8.23 16.67"/><path d="M12 18h.01"/><path d="M17.99 11.66A6 6 0 0 1 15.77 16.67"/><circle cx="12" cy="12" r="2"/><path d="m13.41 10.59 5.66-5.66"/>',
+    "rocket": '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
+    "scale": '<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>',
+    "scan": '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>',
+    "smile": '<circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>',
+    "subtitles": '<path d="M7 13h4"/><path d="M15 13h2"/><path d="M7 9h2"/><path d="M13 9h4"/><path d="M3 3h18a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>',
+    "sword": '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/>',
+    "syringe": '<path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/>',
+    "thermometer": '<path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>',
+    "trophy": '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+    "wallet": '<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>',
+    "wand": '<path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M15 9h0"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/>',
+    "webhook": '<path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/>',
+    "workflow": '<rect x="22" y="7" width="0" height="0" rx="0" ry="0"/><path d="M4 5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M4 13a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1z"/><path d="M19 5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/>',
+    "wrench": '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+    "zap-off": '<polyline points="12.41 6.75 13 2 10.57 4.92"/><polyline points="18.57 12.91 21 10 15.66 10"/><polyline points="8 8 3 14 12 14 11 22 16 16"/>',
 }
 
 _SVG_NS = "http://www.w3.org/2000/svg"  # NOSONAR — W3C namespace URI, not a fetchable URL
 ICON_NAMES: frozenset[str] = frozenset(_ICON_PATHS.keys())
 
+# ---------------------------------------------------------------------------
+# Tag metadata for icon discovery (Phase 2 — T013)
+# ---------------------------------------------------------------------------
 
-def list_icons() -> list[str]:
-    """Return sorted list of all available icon names."""
-    return sorted(_ICON_PATHS.keys())
+_ICON_TAGS: dict[str, list[str]] = {
+    # Activity / health
+    "activity": ["health", "pulse", "analytics"],
+    "heart": ["health", "love", "social"],
+    "heart-pulse": ["health", "pulse", "medical"],
+    "thermometer": ["health", "temperature", "medical"],
+    "syringe": ["health", "medical"],
+    # AI / mind
+    "brain": ["ai", "mind", "intelligence"],
+    "sparkles": ["ai", "magic", "effects"],
+    "rocket": ["ai", "startup", "launch"],
+    "wand": ["ai", "magic", "effects"],
+    "orbit": ["ai", "science", "space"],
+    # DataViz / analytics
+    "bar-chart": ["dataviz", "analytics", "bar"],
+    "bar-chart-2": ["dataviz", "analytics", "bar"],
+    "pie-chart": ["dataviz", "analytics", "pie"],
+    "line-chart": ["dataviz", "analytics", "line"],
+    "trending-up": ["dataviz", "analytics", "trend"],
+    "trending-down": ["dataviz", "analytics", "trend"],
+    "gauge": ["dataviz", "analytics", "speed"],
+    "radar": ["dataviz", "analytics"],
+    "milestone": ["dataviz", "timeline", "progress"],
+    "git-compare": ["dataviz", "comparison"],
+    # Development / programming
+    "code": ["development", "programming"],
+    "terminal": ["development", "cli", "programming"],
+    "cpu": ["development", "hardware"],
+    "command": ["development", "keyboard", "cli"],
+    "git-branch-plus": ["development", "git", "version-control"],
+    "git-fork": ["development", "git", "version-control"],
+    "git-merge": ["development", "git", "version-control"],
+    "git-pull-request": ["development", "git", "version-control"],
+    "webhook": ["development", "api", "integration"],
+    "workflow": ["development", "automation", "process"],
+    "puzzle": ["development", "integration", "components"],
+    "framer": ["development", "design", "tool"],
+    "figma": ["development", "design", "tool"],
+    # Business / finance
+    "briefcase": ["business", "work"],
+    "building": ["business", "office"],
+    "euro": ["business", "finance", "money"],
+    "wallet": ["business", "finance", "money"],
+    "scale": ["business", "legal", "balance"],
+    "trophy": ["business", "achievement", "award"],
+    "award": ["business", "achievement", "award"],
+    "diamond": ["business", "premium", "quality"],
+    "landmark": ["business", "institution"],
+    "graduation-cap": ["business", "education", "learning"],
+    # Communication / social
+    "mail": ["communication", "email"],
+    "message-circle": ["communication", "chat"],
+    "message-square": ["communication", "chat"],
+    "megaphone": ["communication", "marketing"],
+    "phone": ["communication", "contact"],
+    "send": ["communication", "email"],
+    "podcast": ["communication", "audio", "media"],
+    "slack": ["communication", "team"],
+    # Files / storage
+    "file": ["files", "document"],
+    "file-text": ["files", "document", "text"],
+    "folder": ["files", "storage"],
+    "archive": ["files", "storage"],
+    "clipboard": ["files", "document"],
+    "database": ["files", "storage", "data"],
+    "hard-drive": ["files", "storage", "hardware"],
+    "server": ["files", "infrastructure", "hardware"],
+    "library": ["files", "knowledge", "collection"],
+    # Navigation / location
+    "map": ["navigation", "location"],
+    "map-pin": ["navigation", "location", "pin"],
+    "compass": ["navigation", "direction"],
+    "navigation": ["navigation", "direction"],
+    "locate": ["navigation", "location", "gps"],
+    "anchor": ["navigation", "maritime"],
+    # UI / interface
+    "layout": ["ui", "design", "structure"],
+    "grid": ["ui", "design", "structure"],
+    "sidebar": ["ui", "navigation", "layout"],
+    "menu": ["ui", "navigation"],
+    "search": ["ui", "discovery"],
+    "filter": ["ui", "search", "data"],
+    "sliders": ["ui", "settings", "controls"],
+    "settings": ["ui", "configuration"],
+    "maximize": ["ui", "window"],
+    "minimize": ["ui", "window"],
+    "expand": ["ui", "window", "fullscreen"],
+    "scan": ["ui", "camera", "detection"],
+    "cursor": ["ui", "pointer", "interaction"],
+    "frame": ["ui", "design", "layout"],
+    "presentation": ["ui", "slides", "display"],
+    "subtitles": ["ui", "accessibility", "text"],
+    # Security
+    "shield": ["security", "protection"],
+    "lock": ["security", "access"],
+    "unlock": ["security", "access"],
+    "key": ["security", "access", "auth"],
+    "eye": ["security", "visibility"],
+    "eye-off": ["security", "privacy", "visibility"],
+    # Media / content
+    "image": ["media", "visual"],
+    "camera": ["media", "visual", "photo"],
+    "film": ["media", "video"],
+    "video": ["media", "video"],
+    "music": ["media", "audio"],
+    "mic": ["media", "audio", "recording"],
+    "speaker": ["media", "audio"],
+    "volume": ["media", "audio"],
+    "volume-2": ["media", "audio"],
+    "play": ["media", "playback"],
+    "pause": ["media", "playback"],
+    "stop-circle": ["media", "playback"],
+    "skip-forward": ["media", "playback"],
+    "skip-back": ["media", "playback"],
+    "repeat": ["media", "playback"],
+    "shuffle": ["media", "playback"],
+    "youtube": ["media", "video", "social"],
+    "airplay": ["media", "streaming"],
+    # People / users
+    "user": ["people", "profile"],
+    "users": ["people", "team"],
+    "user-check": ["people", "verified"],
+    "user-plus": ["people", "add"],
+    "user-x": ["people", "remove"],
+    "hand": ["people", "gesture"],
+    # Nature / environment
+    "sun": ["nature", "weather"],
+    "moon": ["nature", "weather"],
+    "cloud": ["nature", "weather"],
+    "wind": ["nature", "weather"],
+    "leaf": ["nature", "environment"],
+    "umbrella": ["nature", "weather"],
+    "flame": ["nature", "fire", "energy"],
+    "zap": ["nature", "energy", "electric"],
+    "zap-off": ["nature", "energy"],
+    # Shapes / visual
+    "circle": ["shapes", "geometry"],
+    "square": ["shapes", "geometry"],
+    "triangle": ["shapes", "geometry"],
+    "hexagon": ["shapes", "geometry"],
+    "octagon": ["shapes", "geometry"],
+    "star": ["shapes", "rating", "favorite"],
+    "gem": ["shapes", "premium"],
+    "infinity": ["shapes", "concept"],
+    # Actions / operations
+    "copy": ["actions", "clipboard"],
+    "edit": ["actions", "modify"],
+    "pencil": ["actions", "modify", "write"],
+    "trash": ["actions", "delete"],
+    "download": ["actions", "transfer"],
+    "upload": ["actions", "transfer"],
+    "share": ["actions", "social"],
+    "link": ["actions", "connection"],
+    "external-link": ["actions", "navigation"],
+    "refresh-cw": ["actions", "refresh", "sync"],
+    "save": ["actions", "persist"],
+    "print": ["actions", "output"],
+    "delete": ["actions", "remove"],
+    "move": ["actions", "drag"],
+    "plus": ["actions", "add"],
+    "plus-circle": ["actions", "add"],
+    "minus": ["actions", "remove"],
+    "minus-circle": ["actions", "remove"],
+    "check": ["actions", "confirm", "success"],
+    "check-circle": ["actions", "confirm", "success"],
+    "check-square": ["actions", "confirm", "todo"],
+    "x": ["actions", "close", "cancel"],
+    "x-circle": ["actions", "close", "cancel"],
+    "x-square": ["actions", "close", "cancel"],
+    "forward": ["actions", "navigation"],
+    "eraser": ["actions", "clear", "edit"],
+    # Status / feedback
+    "alert-circle": ["status", "warning"],
+    "alert-triangle": ["status", "warning"],
+    "info": ["status", "information"],
+    "help-circle": ["status", "help"],
+    "loader": ["status", "loading"],
+    "bell": ["status", "notification"],
+    "smile": ["status", "positive", "emotion"],
+    "frown": ["status", "negative", "emotion"],
+    # Time / schedule
+    "clock": ["time", "schedule"],
+    "calendar": ["time", "schedule", "date"],
+    "hourglass": ["time", "waiting"],
+    "timer": ["time", "measurement"],
+    # Power / energy
+    "battery": ["power", "hardware"],
+    "power": ["power", "control"],
+    "toggle-left": ["power", "switch"],
+    "toggle-right": ["power", "switch"],
+    # Misc / tools
+    "tool": ["tools", "hardware"],
+    "wrench": ["tools", "hardware"],
+    "gavel": ["tools", "legal"],
+    "sword": ["tools", "gaming"],
+    "gamepad": ["tools", "gaming"],
+    "joystick": ["tools", "gaming"],
+    "dumbbell": ["tools", "fitness"],
+    "flashlight": ["tools", "utility"],
+    "hash": ["tools", "text", "symbol"],
+    "at-sign": ["tools", "text", "email"],
+    "percent": ["tools", "math", "finance"],
+    "slash": ["tools", "symbol"],
+    "type": ["tools", "text"],
+    "bold": ["tools", "text", "formatting"],
+    "underline": ["tools", "text", "formatting"],
+    # Connectivity
+    "wifi": ["connectivity", "network"],
+    "bluetooth": ["connectivity", "wireless"],
+    "network": ["connectivity", "infrastructure"],
+    "smartphone": ["connectivity", "mobile"],
+    "laptop": ["connectivity", "device"],
+    "monitor": ["connectivity", "device"],
+    "tv": ["connectivity", "device", "media"],
+    "printer": ["connectivity", "device"],
+    "disc": ["connectivity", "storage"],
+    # Misc categorized
+    "package": ["shipping", "product"],
+    "shopping-cart": ["ecommerce", "purchase"],
+    "tag": ["content", "label"],
+    "bookmark": ["content", "save"],
+    "paperclip": ["content", "attachment"],
+    "layers": ["design", "stack"],
+    "palette": ["design", "color", "art"],
+    "feather": ["design", "writing"],
+    "pen-tool": ["design", "vector"],
+    "target": ["goals", "focus"],
+    "flag": ["goals", "milestone"],
+    "flag-off": ["goals", "disabled"],
+    "gift": ["social", "present"],
+    "gift-open": ["social", "present"],
+    "globe": ["global", "web"],
+    "home": ["navigation", "home"],
+    "inbox": ["communication", "email"],
+    "log-in": ["auth", "access"],
+    "log-out": ["auth", "access"],
+    "more-horizontal": ["ui", "options"],
+    "more-vertical": ["ui", "options"],
+    "pin": ["ui", "location"],
+    "ghost": ["gaming", "fun"],
+    "ear": ["accessibility", "audio"],
+    "footprints": ["navigation", "walking"],
+    "fish": ["nature", "animal"],
+    "egg": ["nature", "food"],
+    "forklift": ["logistics", "industrial"],
+    "flip-horizontal": ["design", "transform"],
+    "flip-vertical": ["design", "transform"],
+}
+
+# Fill any icon without explicit tags with a generic fallback
+for _icon_name in _ICON_PATHS:
+    if _icon_name not in _ICON_TAGS:
+        _ICON_TAGS[_icon_name] = ["general"]
+
+
+def list_icons(filter: str | None = None) -> list[tuple[str, list[str]]]:
+    """Return sorted list of (name, tags) pairs for all available icons.
+
+    Args:
+        filter: Optional case-insensitive substring to match against tags.
+                If None or empty string, all icons are returned.
+
+    Returns:
+        Sorted list of (icon_name, tags) tuples.
+    """
+    result = []
+    filter_lower = filter.lower() if filter else None
+    for name in sorted(_ICON_PATHS.keys()):
+        tags = _ICON_TAGS.get(name, ["general"])
+        if filter_lower is None or any(filter_lower in t.lower() for t in tags):
+            result.append((name, tags))
+    return result
 
 
 def render_icon(
     name: str,
-    color: str = "currentColor",
-    size: int = 24,
+    color: str | None = None,
+    size: str = "48px",
     stroke_width: float = 2.0,
     aria_label: str | None = None,
 ) -> str:
-    """Render a Lucide icon as an SVG string.
+    """Render a Lucide icon as an inline SVG string.
 
     Args:
-        name: Icon name (e.g. "check", "arrow-right").
-        color: Stroke color. Defaults to "currentColor".
-        size: Width and height in pixels. Defaults to 24.
+        name: Icon name (e.g. "brain", "arrow-right"). Unknown names fall back
+              to "help-circle" and emit a warning.
+        color: Stroke color as CSS value (e.g. "#635BFF") or None for currentColor.
+        size: CSS size string (e.g. "48px", "2rem"). Applied as width/height style.
         stroke_width: Stroke width. Defaults to 2.0.
         aria_label: Accessible label; if None the icon is treated as decorative.
 
     Returns:
-        Full SVG string (sanitized, no <script>).
-
-    Raises:
-        KeyError: If icon name is not found.
+        Full SVG string with class="icon icon-{name}" — no <script> tags.
     """
     if name not in _ICON_PATHS:
-        raise KeyError(f"Icon '{name}' not found. Use list_icons() to see available icons.")
+        _log.warning("Icon '%s' not found — falling back to 'help-circle'", name)
+        name = "help-circle"
 
     inner = _ICON_PATHS[name]
+    stroke_color = color if color else "currentColor"
     label_attr = f' aria-label="{aria_label}"' if aria_label else ' aria-hidden="true"'
     title_el = f"<title>{aria_label}</title>" if aria_label else ""
+    style_color = f" color: {color};" if color else ""
 
     svg = (
         f'<svg xmlns="{_SVG_NS}" '
-        f'width="{size}" height="{size}" '
+        f'class="icon icon-{name}" '
+        f'style="width:{size};height:{size};{style_color}" '
         f'viewBox="0 0 24 24" '
         f'fill="none" '
-        f'stroke="{color}" '
+        f'stroke="{stroke_color}" '
         f'stroke-width="{stroke_width}" '
         f'stroke-linecap="round" '
         f'stroke-linejoin="round" '

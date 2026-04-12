@@ -15,6 +15,7 @@ from aio.commands.extract import extract
 # Import command functions directly (not as sub-Typers for leaf commands)
 from aio.commands.init import init
 from aio.commands.serve import serve
+from aio.commands.icons import app as icons_app
 from aio.commands.theme import app as theme_app
 
 app = typer.Typer(
@@ -32,6 +33,7 @@ app.command("extract")(extract)
 # Group commands (have subcommands)
 app.add_typer(theme_app, name="theme")
 app.add_typer(commands_app, name="commands")
+app.add_typer(icons_app, name="icons")
 
 
 @app.callback(invoke_without_command=True)
