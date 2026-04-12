@@ -28,7 +28,7 @@ _PALETTE = [
     "#64B5CD",
 ]
 
-_SVG_NS = "http://www.w3.org/2000/svg"
+_SVG_NS = "http://www.w3.org/2000/svg"  # NOSONAR — W3C namespace URI, not a fetchable URL
 
 
 # ---------------------------------------------------------------------------
