@@ -375,7 +375,11 @@ class ScatterChart(BaseChart):
             for xi, yi in zip(xs, series.values):
                 px = ((xi - min_x) / x_range) * chart_w
                 py = chart_h - ((yi - min_y) / y_range) * chart_h
-                b.add_to(g, "circle", {"cx": f"{px:.1f}", "cy": f"{py:.1f}", "r": "4", "fill": color, "opacity": "0.75"})
+                b.add_to(
+                    g,
+                    "circle",
+                    {"cx": f"{px:.1f}", "cy": f"{py:.1f}", "r": "4", "fill": color, "opacity": "0.75"},
+                )
 
 
 # ---------------------------------------------------------------------------

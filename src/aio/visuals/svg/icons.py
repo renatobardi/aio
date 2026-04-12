@@ -5,6 +5,7 @@ circle, line, rect, etc.) — NOT a full <svg> wrapper. render_icon() wraps them
 
 Icon data sourced from Lucide v0.462 (MIT License — https://lucide.dev).
 """
+# ruff: noqa: E501  — SVG path data strings are inherently longer than 120 chars
 
 from __future__ import annotations
 
