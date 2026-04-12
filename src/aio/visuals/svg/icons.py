@@ -220,7 +220,7 @@ def render_icon(
         f'stroke-linecap="round" '
         f'stroke-linejoin="round" '
         f'role="img"'
-        f'{label_attr}>'
+        f"{label_attr}>"
         f"{title_el}"
         f"{inner}"
         f"</svg>"

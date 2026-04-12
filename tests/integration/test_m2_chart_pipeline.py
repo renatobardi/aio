@@ -14,10 +14,12 @@ from aio.commands.build import build_pipeline
 def chart_slide(tmp_path: Path) -> Path:
     """Create a slides.md with @chart-type/@chart-data metadata."""
     slides = tmp_path / "charts.md"
-    chart_data = json.dumps({
-        "labels": ["Q1", "Q2", "Q3", "Q4"],
-        "series": [{"name": "Revenue", "values": [10, 20, 15, 25]}],
-    })
+    chart_data = json.dumps(
+        {
+            "labels": ["Q1", "Q2", "Q3", "Q4"],
+            "series": [{"name": "Revenue", "values": [10, 20, 15, 25]}],
+        }
+    )
     slides.write_text(
         f"""---
 title: Chart Demo
@@ -78,10 +80,12 @@ Body text with no chart.
 @pytest.mark.parametrize("chart_type", ["bar", "line", "pie", "scatter", "heatmap"])
 def test_all_chart_types_produce_valid_html(tmp_path: Path, chart_type: str) -> None:
     """Each supported chart type produces a valid HTML output file."""
-    chart_data = json.dumps({
-        "labels": ["A", "B", "C"],
-        "series": [{"name": "S1", "values": [1, 2, 3]}],
-    })
+    chart_data = json.dumps(
+        {
+            "labels": ["A", "B", "C"],
+            "series": [{"name": "S1", "values": [1, 2, 3]}],
+        }
+    )
     slides = tmp_path / f"chart_{chart_type}.md"
     slides.write_text(
         f"""---

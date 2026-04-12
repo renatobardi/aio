@@ -126,10 +126,12 @@ def test_parse_from_json_string() -> None:
 
 
 def test_parse_from_json_string_with_labels() -> None:
-    payload = json.dumps({
-        "labels": ["a", "b"],
-        "series": [{"name": "S", "values": [1, 2]}],
-    })
+    payload = json.dumps(
+        {
+            "labels": ["a", "b"],
+            "series": [{"name": "S", "values": [1, 2]}],
+        }
+    )
     cd = parse_chart_data(payload, chart_type="line")
     assert cd.labels == ["a", "b"]
 

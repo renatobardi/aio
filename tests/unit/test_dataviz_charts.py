@@ -176,7 +176,7 @@ def test_bar_chart_custom_size() -> None:
         height=360,
     )
     svg = BarChart(data).render()
-    assert '640' in svg and '360' in svg
+    assert "640" in svg and "360" in svg
 
 
 # ---------------------------------------------------------------------------

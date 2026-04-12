@@ -76,15 +76,11 @@ def parse_chart_data(
     series: list[Series] = []
     for i, item in enumerate(raw_series):
         if "values" not in item:
-            raise ChartDataError(
-                f"series[{i}] missing 'values'", chart_type=resolved_type
-            )
+            raise ChartDataError(f"series[{i}] missing 'values'", chart_type=resolved_type)
         try:
             values = [float(v) for v in item["values"]]
         except (TypeError, ValueError) as exc:
-            raise ChartDataError(
-                f"series[{i}] contains non-numeric values: {exc}", chart_type=resolved_type
-            ) from exc
+            raise ChartDataError(f"series[{i}] contains non-numeric values: {exc}", chart_type=resolved_type) from exc
         series.append(
             Series(
                 name=str(item.get("name", f"Series {i + 1}")),

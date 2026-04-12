@@ -317,11 +317,7 @@ class PieChart(BaseChart):
             large_arc = "1" if sweep > math.pi else "0"
             color = _color(data.series[0] if data.series else Series("", []), idx)
 
-            path_d = (
-                f"M {cx:.1f} {cy:.1f} "
-                f"L {x1:.1f} {y1:.1f} "
-                f"A {r:.1f} {r:.1f} 0 {large_arc} 1 {x2:.1f} {y2:.1f} Z"
-            )
+            path_d = f"M {cx:.1f} {cy:.1f} L {x1:.1f} {y1:.1f} A {r:.1f} {r:.1f} 0 {large_arc} 1 {x2:.1f} {y2:.1f} Z"
             b.add("path", {"d": path_d, "fill": color, "stroke": "#fff", "stroke-width": "1"})
             start_angle = end_angle
 
