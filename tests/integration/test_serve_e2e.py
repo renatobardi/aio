@@ -40,6 +40,32 @@ def _bind_port(port: int) -> socket.socket:
     return s
 
 
+def _bind_range(count: int) -> tuple[int, list[socket.socket]]:
+    """Find and bind `count` consecutive free ports. Returns (start_port, sockets).
+
+    Sequential port fallback in serve.py tries up to 10 alternatives before
+    exiting with code 2, so callers that want to force exit 2 need count=11.
+    """
+    for base in range(40000, 60000):
+        sockets: list[socket.socket] = []
+        ok = True
+        for p in range(base, base + count):
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.bind(("127.0.0.1", p))
+                s.listen(1)
+                sockets.append(s)
+            except OSError:
+                for sock in sockets:
+                    sock.close()
+                ok = False
+                break
+        if ok:
+            return base, sockets
+    pytest.skip("Could not find 11 consecutive free ports")
+
+
 # ---------------------------------------------------------------------------
 # App factory tests
 # ---------------------------------------------------------------------------
@@ -175,19 +201,26 @@ def test_get_sse_first_event_is_connected(live_server: str) -> None:
 
 
 def test_port_collision_exits_2(tmp_path: Path) -> None:
-    """serve() must exit with code 2 when the port is already bound."""
+    """serve() must exit with code 2 when all sequential fallback ports are exhausted.
+
+    FR-255: serve tries up to 10 alternative ports before giving up.  Binding
+    11 consecutive ports (the original + 10 retries) forces exit code 2.
+    """
     from typer.testing import CliRunner
 
     from aio.commands.serve import app as serve_app
 
-    port = _free_port()
-    occupied = _bind_port(port)
+    start_port, sockets = _bind_range(11)
     try:
         runner = CliRunner()
-        result = runner.invoke(serve_app, [str(FIXTURE_SLIDES), "--port", str(port)])
+        result = runner.invoke(
+            serve_app,
+            [str(FIXTURE_SLIDES), "--port", str(start_port), "--no-reload"],
+        )
         assert result.exit_code == 2, f"Expected exit 2, got {result.exit_code}: {result.output}"
     finally:
-        occupied.close()
+        for s in sockets:
+            s.close()
 
 
 def test_host_0000_accepted(tmp_path: Path) -> None:
@@ -196,13 +229,15 @@ def test_host_0000_accepted(tmp_path: Path) -> None:
 
     from aio.commands.serve import app as serve_app
 
-    port = _free_port()
-    occupied = _bind_port(port)
+    start_port, sockets = _bind_range(11)
     try:
         runner = CliRunner()
-        # Port already taken → exits 2, but host option parsed correctly (no parse error)
-        result = runner.invoke(serve_app, [str(FIXTURE_SLIDES), "--host", "0.0.0.0", "--port", str(port)])
-        # Exit 2 means collision detected — host was accepted (not exit 9 / usage error)
+        # All fallback ports taken → exits 2; host option parsed correctly (not exit 9)
+        result = runner.invoke(
+            serve_app,
+            [str(FIXTURE_SLIDES), "--host", "0.0.0.0", "--port", str(start_port), "--no-reload"],
+        )
         assert result.exit_code in (0, 2)
     finally:
-        occupied.close()
+        for s in sockets:
+            s.close()

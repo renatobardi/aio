@@ -3,11 +3,9 @@
 
 {% block slide_content %}
 <div class="layout-content takeaways-content">
-  {% if title %}
-  <h2 class="takeaways-heading">{{ title }}</h2>
-  {% endif %}
+  <h2 class="takeaways-heading">{% block takeaways_title %}{{ title | default("Key Takeaways") }}{% endblock %}</h2>
   <div class="takeaways-list">
-    {{ body_html }}
+    {% block takeaways_body %}{{ body_html | default("") }}{% endblock %}
   </div>
 </div>
 {% endblock %}

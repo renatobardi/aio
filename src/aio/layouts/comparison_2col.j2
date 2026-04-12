@@ -4,20 +4,12 @@
 {% block slide_content %}
 <div class="layout-content comparison-grid">
   <div class="comparison-col comparison-left">
-    {% if left_title %}
-    <h3 class="comparison-col-title">{{ left_title }}</h3>
-    {% endif %}
-    {% if left_content %}
-    <div class="comparison-col-body">{{ left_content }}</div>
-    {% endif %}
+    <h3 class="comparison-col-title">{% block left_title %}{{ left_title | default("Option A") }}{% endblock %}</h3>
+    <div class="comparison-col-body">{% block left_content %}{{ left_content | default("") }}{% endblock %}</div>
   </div>
   <div class="comparison-col comparison-right">
-    {% if right_title %}
-    <h3 class="comparison-col-title">{{ right_title }}</h3>
-    {% endif %}
-    {% if right_content %}
-    <div class="comparison-col-body">{{ right_content }}</div>
-    {% endif %}
+    <h3 class="comparison-col-title">{% block right_title %}{{ right_title | default("Option B") }}{% endblock %}</h3>
+    <div class="comparison-col-body">{% block right_content %}{{ right_content | default("") }}{% endblock %}</div>
   </div>
 </div>
 {% endblock %}

@@ -67,8 +67,9 @@ class _FileModifiedHandler:
     asyncio.get_event_loop() before uvicorn has created its own loop (Python 3.12+ crash).
     """
 
-    def __init__(self, source: Path) -> None:
+    def __init__(self, source: Path, extra_dirs: list[Path] | None = None) -> None:
         self._source = source
+        self._extra_dirs: list[Path] = [d.resolve() for d in (extra_dirs or [])]
         self._loop: asyncio.AbstractEventLoop | None = None
 
     def set_loop(self, loop: asyncio.AbstractEventLoop) -> None:
@@ -79,10 +80,15 @@ class _FileModifiedHandler:
         if self._loop is None:
             return
         src = getattr(event, "src_path", "")
-        if Path(src).resolve() == self._source.resolve():
+        src_path = Path(src).resolve()
+        triggered = src_path == self._source.resolve() or any(
+            str(src_path).startswith(str(d) + "/") for d in self._extra_dirs
+        )
+        if triggered:
+            label = src_path.name if src_path != self._source.resolve() else self._source.name
             reload_event = HotReloadEvent(
                 event_type="reload",
-                message=f"File changed: {self._source.name}",
+                message=f"File changed: {label}",
                 source_path=self._source,
                 timestamp=time.time(),
             )
@@ -224,9 +230,14 @@ def serve(
     import uvicorn
     from watchdog.observers import Observer
 
-    if _port_in_use(host, port):
-        _log.error("Port %d is already in use", port)
-        raise typer.Exit(code=2)
+    original_port = port
+    while _port_in_use(host, port):
+        if port - original_port >= 10:
+            _log.error("Could not find a free port in range %d-%d", original_port, port)
+            raise typer.Exit(code=2)
+        port += 1
+    if port != original_port:
+        _log.info("Port %d in use — using port %d instead", original_port, port)
 
     if not input.exists():
         _log.error("Input file not found: %s", input)
@@ -235,7 +246,19 @@ def serve(
     _log.info("Starting serve on http://%s:%d", host, port)
 
     # --- watchdog setup ---
-    handler = _FileModifiedHandler(input) if not no_reload else None
+    # Locate .aio/ so config.yaml and themes/* changes also trigger reload
+    _aio_dir: Path | None = None
+    if not no_reload:
+        from aio._utils import find_aio_dir
+        from aio.exceptions import AIOError
+
+        try:
+            _aio_dir = find_aio_dir(input.parent)
+        except (FileNotFoundError, AIOError):
+            pass
+
+    extra_dirs = [_aio_dir] if _aio_dir is not None else []
+    handler = _FileModifiedHandler(input, extra_dirs=extra_dirs) if not no_reload else None
     starlette_app = create_app(input, file_handler=handler)
 
     observer = None
@@ -251,6 +274,9 @@ def serve(
         observer = Observer()
         watch_dir = str(input.parent.resolve())
         observer.schedule(_WatchdogBridge(), watch_dir, recursive=False)  # type: ignore[no-untyped-call]
+        if _aio_dir is not None:
+            observer.schedule(_WatchdogBridge(), str(_aio_dir.resolve()), recursive=True)  # type: ignore[no-untyped-call]
+            _log.debug("watchdog also observing .aio/ at %s", _aio_dir)
         observer.start()  # type: ignore[no-untyped-call]
         _log.debug("watchdog observer started on %s", watch_dir)
 

@@ -38,7 +38,7 @@ aio build slides.md -o out.html --enrich       # with image generation
 aio serve slides.md --port 3000
 aio theme list
 aio theme validate minimal
-aio extract https://stripe.com -o DESIGN.md
+aio extract https://stripe.com -o DESIGN.md  # requires pip install -e ".[enrich]"
 
 # Check for external URL leaks in output HTML (Art. II compliance)
 python -c "
@@ -61,6 +61,7 @@ Markdown file
     ▼ Step 1: parse_slides()    — mistune AST + yaml.safe_load() frontmatter → SlideAST[]
     ▼ Step 2: analyze_slides()  — CompositionEngine.infer_layout() → SlideRenderContext[]
     ▼ Step 3: compose_slides()  — Jinja2 layout templates → ComposedSlide[] (HTML fragments)
+                                   @chart-type + @chart-data metadata → inline SVG via visuals.dataviz
     ▼ Step 4: render_document() — assemble Reveal.js HTML + inline CSS/JS → full HTML string
     ▼ Step 5: inline_assets()   — verify no external URLs; append SSE snippet (serve mode)
                                  ← FAILS HERE (exit 3) if any external URL detected
@@ -81,17 +82,26 @@ Markdown file
 | `src/aio/layouts/` | Jinja2 layout templates (`*.j2`) + `registry.py` (LayoutRegistry) |
 | `src/aio/themes/loader.py` | `ThemeRecord` + `load_registry()` |
 | `src/aio/themes/parser.py` | `parse_design_md()` — 11-section DESIGN.md parser |
+| `src/aio/themes/validator.py` | `validate_css_string()` (optional cssutils), `wcag_contrast_ratio()` |
+| `src/aio/visuals/dataviz/charts.py` | M2: `BaseChart` + 5 types: Bar, Line, Pie, Scatter, Heatmap — pure-Python SVG |
+| `src/aio/visuals/dataviz/data_parser.py` | M2: `ChartData`/`Series` from CSV, JSON, or dict |
+| `src/aio/visuals/svg/icons.py` | M2: 159 Lucide icons — `render_icon(name, color, size)` |
+| `src/aio/visuals/svg/composites.py` | M2: SVG composites skeleton (flowcharts, org charts — stub) |
+| `src/aio/commands/extract.py` | M2: `aio extract <url>` — scrapes design site → 11-section DESIGN.md |
+| `src/aio/agents/prompts.py` | `list_commands()`, `list_agents()`, `load_agent_template(agent, cmd, version)` |
 | `src/aio/vendor/revealjs/` | Static Reveal.js 5.x UMD build (never update to v6) |
 | `src/aio/_log.py` | Structured stderr logging — **use this, never `print()`** |
 | `src/aio/_utils.py` | `build_jinja_env`, `base64_inline`, `escape_script`, `find_aio_dir` |
 | `src/aio/_validators.py` | `yaml.safe_load()` wrapper, external-URL checker (`check_external_urls`) |
-| `src/aio/exceptions.py` | `AIOError`, `ExternalURLError`, `ParseError`, `ThemeValidationError` |
+| `src/aio/exceptions.py` | `AIOError`, `ExternalURLError`, `ParseError`, `ThemeValidationError`, `ChartDataError`, `ExtractError` |
 
 ### Key Paths
 
 - Agent command prompts: `src/aio/agent_commands/{agent}/v{N}/` (frozen at release — add new version dir, never edit existing)
+  - Agents: `claude`, `gemini`, `copilot`, `windsurf`, `devin`, `chatgpt`, `cursor`, `generic`
+  - Generic commands (agent-agnostic): `outline`, `generate`, `refine`, `visual`, `theme`, `extract`, `build`
 - Theme directory: `src/aio/themes/{id}/` with `DESIGN.md`, `theme.css`, `layout.css`, `meta.json`, `fonts/`
-- Global theme registry: `src/aio/themes/registry.json`
+- Global theme registry: `src/aio/themes/registry.json` (currently 3 themes: minimal, modern, vibrant)
 - Per-project config: `.aio/config.yaml`, `.aio/meta.json`, `.aio/themes/registry.json`
 
 ---
@@ -106,6 +116,7 @@ Markdown file
 6. **`cli.py` and `serve.py` must NOT have `from __future__ import annotations`** — breaks Typer's runtime type introspection
 7. **SVG output must not contain `<script>` tags** — sanitize all SVG before inlining
 8. **No `unittest.mock` for the core pipeline** (init, build, compose, enrich) — use real temp directories
+9. **CSS validation is additive** — `cssutils` import must fail gracefully; never make it a hard dependency outside `[enrich]`
 
 ---
 
@@ -168,6 +179,13 @@ Validate with: `aio theme validate {id}`
 
 ---
 
+## CI
+
+`.github/workflows/1-lint-test.yml` runs 3 stages sequentially: **lint → typecheck → test**.
+SonarCloud quality gate runs on every PR — security hotspots flagged by SonarCloud must be resolved before merge (see `sonar-project.properties` for exclusion config).
+
+---
+
 ## Specs & Planning Artifacts
 
 Full implementation plan, data model, CLI contracts, and quickstart guide:
@@ -185,7 +203,7 @@ specs/main/
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
 
-## Active Technologies (M0)
+## Active Technologies
 - **Runtime**: Python 3.12+ (primary; 3.10+ tolerated)
 - **Core deps**: typer 0.12.0, jinja2 3.1.2, mistune 3.0.2, pyyaml 6.0.1, rich 13.7.0, click 8.1.7
 - **Storage**: Local filesystem — `.aio/` config dir, `~/.aio/logs/`

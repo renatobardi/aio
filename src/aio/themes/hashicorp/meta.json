@@ -1,0 +1,18 @@
+{
+  "id": "hashicorp",
+  "name": "Hashicorp",
+  "description": "",
+  "version": "1.0.0",
+  "author": "awesome-design-md",
+  "source_url": "https://github.com/HU-UH/awesome-design-md",
+  "categories": [],
+  "colors": {
+    "background": "#ffffff",
+    "text": "#000000"
+  },
+  "typography": {
+    "heading_font": "sans-serif",
+    "body_font": "sans-serif"
+  },
+  "is_builtin": false
+}

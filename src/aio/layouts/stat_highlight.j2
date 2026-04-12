@@ -3,12 +3,10 @@
 
 {% block slide_content %}
 <div class="layout-content stat-content">
-  <span class="stat">{{ stat_value }}</span>
-  {% if stat_label %}
-  <p class="stat-label">{{ stat_label }}</p>
-  {% endif %}
-  {% if stat_description %}
-  <p class="stat-description">{{ stat_description }}</p>
+  <span class="stat">{% block stat_value %}{{ stat_value | default("—") }}{% endblock %}</span>
+  <p class="stat-label">{% block stat_label %}{{ stat_label | default("") }}{% endblock %}</p>
+  {% if stat_description or not stat_description is defined %}
+  <p class="stat-description">{% block stat_description %}{{ stat_description | default("") }}{% endblock %}</p>
   {% endif %}
 </div>
 {% endblock %}

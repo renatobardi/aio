@@ -3,11 +3,9 @@
 
 {% block slide_content %}
 <div class="layout-content icons-content">
-  {% if title %}
-  <h2 class="icons-heading">{{ title }}</h2>
-  {% endif %}
+  <h2 class="icons-heading">{% block icons_title %}{{ title | default("") }}{% endblock %}</h2>
   <div class="icons-grid">
-    {{ body_html }}
+    {% block icons_body %}{{ body_html | default("") }}{% endblock %}
   </div>
 </div>
 {% endblock %}

@@ -28,12 +28,27 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from aio.exceptions import DesignSectionParseError, DesignSectionValidationError
 from aio.themes.parser import (
+    DesignSection,
     extract_css_vars,
     extract_layout_css,
     parse_design_md,
 )
 
-AWESOME_REPO = "https://github.com/nicholasgasior/awesome-design-md"
+# Stub content for AIO-specific sections missing from external DESIGN.md files
+_SECTION_STUBS: dict[int, tuple[str, str]] = {
+    10: ("Visual Composition", "Standard visual hierarchy: H1 > H2 > H3. Emphasis via color and size."),
+    11: (
+        "Agent Prompt Snippet",
+        "Use this theme to create clean, professional slides that reflect the brand's "
+        "visual identity. Apply the primary color to headings and key statistics. Use "
+        "the body font for all paragraph text and the display font for titles. Keep "
+        "layouts minimal with generous whitespace. Prefer flat design with subtle "
+        "shadows and rounded corners where appropriate. Maintain consistent spacing "
+        "throughout the presentation.",
+    ),
+}
+
+AWESOME_REPO = "https://github.com/HU-UH/awesome-design-md"
 REGISTRY_FILENAME = "registry.json"
 
 logging.basicConfig(
@@ -84,6 +99,25 @@ def _clone_or_pull(repo_url: str, clone_dir: Path) -> None:
 def _discover_themes(repo_root: Path) -> list[Path]:
     """Return all DESIGN.md paths found under repo_root."""
     return sorted(repo_root.rglob("DESIGN.md"))
+
+
+# ---------------------------------------------------------------------------
+# Lenient parser — pads missing sections with stubs
+# ---------------------------------------------------------------------------
+
+def _parse_lenient(text: str) -> list:
+    """Parse DESIGN.md tolerantly, padding missing sections 10/11 with stubs."""
+    try:
+        return parse_design_md(text)
+    except (DesignSectionParseError, DesignSectionValidationError):
+        pass
+
+    # Re-parse without strict validation by appending stub sections
+    stub_lines = []
+    for num, (title, body) in _SECTION_STUBS.items():
+        stub_lines.append(f"\n## {num}. {title}\n\n{body}\n")
+    padded = text.rstrip() + "\n" + "".join(stub_lines)
+    return parse_design_md(padded)
 
 
 # ---------------------------------------------------------------------------
@@ -179,6 +213,20 @@ def run_import(
     """
     registry_path = output_dir / REGISTRY_FILENAME
 
+    local_path = Path(repo_url).expanduser()
+    if local_path.is_dir():
+        # Local directory — use directly without cloning
+        _log.info("Using local directory: %s", local_path)
+        design_files = _discover_themes(local_path)
+        _log.info("Discovered %d DESIGN.md files", len(design_files))
+        return _do_import(
+            design_files=design_files,
+            output_dir=output_dir,
+            registry_path=registry_path,
+            dry_run=dry_run,
+            limit=limit,
+        )
+
     with tempfile.TemporaryDirectory(prefix="aio-import-") as tmpdir:
         clone_dir = Path(tmpdir) / "awesome-design-md"
         try:
@@ -189,52 +237,68 @@ def run_import(
 
         design_files = _discover_themes(clone_dir)
         _log.info("Discovered %d DESIGN.md files", len(design_files))
+        return _do_import(
+            design_files=design_files,
+            output_dir=output_dir,
+            registry_path=registry_path,
+            dry_run=dry_run,
+            limit=limit,
+        )
 
-        if limit is not None:
-            design_files = design_files[:limit]
 
-        imported = 0
-        skipped = 0
+def _do_import(
+    *,
+    design_files: list[Path],
+    output_dir: Path,
+    registry_path: Path,
+    dry_run: bool,
+    limit: int | None,
+) -> int:
+    if limit is not None:
+        design_files = design_files[:limit]
 
-        for design_path in design_files:
-            text = design_path.read_text(encoding="utf-8", errors="replace")
-            try:
-                sections = parse_design_md(text)
-            except (DesignSectionParseError, DesignSectionValidationError) as exc:
-                _log.warning("Skipping %s: %s", design_path.parent.name, exc)
-                skipped += 1
-                continue
+    imported = 0
+    skipped = 0
 
-            meta = _extract_meta(design_path, sections)
-            theme_id = meta["id"]
-            theme_dir = output_dir / theme_id
+    for design_path in design_files:
+        text = design_path.read_text(encoding="utf-8", errors="replace")
+        try:
+            sections = _parse_lenient(text)
+        except (DesignSectionParseError, DesignSectionValidationError) as exc:
+            _log.warning("Skipping %s: %s", design_path.parent.name, exc)
+            skipped += 1
+            continue
 
-            _log.info("  ✓ %s (%s)", meta["name"], theme_id)
+        meta = _extract_meta(design_path, sections)
+        theme_id = meta["id"]
+        theme_dir = output_dir / theme_id
 
-            if not dry_run:
-                theme_dir.mkdir(parents=True, exist_ok=True)
+        _log.info("  ✓ %s (%s)", meta["name"], theme_id)
 
-                # Copy DESIGN.md
-                shutil.copy2(design_path, theme_dir / "DESIGN.md")
+        if not dry_run:
+            theme_dir.mkdir(parents=True, exist_ok=True)
 
-                # Generate theme.css from color + typography sections
-                css_vars = extract_css_vars(sections)
-                (theme_dir / "theme.css").write_text(css_vars or "/* no CSS vars extracted */\n", encoding="utf-8")
+            # Copy DESIGN.md
+            shutil.copy2(design_path, theme_dir / "DESIGN.md")
 
-                # Generate layout.css stubs
-                layout_css = extract_layout_css(sections)
-                (theme_dir / "layout.css").write_text(layout_css or "/* no layout CSS extracted */\n", encoding="utf-8")
+            # Generate theme.css from color + typography sections
+            css_vars = extract_css_vars(sections)
+            (theme_dir / "theme.css").write_text(css_vars or "/* no CSS vars extracted */\n", encoding="utf-8")
 
-                # Write meta.json
-                (theme_dir / "meta.json").write_text(
-                    json.dumps(meta, indent=2, ensure_ascii=False) + "\n",
-                    encoding="utf-8",
-                )
+            # Generate layout.css stubs
+            layout_css = extract_layout_css(sections)
+            (theme_dir / "layout.css").write_text(layout_css or "/* no layout CSS extracted */\n", encoding="utf-8")
 
-                # Update registry
-                _update_registry(registry_path, meta)
+            # Write meta.json
+            (theme_dir / "meta.json").write_text(
+                json.dumps(meta, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
 
-            imported += 1
+            # Update registry
+            _update_registry(registry_path, meta)
+
+        imported += 1
 
     _log.info(
         "%s %d theme(s) from awesome-design-md (%d skipped)",

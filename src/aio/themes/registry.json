@@ -6,7 +6,11 @@
     "version": "1.0.0",
     "author": "AIO",
     "source_url": null,
-    "categories": ["minimal", "clean", "technical"],
+    "categories": [
+      "minimal",
+      "clean",
+      "technical"
+    ],
     "colors": {
       "primary": "#1a1a1a",
       "accent": "#0066cc",
@@ -26,7 +30,11 @@
     "version": "1.0.0",
     "author": "AIO",
     "source_url": null,
-    "categories": ["modern", "bold", "corporate"],
+    "categories": [
+      "modern",
+      "bold",
+      "corporate"
+    ],
     "colors": {
       "primary": "#0f172a",
       "accent": "#6366f1",
@@ -46,7 +54,11 @@
     "version": "1.0.0",
     "author": "AIO",
     "source_url": null,
-    "categories": ["vibrant", "colorful", "creative"],
+    "categories": [
+      "vibrant",
+      "colorful",
+      "creative"
+    ],
     "colors": {
       "primary": "#1e1b4b",
       "accent": "#a855f7",
@@ -58,5 +70,977 @@
       "body_font": "Satoshi"
     },
     "is_builtin": true
+  },
+  {
+    "id": "airbnb",
+    "name": "Airbnb",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "airtable",
+    "name": "Airtable",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "apple",
+    "name": "Apple",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "bmw",
+    "name": "Bmw",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "cal",
+    "name": "Cal",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "claude",
+    "name": "Claude",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "clay",
+    "name": "Clay",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "clickhouse",
+    "name": "Clickhouse",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "cohere",
+    "name": "Cohere",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "coinbase",
+    "name": "Coinbase",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "composio",
+    "name": "Composio",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "elevenlabs",
+    "name": "Elevenlabs",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "expo",
+    "name": "Expo",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "figma",
+    "name": "Figma",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "framer",
+    "name": "Framer",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "hashicorp",
+    "name": "Hashicorp",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "ibm",
+    "name": "Ibm",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "intercom",
+    "name": "Intercom",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "kraken",
+    "name": "Kraken",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "linear-app",
+    "name": "Linear.App",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "lovable",
+    "name": "Lovable",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "minimax",
+    "name": "Minimax",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "mintlify",
+    "name": "Mintlify",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "miro",
+    "name": "Miro",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "mistral-ai",
+    "name": "Mistral.Ai",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "mongodb",
+    "name": "Mongodb",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "notion",
+    "name": "Notion",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "nvidia",
+    "name": "Nvidia",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "ollama",
+    "name": "Ollama",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "opencode-ai",
+    "name": "Opencode.Ai",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "pinterest",
+    "name": "Pinterest",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "posthog",
+    "name": "Posthog",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "raycast",
+    "name": "Raycast",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "replicate",
+    "name": "Replicate",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "resend",
+    "name": "Resend",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "revolut",
+    "name": "Revolut",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "runwayml",
+    "name": "Runwayml",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "sanity",
+    "name": "Sanity",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "sentry",
+    "name": "Sentry",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "spacex",
+    "name": "Spacex",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "spotify",
+    "name": "Spotify",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "stripe",
+    "name": "Stripe",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "supabase",
+    "name": "Supabase",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "superhuman",
+    "name": "Superhuman",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "together-ai",
+    "name": "Together.Ai",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "uber",
+    "name": "Uber",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "vercel",
+    "name": "Vercel",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "voltagent",
+    "name": "Voltagent",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "warp",
+    "name": "Warp",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "webflow",
+    "name": "Webflow",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "wise",
+    "name": "Wise",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "x-ai",
+    "name": "X.Ai",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
+  },
+  {
+    "id": "zapier",
+    "name": "Zapier",
+    "description": "",
+    "version": "1.0.0",
+    "author": "awesome-design-md",
+    "source_url": "https://github.com/HU-UH/awesome-design-md",
+    "categories": [],
+    "colors": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "typography": {
+      "heading_font": "sans-serif",
+      "body_font": "sans-serif"
+    },
+    "is_builtin": false
   }
 ]

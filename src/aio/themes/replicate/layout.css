@@ -1,0 +1,39 @@
+.layout-hero-title h1.hero-title {
+  color: var(--color-primary);
+  font-family: var(--font-display);
+}
+
+.layout-stat-highlight .stat {
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: 5rem;
+}
+
+.layout-split-image-text {
+  font-family: var(--font-body);
+}
+
+.layout-content-with-icons {
+  font-family: var(--font-body);
+}
+
+.layout-comparison-2col {
+  font-family: var(--font-body);
+}
+
+.layout-quote blockquote {
+  font-family: var(--font-display);
+  border-left: 4px solid var(--color-primary);
+}
+
+.layout-key-takeaways {
+  font-family: var(--font-body);
+}
+
+.layout-closing {
+  font-family: var(--font-body);
+}
+
+.layout-content {
+  font-family: var(--font-body);
+}
