@@ -250,10 +250,11 @@ def serve(
     _aio_dir: Path | None = None
     if not no_reload:
         from aio._utils import find_aio_dir
+        from aio.exceptions import AIOError
 
         try:
             _aio_dir = find_aio_dir(input.parent)
-        except FileNotFoundError:
+        except (FileNotFoundError, AIOError):
             pass
 
     extra_dirs = [_aio_dir] if _aio_dir is not None else []
