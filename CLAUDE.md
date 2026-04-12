@@ -28,7 +28,7 @@ mypy src/aio/
 # Tests
 pytest tests/unit/ -v                          # fast unit tests only
 pytest tests/integration/ -v                   # full pipeline tests
-pytest --cov=src/aio --cov-report=term-missing # coverage (must be ≥ 80%)
+pytest --cov=src/aio --cov-report=term-missing # coverage (CI gate: ≥ 20%)
 pytest -k "test_infer_title_layout" -v         # single test by name
 
 # CLI (after pip install -e .)
@@ -102,7 +102,7 @@ Markdown file
   - Agents: `claude`, `gemini`, `copilot`, `windsurf`, `devin`, `chatgpt`, `cursor`, `generic`
   - Generic commands (agent-agnostic): `outline`, `generate`, `refine`, `visual`, `theme`, `extract`, `build`
 - Theme directory: `src/aio/themes/{id}/` with `DESIGN.md`, `theme.css`, `layout.css`, `meta.json`, `fonts/`
-- Global theme registry: `src/aio/themes/registry.json` (currently 3 themes: minimal, modern, vibrant)
+- Global theme registry: `src/aio/themes/registry.json` (3 builtins: minimal, modern, vibrant + ~59 synced from awesome-design-md)
 - Per-project config: `.aio/config.yaml`, `.aio/meta.json`, `.aio/themes/registry.json`
 
 ---
@@ -129,7 +129,7 @@ tests/integration/ → real temp dirs, full pipeline, no mocks for core pipeline
 tests/fixtures/    → shared sample slides, themes, expected outputs, mock API responses
 ```
 
-Coverage gate: **80% line, 75% branch**. CI blocks merge if below threshold.
+Coverage gate: **20% line** (`--cov-fail-under=20` in CI). TDD aspirational target is 80% — keep coverage growing.
 
 TDD is mandatory: write tests first, confirm they fail, then implement.
 

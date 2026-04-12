@@ -48,7 +48,7 @@ def setup_logging(level: int = logging.INFO) -> None:
     root.setLevel(level)
     handler = logging.StreamHandler(sys.stderr)
     handler.setLevel(level)
-    formatter = _MaskingFormatter("%(levelname)s [%(name)s] %(message)s")
+    formatter = _MaskingFormatter("%(asctime)s %(levelname)s [%(name)s] %(message)s", datefmt="%Y-%m-%dT%H:%M:%S")
     handler.setFormatter(formatter)
     root.addHandler(handler)
     root.propagate = False
