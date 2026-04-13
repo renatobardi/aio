@@ -517,6 +517,18 @@ for _icon_name in _ICON_PATHS:
     if _icon_name not in _ICON_TAGS:
         _ICON_TAGS[_icon_name] = ["general"]
 
+# Public registry — consumed by aio.icons and external tools
+ICON_REGISTRY: dict[str, dict[str, object]] = {
+    name: {
+        "id": name,
+        "name": name.replace("-", " ").title(),
+        "tags": _ICON_TAGS.get(name, []),
+        "viewBox": "0 0 24 24",
+        "path_data": path_data,
+    }
+    for name, path_data in _ICON_PATHS.items()
+}
+
 
 def list_icons(filter: str | None = None) -> list[tuple[str, list[str]]]:
     """Return sorted list of (name, tags) pairs for all available icons.

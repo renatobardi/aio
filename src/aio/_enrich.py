@@ -25,6 +25,20 @@ _log = get_logger(__name__)
 _POLLINATIONS_URL = "https://image.pollinations.ai/prompt/{prompt}"
 _TAG_RE = re.compile(r"<[^>]+>")
 
+# FR-368: theme-to-style hint mapping for Pollinations
+_THEME_STYLE_HINTS: dict[str, str] = {
+    "minimal": "minimalist clean white background professional",
+    "modern": "modern bold vibrant tech startup",
+    "vibrant": "colorful vibrant energetic creative",
+    "stripe": "fintech professional clean blue",
+    "linear": "dark minimal developer tool",
+}
+
+
+def infer_style_hint(theme_id: str) -> str:
+    """Return a style hint string for Pollinations based on theme."""
+    return _THEME_STYLE_HINTS.get(theme_id, "professional presentation slide")
+
 
 @dataclass
 class EnrichContext:
@@ -85,12 +99,16 @@ def make_placeholder_svg() -> str:
 class EnrichEngine:
     """Calls Pollinations.ai for each EnrichContext, validates JPEG, base64-encodes result."""
 
+    def __init__(self, timeout: int = 30, style_hint: str = "") -> None:
+        self._timeout = timeout
+        self._style_hint = style_hint
+
     def enrich_all(self, contexts: list[EnrichContext]) -> list[EnrichContext]:
         """Enrich all contexts in-place; return updated list.
 
         For each context:
         - Builds Pollinations URL with prompt + seed
-        - Fetches image with 30s timeout
+        - Fetches image with configured timeout
         - Validates JPEG magic bytes
         - Base64-encodes result
         - On any error: sets is_placeholder=True, logs warning
@@ -100,11 +118,13 @@ class EnrichEngine:
             results.append(self._enrich_one(ctx))
         return results
 
-    def _enrich_one(self, ctx: EnrichContext) -> EnrichContext:
-        encoded_prompt = urllib.parse.quote(ctx.prompt)
+    def _enrich_one(self, ctx: EnrichContext, style_hint: str = "") -> EnrichContext:
+        effective_hint = style_hint or self._style_hint
+        full_prompt = f"{ctx.prompt}, {effective_hint}" if effective_hint else ctx.prompt
+        encoded_prompt = urllib.parse.quote(full_prompt)
         url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?seed={ctx.seed}&width=512&height=384&nologo=true"
         try:
-            with urllib.request.urlopen(url, timeout=30) as resp:
+            with urllib.request.urlopen(url, timeout=self._timeout) as resp:
                 data = resp.read()
             if not _is_valid_jpeg(data):
                 _log.warning(

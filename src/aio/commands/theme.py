@@ -231,7 +231,7 @@ def info(
 @app.command("show")
 def show(
     theme_id: str = typer.Argument(..., help="Theme ID"),
-    section: int | None = typer.Option(None, "--section", help="Section number (1–11)"),
+    section: int | None = typer.Option(None, "--section", help="Section number (1–12)"),
     raw: bool = typer.Option(False, "--raw", is_flag=True, help="Print raw Markdown"),
 ) -> None:
     """Display a theme's DESIGN.md (or a specific section)."""
@@ -248,8 +248,8 @@ def show(
     text = record.design_md_path.read_text(encoding="utf-8")
 
     if section is not None:
-        if not (1 <= section <= 11):
-            _log.error("Section %d out of range (1–11).", section)
+        if not (1 <= section <= 12):
+            _log.error("Section %d out of range (1–12).", section)
             raise typer.Exit(code=3)
         from aio.themes.parser import parse_design_md
 
