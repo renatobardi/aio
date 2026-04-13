@@ -3,7 +3,6 @@
 TDD: all tests should FAIL before T033–T040 are implemented.
 """
 
-
 from aio.themes.parser import parse_design_md
 
 # ---------------------------------------------------------------------------
@@ -128,6 +127,7 @@ class TestParseDesignMdWithDecorations:
         import dataclasses
 
         from aio.themes.parser import DecorationSpec
+
         assert dataclasses.is_dataclass(DecorationSpec)
 
     def test_decoration_spec_fields(self):
@@ -135,6 +135,7 @@ class TestParseDesignMdWithDecorations:
         import dataclasses
 
         from aio.themes.parser import DecorationSpec
+
         field_names = {f.name for f in dataclasses.fields(DecorationSpec)}
         assert "name" in field_names
         assert "css_class" in field_names
@@ -149,10 +150,12 @@ class TestParseDesignMdWithDecorations:
 class TestGenerateDecorationCss:
     def test_function_importable(self):
         from aio.themes.parser import generate_decoration_css
+
         assert callable(generate_decoration_css)
 
     def test_gradient_produces_background_class(self):
         from aio.themes.parser import DecorationSpec, generate_decoration_css
+
         specs = [
             DecorationSpec(
                 name="primary-gradient",
@@ -169,6 +172,7 @@ class TestGenerateDecorationCss:
 
     def test_empty_specs_returns_defaults(self):
         from aio.themes.parser import generate_decoration_css
+
         css = generate_decoration_css([])
         # Default fallback classes must be present
         assert ".decoration-" in css
@@ -176,6 +180,7 @@ class TestGenerateDecorationCss:
 
     def test_css_is_valid_syntax(self):
         from aio.themes.parser import DecorationSpec, generate_decoration_css
+
         specs = [
             DecorationSpec(
                 name="primary-gradient",
@@ -191,6 +196,7 @@ class TestGenerateDecorationCss:
 
     def test_multiple_specs_all_emitted(self):
         from aio.themes.parser import DecorationSpec, generate_decoration_css
+
         specs = [
             DecorationSpec(
                 name="primary-gradient",
@@ -222,6 +228,7 @@ class TestThemeRecordDecorations:
         import dataclasses
 
         from aio.themes.loader import ThemeRecord
+
         field_names = {f.name for f in dataclasses.fields(ThemeRecord)}
         assert "decorations" in field_names
 
@@ -229,6 +236,7 @@ class TestThemeRecordDecorations:
         import dataclasses
 
         from aio.themes.loader import ThemeRecord
+
         # Check the decorations field has a default of []
         fields_by_name = {f.name: f for f in dataclasses.fields(ThemeRecord)}
         decorations_field = fields_by_name["decorations"]
@@ -245,6 +253,7 @@ class TestDecorationsSuppression:
     def test_disabled_config_suppresses_decoration_css(self):
         """When decorations disabled in config, generate_decoration_css returns empty string."""
         from aio.themes.parser import DecorationSpec, generate_decoration_css
+
         specs = [
             DecorationSpec(
                 name="primary-gradient",

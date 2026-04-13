@@ -25,8 +25,7 @@ class TestIconIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Icon Test\ntheme: minimal\n---\n\n"
-            "<!-- @icon: brain -->\n\n# AI Insights\n\nBody text.",
+            "---\ntitle: Icon Test\ntheme: minimal\n---\n\n<!-- @icon: brain -->\n\n# AI Insights\n\nBody text.",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"
@@ -39,8 +38,7 @@ class TestIconIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Icon Test\ntheme: minimal\n---\n\n"
-            "<!-- @icon: brain -->\n\n# Title",
+            "---\ntitle: Icon Test\ntheme: minimal\n---\n\n<!-- @icon: brain -->\n\n# Title",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"
@@ -79,8 +77,7 @@ class TestDataVizIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Chart Test\ntheme: minimal\n---\n\n"
-            "<!-- @chart: bar -->\n<!-- @data: A:10, B:20 -->\n\n# Bar",
+            "---\ntitle: Chart Test\ntheme: minimal\n---\n\n<!-- @chart: bar -->\n<!-- @data: A:10, B:20 -->\n\n# Bar",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"
@@ -94,8 +91,7 @@ class TestDataVizIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Det Test\ntheme: minimal\n---\n\n"
-            "<!-- @chart: bar -->\n<!-- @data: Q1:50, Q2:75 -->\n\n# Bar",
+            "---\ntitle: Det Test\ntheme: minimal\n---\n\n<!-- @chart: bar -->\n<!-- @data: Q1:50, Q2:75 -->\n\n# Bar",
             encoding="utf-8",
         )
         out1 = tmp_path / "out1.html"
@@ -141,6 +137,7 @@ class TestDecorationIntegration:
 
         # Copy entire minimal theme
         import shutil
+
         for f in design_src.parent.iterdir():
             if f.is_file():
                 shutil.copy(f, theme_dir / f.name)
@@ -148,8 +145,7 @@ class TestDecorationIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Dec Test\ntheme: minimal\n---\n\n"
-            "<!-- @decoration: gradient -->\n\n# Bold Statement\n\nText.",
+            "---\ntitle: Dec Test\ntheme: minimal\n---\n\n<!-- @decoration: gradient -->\n\n# Bold Statement\n\nText.",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"
@@ -178,8 +174,7 @@ class TestDecorationIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: CSS Test\ntheme: minimal\n---\n\n"
-            "<!-- @decoration: gradient -->\n\n# Title",
+            "---\ntitle: CSS Test\ntheme: minimal\n---\n\n<!-- @decoration: gradient -->\n\n# Title",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"
@@ -192,8 +187,7 @@ class TestDecorationIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Dec Test\ntheme: minimal\n---\n\n"
-            "<!-- @decoration: gradient -->\n\n# Title",
+            "---\ntitle: Dec Test\ntheme: minimal\n---\n\n<!-- @decoration: gradient -->\n\n# Title",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"

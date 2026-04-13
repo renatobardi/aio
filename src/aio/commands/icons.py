@@ -2,7 +2,6 @@
 # NOTE: NO `from __future__ import annotations` in this file.
 # Typer relies on runtime type introspection; postponed evaluation breaks it.
 
-
 import typer
 from rich.console import Console
 

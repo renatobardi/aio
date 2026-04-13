@@ -210,12 +210,14 @@ def _parse_decoration_section(raw_content: str) -> list[DecorationSpec]:
         )
         css_class = f"decoration-{category_slug}-{name}"
 
-        specs.append(DecorationSpec(
-            name=name,
-            css_class=css_class,
-            css_value=value,
-            css_property=css_property,
-        ))
+        specs.append(
+            DecorationSpec(
+                name=name,
+                css_class=css_class,
+                css_value=value,
+                css_property=css_property,
+            )
+        )
 
     return specs
 

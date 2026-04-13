@@ -36,6 +36,7 @@ class TestDonutChart:
 
     def test_empty_data_renders_placeholder(self):
         from aio.visuals.dataviz.data_parser import ChartData
+
         data = ChartData(chart_type="donut", series=[])
         svg = render_chart(data)
         assert "<svg" in svg  # renders something, not exception
@@ -75,6 +76,7 @@ class TestSparklineChart:
         from unittest.mock import patch
 
         import aio.visuals.dataviz.charts as charts_module
+
         data = parse_chart_data("42", chart_type="sparkline")
         with patch.object(charts_module, "_log") as mock_log:
             svg = render_chart(data)
