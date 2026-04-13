@@ -90,6 +90,7 @@ _SECTION_NAMES = [
     "Animation & Transitions",
     "Accessibility",
     "Agent Prompt Snippet",
+    "Decorations",
 ]
 
 
@@ -194,6 +195,22 @@ def _build_design_md(
             "Maintain generous white space with an 8px base grid. "
             "Ensure all color pairings meet WCAG AA contrast requirements.\n"
         )
+
+    # Section 12 — Decorations
+    if _include("decoration"):
+        lines.append("## 12. Decorations\n")
+        lines.append("### Gradients\n")
+        if colors and len(colors) >= 2:
+            lines.append(f"- primary-gradient: linear-gradient(135deg, {colors[0]} 0%, {colors[1]} 100%)\n")
+        else:
+            lines.append("- primary-gradient: linear-gradient(135deg, #635BFF 0%, #00D084 100%)\n")
+        lines.append("### Dividers\n")
+        lines.append("- thin: 1px solid var(--color-neutral-300)\n")
+        lines.append("- thick: 3px solid var(--color-primary)\n")
+        lines.append("### Glow Effects\n")
+        lines.append("- primary-glow: 0 0 30px rgba(99, 91, 255, 0.5)\n")
+        lines.append("### Accent Lines\n")
+        lines.append("- left-border: 4px solid var(--color-primary)\n")
 
     return "".join(lines)
 

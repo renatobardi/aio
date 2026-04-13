@@ -36,6 +36,8 @@ class ProjectConfig:
     enrich: bool = False
     serve_port: int = 8000
     output_dir: str = "build"
+    enrich_style: str = ""  # FR-387: style hint for Pollinations
+    enrich_timeout: int = 30  # FR-387: per-image timeout in seconds
 
     def __post_init__(self) -> None:
         # Resolve "default" alias → "minimal" before validation
@@ -63,6 +65,8 @@ class ProjectConfig:
             enrich=bool(data.get("enrich", False)),
             serve_port=int(data.get("serve_port", 8000)),
             output_dir=str(data.get("output_dir", "build")),
+            enrich_style=str(data.get("enrich_style", "")),
+            enrich_timeout=int(data.get("enrich_timeout", 30)),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -73,6 +77,8 @@ class ProjectConfig:
             "enrich": self.enrich,
             "serve_port": self.serve_port,
             "output_dir": self.output_dir,
+            "enrich_style": self.enrich_style,
+            "enrich_timeout": self.enrich_timeout,
         }
 
 

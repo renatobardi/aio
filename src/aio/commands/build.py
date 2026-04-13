@@ -149,7 +149,7 @@ def parse_slides(path: str | Path) -> list[SlideAST]:
             md = mistune.create_markdown(renderer=None)
             tokens = md(cleaned) or []
         except Exception as exc:
-            _log.warning("Mistune tokenization warning for slide %d: %s", i, exc)
+            _log.warning("Mistune tokenization warning for slide %d: %s — verify frontmatter YAML syntax", i, exc)
             tokens = []
 
         slides.append(
@@ -165,6 +165,7 @@ def parse_slides(path: str | Path) -> list[SlideAST]:
         _log.debug("Slide %d: layout=%s, title=%s", i, metadata.get("layout"), title)
 
     _log.info("Parsed %d slides from %s", len(slides), file_path.name)
+    _log.debug("  PARSE ✓ — %d slides", len(slides))
     return slides
 
 
@@ -281,6 +282,7 @@ def analyze_slides(
         contexts.append(ctx)
         _log.debug("Slide %d: layout=%s (inferred=%s)", ast.index, layout_type.value, ctx.is_inferred)
 
+    _log.debug("  ANALYZE ✓ — %d contexts", len(contexts))
     return contexts
 
 
@@ -381,6 +383,7 @@ def compose_slides(contexts: list[SlideRenderContext]) -> list[ComposedSlide]:
 
         _log.debug("Composed slide %d (%s)", ctx.slide_index, ctx.layout_id)
 
+    _log.debug("  COMPOSE ✓ — %d slides composed", len(composed))
     return composed
 
 
@@ -471,7 +474,7 @@ def render_document(
                 specs: list[DecorationSpec] = sec12.parsed_data.get("decorations", [])  # type: ignore[assignment]
                 decoration_css = generate_decoration_css(specs)
         except Exception as exc:
-            _log.warning("Could not parse decoration CSS: %s", exc)
+            _log.warning("Could not parse decoration CSS: %s — check your DESIGN.md", exc)
 
     vendor_js = escape_script(_load_vendor_js())
     slides_html = "\n".join(f"    {s.html_fragment}" for s in slides)
@@ -484,6 +487,7 @@ def render_document(
         vendor_js=vendor_js,
         slides=slides_html,
     )
+    _log.debug("  RENDER ✓ — %d bytes", len(html))
     return html
 
 
@@ -533,6 +537,8 @@ def build_pipeline(
     serve_mode: bool = False,
     theme_dir: Path | None = None,
     enrich: bool = False,
+    enrich_timeout: int = 30,
+    enrich_style: str = "",
 ) -> BuildResult:
     """
     Run the full build pipeline.
@@ -592,10 +598,23 @@ def build_pipeline(
     enrich_contexts: list[object] = []
     if enrich:
         _log.info("Step 4.5/%d: ENRICH", steps_total)
-        from aio._enrich import EnrichContext, EnrichEngine, derive_seed, infer_prompt, make_placeholder_svg
+        from aio._enrich import (
+            EnrichContext,
+            EnrichEngine,
+            derive_seed,
+            infer_prompt,
+            infer_style_hint,
+            make_placeholder_svg,
+        )
+
+        # FR-370: skip hero-title and closing slides — they don't need images
+        SKIP_ENRICH_LAYOUTS = {"hero-title", "closing", "section-divider"}
 
         enrich_ctxs: list[EnrichContext] = []
         for slide_ctx in contexts:
+            if getattr(slide_ctx, "layout_id", None) in SKIP_ENRICH_LAYOUTS:
+                _log.debug("Slide %d: skipping enrich (layout=%s)", slide_ctx.slide_index, slide_ctx.layout_id)
+                continue
             prompt = slide_ctx.image_prompt
             if not prompt:
                 body = slide_ctx.body if hasattr(slide_ctx, "body") else ""
@@ -611,11 +630,14 @@ def build_pipeline(
                 )
             )
 
-        engine = EnrichEngine()
+        # FR-368: pass style hint derived from theme; FR-387: pass timeout
+        _style_hint = enrich_style or infer_style_hint(effective_theme)
+        engine = EnrichEngine(timeout=enrich_timeout, style_hint=_style_hint)
         enriched = engine.enrich_all(enrich_ctxs)
         enrich_contexts = list(enriched)
 
         # Inject images into HTML via per-slide placeholders
+        enriched_count = 0
         for ectx in enriched:
             placeholder_marker = f"<!-- enrich-img-{ectx.slide_index} -->"
             if placeholder_marker not in html:
@@ -627,11 +649,20 @@ def build_pipeline(
                 img_html = (
                     f'<div class="slide-image"><img src="data:image/jpeg;base64,{b64}" alt="slide image" /></div>'
                 )
+                # FR-367: Save to assets/slides/ for reference
+                assets_dir = output.parent / "assets" / "slides"
+                assets_dir.mkdir(parents=True, exist_ok=True)
+                asset_path = assets_dir / f"slide-{ectx.slide_index}-enriched.jpg"
+                asset_path.write_bytes(ectx.image_bytes)
+                _log.debug("Saved enriched image: %s", asset_path)
+                enriched_count += 1
             html = html.replace(placeholder_marker, img_html, 1)
+        _log.debug("  ENRICH ✓ — %d images processed", enriched_count)
 
     # Step 5: INLINE
     _log.info("Step %d/%d: INLINE", steps_total, steps_total)
     html = inline_assets(html, source_dir=input_path.parent, serve_mode=serve_mode)
+    _log.debug("  INLINE ✓ — final size: %.1f KB", len(html) / 1024)
 
     elapsed = time.perf_counter() - start
     byte_size = len(html.encode("utf-8"))
@@ -682,23 +713,38 @@ def build(
     dry_run: bool = typer.Option(False, "--dry-run", help="Show planned output without writing"),
 ) -> None:
     """Compile slides.md → build/slides.html."""
-    # Auto-detect theme from project config if not overridden
+    # Auto-detect theme and enrich settings from project config if not overridden
     effective_theme = theme
-    if not effective_theme:
-        try:
-            from aio._utils import find_aio_dir
-            from aio.commands.init import ProjectConfig
+    effective_enrich = enrich
+    cfg_enrich_style = ""
+    cfg_enrich_timeout = 30
+    try:
+        from aio._utils import find_aio_dir
+        from aio.commands.init import ProjectConfig
 
-            aio_dir = find_aio_dir(input.parent if input.parent != Path(".") else Path.cwd())
-            cfg = ProjectConfig.load(aio_dir)
+        aio_dir = find_aio_dir(input.parent if input.parent != Path(".") else Path.cwd())
+        cfg = ProjectConfig.load(aio_dir)
+        if not effective_theme:
             effective_theme = cfg.theme
-        except Exception:
-            effective_theme = "minimal"
+        # FR-371: merge config enrich with CLI flag
+        effective_enrich = enrich or cfg.enrich
+        cfg_enrich_style = cfg.enrich_style
+        cfg_enrich_timeout = cfg.enrich_timeout
+    except Exception:
+        pass
 
     effective_theme = effective_theme or "minimal"
 
     try:
-        result = build_pipeline(input, output=output, theme_id=effective_theme, dry_run=dry_run, enrich=enrich)
+        result = build_pipeline(
+            input,
+            output=output,
+            theme_id=effective_theme,
+            dry_run=dry_run,
+            enrich=effective_enrich,
+            enrich_style=cfg_enrich_style,
+            enrich_timeout=cfg_enrich_timeout,
+        )
     except ExternalURLError as exc:
         _log.error("External URLs found in output: %s", exc)
         typer.echo(f"Build failed: external URLs detected — {exc}", err=True)
