@@ -596,6 +596,7 @@ def build_pipeline(
 
     # Step 4.5: ENRICH (optional)
     enrich_contexts: list[object] = []
+    pending_jpeg_writes: list[tuple[Path, bytes]] = []
     if enrich:
         _log.info("Step 4.5/%d: ENRICH", steps_total)
         from aio._enrich import (
@@ -608,7 +609,8 @@ def build_pipeline(
         )
 
         # FR-370: skip hero-title and closing slides — they don't need images
-        SKIP_ENRICH_LAYOUTS = {"hero-title", "closing", "section-divider"}
+        # "section-divider" is not a LayoutType value and is intentionally excluded
+        SKIP_ENRICH_LAYOUTS = {"hero-title", "closing"}
 
         enrich_ctxs: list[EnrichContext] = []
         for slide_ctx in contexts:
@@ -636,7 +638,9 @@ def build_pipeline(
         enriched = engine.enrich_all(enrich_ctxs)
         enrich_contexts = list(enriched)
 
-        # Inject images into HTML via per-slide placeholders
+        # Inject images into HTML via per-slide placeholders.
+        # Defer disk writes (FR-367) until after inline_assets succeeds to avoid
+        # orphaned JPEG files on ExternalURLError.
         enriched_count = 0
         for ectx in enriched:
             placeholder_marker = f"<!-- enrich-img-{ectx.slide_index} -->"
@@ -649,20 +653,23 @@ def build_pipeline(
                 img_html = (
                     f'<div class="slide-image"><img src="data:image/jpeg;base64,{b64}" alt="slide image" /></div>'
                 )
-                # FR-367: Save to assets/slides/ for reference
-                assets_dir = output.parent / "assets" / "slides"
-                assets_dir.mkdir(parents=True, exist_ok=True)
-                asset_path = assets_dir / f"slide-{ectx.slide_index}-enriched.jpg"
-                asset_path.write_bytes(ectx.image_bytes)
-                _log.debug("Saved enriched image: %s", asset_path)
+                # Queue for disk write after pipeline succeeds (FR-367)
+                asset_path = output.parent / "assets" / "slides" / f"slide-{ectx.slide_index}-enriched.jpg"
+                pending_jpeg_writes.append((asset_path, ectx.image_bytes))
                 enriched_count += 1
             html = html.replace(placeholder_marker, img_html, 1)
         _log.debug("  ENRICH ✓ — %d images processed", enriched_count)
 
-    # Step 5: INLINE
+    # Step 5: INLINE (may raise ExternalURLError — must succeed before writing any files)
     _log.info("Step %d/%d: INLINE", steps_total, steps_total)
     html = inline_assets(html, source_dir=input_path.parent, serve_mode=serve_mode)
     _log.debug("  INLINE ✓ — final size: %.1f KB", len(html) / 1024)
+
+    # FR-367: Flush deferred JPEG saves only after pipeline succeeds
+    for _asset_path, _asset_bytes in pending_jpeg_writes:
+        _asset_path.parent.mkdir(parents=True, exist_ok=True)
+        _asset_path.write_bytes(_asset_bytes)
+        _log.debug("Saved enriched image: %s", _asset_path)
 
     elapsed = time.perf_counter() - start
     byte_size = len(html.encode("utf-8"))
@@ -730,8 +737,8 @@ def build(
         effective_enrich = enrich or cfg.enrich
         cfg_enrich_style = cfg.enrich_style
         cfg_enrich_timeout = cfg.enrich_timeout
-    except Exception:
-        pass
+    except Exception as _cfg_exc:
+        _log.debug("Could not load project config (using defaults): %s", _cfg_exc)
 
     effective_theme = effective_theme or "minimal"
 

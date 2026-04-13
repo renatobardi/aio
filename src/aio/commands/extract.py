@@ -197,7 +197,7 @@ def _build_design_md(
         )
 
     # Section 12 — Decorations
-    if _include("decoration"):
+    if _include("decorat") or _include("12"):  # matches "decoration", "decorations", "12"
         lines.append("## 12. Decorations\n")
         lines.append("### Gradients\n")
         if colors and len(colors) >= 2:
