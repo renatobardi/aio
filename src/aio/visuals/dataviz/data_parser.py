@@ -125,11 +125,11 @@ def parse_chart_data(
             pairs = _parse_inline_timeline(stripped)
             if not pairs:
                 _log.warning("Empty or malformed @data for timeline chart — rendering empty state")
-                return ChartData(chart_type="timeline", series=[], labels=[])  # type: ignore[arg-type]
+                return ChartData(chart_type="timeline", series=[], labels=[])
             # Store events as series with label=date, name=event
             series = [Series(name=event, values=[0.0], color=None) for _, event in pairs]
             labels = [date for date, _ in pairs]
-            return ChartData(chart_type="timeline", series=series, labels=labels, title=title)  # type: ignore[arg-type]
+            return ChartData(chart_type="timeline", series=series, labels=labels, title=title)
 
         if resolved_type == "sparkline" or (_NUMERIC_CSV_RE.match(stripped) and ":" not in stripped):
             values = _parse_inline_numeric(stripped)

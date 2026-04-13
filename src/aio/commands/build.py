@@ -434,13 +434,16 @@ def render_document(
     All CSS and JS are inlined — no external resource references.
     """
     from aio.themes.loader import load_registry
-    from aio.themes.parser import generate_decoration_css, parse_design_md
+    from aio.themes.parser import DecorationSpec, generate_decoration_css, parse_design_md
 
     # Load theme CSS
     registry = load_registry()
     record = next((r for r in registry if r.id == theme_id), None)
 
     # Allow a custom theme_dir to override file paths
+    css_path: Path | None
+    layout_css_path: Path | None
+    design_md_path: Path | None
     if theme_dir is not None:
         css_path = theme_dir / "theme.css"
         layout_css_path = theme_dir / "layout.css"
@@ -465,7 +468,7 @@ def render_document(
             sections = parse_design_md(design_md_path.read_text(encoding="utf-8"))
             sec12 = next((s for s in sections if s.section_number == 12), None)
             if sec12:
-                specs = sec12.parsed_data.get("decorations", [])
+                specs: list[DecorationSpec] = sec12.parsed_data.get("decorations", [])  # type: ignore[assignment]
                 decoration_css = generate_decoration_css(specs)
         except Exception as exc:
             _log.warning("Could not parse decoration CSS: %s", exc)
