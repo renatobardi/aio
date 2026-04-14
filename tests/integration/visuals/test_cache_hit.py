@@ -1,7 +1,6 @@
 """Integration tests for cache hit/miss behavior."""
 
-import time
-from aio._enrich import EnrichEngine, EnrichContext
+from aio._enrich import EnrichContext, EnrichEngine
 
 
 class TestCacheHit:

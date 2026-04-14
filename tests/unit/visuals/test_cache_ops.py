@@ -1,9 +1,8 @@
 """Unit tests for cache operations (get, set, delete)."""
 
-import os
-import tempfile
-from aio._enrich import cache_set, cache_get, CacheEntry
 from datetime import datetime
+
+from aio._enrich import CacheEntry, cache_get, cache_set
 
 
 class TestCacheOperations:

@@ -1,7 +1,8 @@
 """Unit tests for image providers."""
 
 import pytest
-from aio._enrich import PollinationsProvider, OpenAIProvider, UnsplashProvider
+
+from aio._enrich import OpenAIProvider, PollinationsProvider, UnsplashProvider
 
 
 class TestProviders:

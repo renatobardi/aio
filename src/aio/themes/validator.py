@@ -7,7 +7,7 @@ import re
 
 from aio._log import get_logger
 from aio.exceptions import DesignSectionParseError, DesignSectionValidationError, ThemeNotFoundError
-from aio.themes.parser import parse_design_md, extract_visual_style_config
+from aio.themes.parser import extract_visual_style_config, parse_design_md
 
 _log = get_logger(__name__)
 

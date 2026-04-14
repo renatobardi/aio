@@ -1,6 +1,7 @@
 """Integration tests for all 8 SVG composite types."""
 
 import pytest
+
 from aio.visuals.svg.composites import SVGComposer
 
 

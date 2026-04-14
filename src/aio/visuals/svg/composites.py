@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from typing import Literal
-import hashlib
-
 
 # ============================================================================
 # Data Models
@@ -275,7 +274,11 @@ class SVGComposer:
         for y in range(0, height, size):
             for x in range(0, width, size):
                 if (x // size + y // size) % 2 == 0:
-                    elements.append(f'<rect x="{x}" y="{y}" width="{size}" height="{size}" fill="{c1}" opacity="0.08"/>')
+                    rect = (
+                        f'<rect x="{x}" y="{y}" width="{size}" height="{size}" '
+                        f'fill="{c1}" opacity="0.08"/>'
+                    )
+                    elements.append(rect)
         return "\n".join(elements[:40])
 
     @staticmethod

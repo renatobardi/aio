@@ -1,6 +1,7 @@
 """Unit tests for SVG primitives (rect, circle, path, gradient, wave, grid)."""
 
 import pytest
+
 from aio.visuals.svg.composites import SVGComposer, VisualStyleConfig
 
 

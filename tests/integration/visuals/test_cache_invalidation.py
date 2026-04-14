@@ -1,7 +1,8 @@
 """Integration tests for cache invalidation."""
 
-from aio._enrich import cache_invalidate, cache_set, CacheEntry
 from datetime import datetime
+
+from aio._enrich import CacheEntry, cache_invalidate, cache_set
 
 
 class TestCacheInvalidation:

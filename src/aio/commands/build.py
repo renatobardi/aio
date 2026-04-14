@@ -602,7 +602,6 @@ def build_pipeline(
             EnrichEngine,
             derive_seed,
             infer_prompt,
-            infer_style_hint,
             make_placeholder_svg,
         )
 
@@ -715,7 +714,7 @@ def build(
     cache_stats: bool = typer.Option(False, "--cache-stats", help="Show cache statistics and exit"),
 ) -> None:
     """Compile slides.md → build/slides.html."""
-    from aio._enrich import cache_invalidate, cache_get_stats
+    from aio._enrich import cache_get_stats, cache_invalidate
 
     # Handle cache management flags
     if cache_clear:
@@ -730,7 +729,7 @@ def build(
 
     if cache_stats:
         stats = cache_get_stats()
-        typer.echo(f"Cache statistics:")
+        typer.echo("Cache statistics:")
         typer.echo(f"  Entries: {stats['entry_count']}")
         typer.echo(f"  Size: {stats['total_size_mb']} MB / {stats['max_size_mb']} MB")
         typer.echo(f"  AIO version: {stats['aio_version']}")
