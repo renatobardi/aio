@@ -1,0 +1,5 @@
+agent: claude
+enrich: false
+output_dir: build
+serve_port: 8000
+theme: minimal

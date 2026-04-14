@@ -11,7 +11,7 @@ from typing import Any
 
 from aio._log import get_logger
 from aio.exceptions import ThemeValidationError
-from aio.themes.parser import DecorationSpec
+from aio.themes.parser import DecorationSpec, extract_visual_style_config, create_default_visual_config, parse_design_md
 
 _log = get_logger(__name__)
 
@@ -42,6 +42,7 @@ class ThemeRecord:
     is_builtin: bool
     base_dir: Path
     decorations: list[DecorationSpec] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, d: dict[str, Any], base_dir: Path) -> ThemeRecord:
@@ -78,6 +79,33 @@ class ThemeRecord:
         layout_css_path = base_dir / "layout.css"
         design_md_path = base_dir / "DESIGN.md"
 
+        # Parse DESIGN.md section 10 for visual_config, with defaults fallback
+        metadata: dict[str, Any] = {}
+        visual_config: dict[str, object] = {}
+
+        if design_md_path.exists():
+            try:
+                design_text = design_md_path.read_text(encoding="utf-8")
+                sections = parse_design_md(design_text)
+                visual_config = extract_visual_style_config(sections)
+                if visual_config:
+                    _log.debug("Theme '%s': extracted visual_config from DESIGN.md section 10", theme_id)
+                else:
+                    _log.warning(
+                        "Theme '%s': DESIGN.md section 10 (Visual Style Preference) not found or incomplete; "
+                        "using defaults (tech/geometric/sharp/static)",
+                        theme_id,
+                    )
+            except Exception as exc:
+                _log.warning(
+                    "Theme '%s': could not parse DESIGN.md section 10: %s; using defaults (tech/geometric/sharp/static)",
+                    theme_id,
+                    exc,
+                )
+
+        # Always provide visual_config (defaults: tech/geometric/sharp/static)
+        metadata["visual_config"] = {**create_default_visual_config(), **visual_config}
+
         return cls(
             id=theme_id,
             name=name,
@@ -93,6 +121,7 @@ class ThemeRecord:
             design_md_path=design_md_path if design_md_path.exists() else None,
             is_builtin=bool(d.get("is_builtin", False)),
             base_dir=base_dir,
+            metadata=metadata,
         )
 
 

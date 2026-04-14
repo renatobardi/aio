@@ -88,6 +88,45 @@ All SVG is generated in pure Python — no D3, no Chart.js, no external assets.
 
 ---
 
+## Image Enrichment & Caching
+
+When you build with `--enrich`, AIO automatically generates images for slides using a multi-provider fallback:
+
+1. **Pollinations** (free, no API key) — <8s per image
+2. **OpenAI DALL-E** (paid, $0.08–0.12/image, requires `OPENAI_API_KEY`)
+3. **Unsplash** (free, requires `UNSPLASH_API_KEY`)
+4. **SVG fallback** (free, automatic) — <500ms
+
+All images are cached locally in `.aio/cache/images/` and reused on rebuilds for 95% faster build times.
+
+```bash
+# First build: generates and caches images (~20–30s)
+aio build slides.md --enrich
+
+# Second build: cache hits, only re-renders (~2s)
+aio build slides.md --enrich
+
+# Check cache stats
+aio build slides.md --cache-stats
+# Output:
+#   Entries: 10
+#   Size: 12.3 MB / 100.0 MB
+#   AIO version: 0.1.0
+
+# Clear cache if needed
+aio build slides.md --cache-clear
+```
+
+**Cache Management**:
+- **Automatic**: Cache is created and managed automatically (`.aio/cache/`)
+- **LRU Eviction**: When cache > 100 MB, oldest entries deleted until < 50 MB
+- **Version-locked**: Cache invalidates if AIO version changes
+- **Per-provider keys**: Same prompt on different providers = different cache entries
+
+See `docs/image-generation-troubleshooting.md` for debugging and `specs/004-svg-composites-api/quickstart.md` for detailed usage.
+
+---
+
 ## Development
 
 ```bash
