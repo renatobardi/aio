@@ -19,9 +19,11 @@ _log = get_logger(__name__)
 # Data Models
 # ============================================================================
 
+
 @dataclass
 class VisualStyleConfig:
     """Visual style preferences (imported from visuals.svg.composites)."""
+
     visual_style_preference: Literal["geometric", "organic", "tech", "minimal"] = "tech"
     pattern: Literal["grid", "dots", "lines", "mesh", "noise", "flowing"] = "geometric"
     curvature: Literal["sharp", "soft", "mixed"] = "sharp"
@@ -45,7 +47,7 @@ class EnrichContext:
 class CacheEntry:
     """Cache metadata and versioning."""
 
-    hash: str              # SHA256(prompt + provider_name)
+    hash: str  # SHA256(prompt + provider_name)
     timestamp: datetime = field(default_factory=datetime.now)
     size_bytes: int = 0
     aio_version: str = "0.1.0"  # Will be replaced with actual version
@@ -131,7 +133,7 @@ class UnsplashProvider(ImageProvider):
 
 _CACHE_DIR = Path(".aio/cache/images")
 _CACHE_MAX_SIZE = 100 * 1024 * 1024  # 100 MB
-_CACHE_MIN_SIZE = 50 * 1024 * 1024   # 50 MB (target after eviction)
+_CACHE_MIN_SIZE = 50 * 1024 * 1024  # 50 MB (target after eviction)
 _META_FILE = Path(".aio/meta.json")
 
 
@@ -217,8 +219,9 @@ def cache_get(hash_key: str) -> bytes | None:
     entry_data = entries[hash_key]
     if entry_data.get("aio_version") != current_version:
         # Version mismatch; invalidate
-        _log.debug("Cache MISS: %s (version mismatch: %s vs %s)",
-                   hash_key[:8], entry_data.get("aio_version"), current_version)
+        _log.debug(
+            "Cache MISS: %s (version mismatch: %s vs %s)", hash_key[:8], entry_data.get("aio_version"), current_version
+        )
         return None
 
     cache_file = _CACHE_DIR / f"{hash_key}.jpg"
@@ -262,6 +265,7 @@ def cache_set(hash_key: str, image_bytes: bytes, entry: CacheEntry) -> None:
 def cache_invalidate() -> None:
     """Clear image cache."""
     import shutil
+
     if _CACHE_DIR.exists():
         shutil.rmtree(_CACHE_DIR)
         _log.info("Cache INVALIDATED: all entries cleared")
@@ -301,19 +305,18 @@ def cache_init(aio_version: str = "0.1.0") -> None:
     # Check version mismatch — invalidate cache if version changed
     if old_version and old_version != aio_version:
         # Version changed; clear cache
-        _log.warning("Cache INVALIDATION: version mismatch (%s → %s); clearing entries",
-                     old_version, aio_version)
+        _log.warning("Cache INVALIDATION: version mismatch (%s → %s); clearing entries", old_version, aio_version)
         metadata["cache_entries"] = {}
 
     metadata["aio_version"] = aio_version
     _save_cache_metadata(metadata)
-    _log.debug("Cache initialized: version %s, %d entries",
-               aio_version, len(metadata.get("cache_entries", {})))
+    _log.debug("Cache initialized: version %s, %d entries", aio_version, len(metadata.get("cache_entries", {})))
 
 
 # ============================================================================
 # EnrichEngine
 # ============================================================================
+
 
 class EnrichEngine:
     """Orchestrates image generation with multi-provider fallback."""
@@ -458,8 +461,8 @@ def infer_prompt(slide_title: str | None, slide_body: str | None) -> str:
 
 def make_placeholder_svg() -> str:
     """Return minimal SVG placeholder when image generation fails."""
-    return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+    return """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
       <rect width="800" height="450" fill="#f0f0f0"/>
       <circle cx="400" cy="225" r="50" fill="#ccc"/>
       <text x="400" y="240" text-anchor="middle" fill="#999" font-size="14">Image unavailable</text>
-    </svg>'''
+    </svg>"""

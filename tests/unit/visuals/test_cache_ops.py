@@ -13,10 +13,10 @@ class TestCacheOperations:
         hash_key = "test_hash_12345"
         image_data = b"\xff\xd8\xff\xe0"  # JPEG header
         entry = CacheEntry(hash_key, datetime.now(), len(image_data))
-        
+
         cache_set(hash_key, image_data, entry)
         retrieved = cache_get(hash_key)
-        
+
         assert retrieved == image_data
 
     def test_cache_miss_returns_none(self):

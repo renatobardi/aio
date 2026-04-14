@@ -35,6 +35,7 @@ class TestSVGCompositeTypes:
         """Test SVG output is ≤20 KB."""
         theme = {"id": "test", "palette": {"primary": "#0EA5E9"}}
         import gzip
+
         svg = SVGComposer.compose("hero-background", theme)
         gzipped = gzip.compress(svg.encode())
         assert len(gzipped) <= 20000, f"SVG size {len(gzipped)} bytes exceeds 20 KB"

@@ -12,7 +12,7 @@ class TestCacheHit:
             EnrichContext(slide_index=0, prompt="Test", seed=123),
             EnrichContext(slide_index=1, prompt="Another", seed=456),
         ]
-        
+
         # First enrich (would be slow with API calls)
         # Second enrich (should be fast with cache)
         # For unit test: just verify contexts are returned

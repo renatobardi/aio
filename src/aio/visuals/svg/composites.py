@@ -10,6 +10,7 @@ from typing import Literal
 # Data Models
 # ============================================================================
 
+
 @dataclass
 class VisualStyleConfig:
     """Visual style preferences extracted from DESIGN.md section 10."""
@@ -23,10 +24,7 @@ class VisualStyleConfig:
     def defaults(cls) -> VisualStyleConfig:
         """Return default visual config (tech/geometric/sharp/static) for legacy themes."""
         return cls(
-            visual_style_preference="tech",
-            pattern="geometric",
-            curvature="sharp",
-            animation_preference="static"
+            visual_style_preference="tech", pattern="geometric", curvature="sharp", animation_preference="static"
         )
 
 
@@ -60,6 +58,7 @@ class SVGComposite:
 # ============================================================================
 # SVGComposer Interface
 # ============================================================================
+
 
 class SVGComposer:
     """Main composer for generating deterministic SVG compositions."""
@@ -99,13 +98,7 @@ class SVGComposer:
                 seed = int(hashlib.sha256(seed_str.encode()).hexdigest(), 16) % (2**31)
 
             # Generate SVG based on type
-            svg = SVGComposer._generate_svg(
-                composite_type,
-                colors,
-                visual_config,
-                dimensions,
-                seed
-            )
+            svg = SVGComposer._generate_svg(composite_type, colors, visual_config, dimensions, seed)
             return svg
 
         except Exception:
@@ -200,13 +193,13 @@ class SVGComposer:
         if style == "organic":
             # Soft, flowing organic shape
             return (
-                f'<ellipse cx="{width//2}" cy="{height//2}" rx="{width//3}" '
-                f'ry="{height//3}" fill="{c1}" opacity="0.15"/>'
+                f'<ellipse cx="{width // 2}" cy="{height // 2}" rx="{width // 3}" '
+                f'ry="{height // 3}" fill="{c1}" opacity="0.15"/>'
             )
         else:
             # Tech/geometric: sharp circle
             return (
-                f'<circle cx="{width//2}" cy="{height//2}" r="{min(width, height)//3}" '
+                f'<circle cx="{width // 2}" cy="{height // 2}" r="{min(width, height) // 3}" '
                 f'fill="{c1}" opacity="0.2"/>'
             )
 
@@ -218,17 +211,11 @@ class SVGComposer:
         spacing = 100
         # Vertical lines
         for x in range(0, width + spacing, spacing):
-            line = (
-                f'<line x1="{x}" y1="0" x2="{x}" y2="{height}" '
-                f'stroke="{c1}" stroke-width="1" opacity="0.1"/>'
-            )
+            line = f'<line x1="{x}" y1="0" x2="{x}" y2="{height}" stroke="{c1}" stroke-width="1" opacity="0.1"/>'
             lines.append(line)
         # Horizontal lines
         for y in range(0, height + spacing, spacing):
-            line = (
-                f'<line x1="0" y1="{y}" x2="{width}" y2="{y}" '
-                f'stroke="{c1}" stroke-width="1" opacity="0.1"/>'
-            )
+            line = f'<line x1="0" y1="{y}" x2="{width}" y2="{y}" stroke="{c1}" stroke-width="1" opacity="0.1"/>'
             lines.append(line)
         return "\n".join(lines[:30])
 
@@ -274,10 +261,7 @@ class SVGComposer:
         for y in range(0, height, size):
             for x in range(0, width, size):
                 if (x // size + y // size) % 2 == 0:
-                    rect = (
-                        f'<rect x="{x}" y="{y}" width="{size}" height="{size}" '
-                        f'fill="{c1}" opacity="0.08"/>'
-                    )
+                    rect = f'<rect x="{x}" y="{y}" width="{size}" height="{size}" fill="{c1}" opacity="0.08"/>'
                     elements.append(rect)
         return "\n".join(elements[:40])
 
@@ -300,7 +284,7 @@ class SVGComposer:
             '<defs><linearGradient id="fallback" x1="0%" y1="0%" x2="100%" y2="100%">'
             '<stop offset="0%" style="stop-color:#F3F4F6;stop-opacity:1" />'
             '<stop offset="100%" style="stop-color:#E5E7EB;stop-opacity:1" />'
-            '</linearGradient></defs>'
+            "</linearGradient></defs>"
             f'<rect width="{width}" height="{height}" fill="url(#fallback)"/>'
-            '</svg>'
+            "</svg>"
         )

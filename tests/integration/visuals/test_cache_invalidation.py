@@ -15,12 +15,13 @@ class TestCacheInvalidation:
         image_data = b"test"
         entry = CacheEntry(hash_key, datetime.now(), len(image_data))
         cache_set(hash_key, image_data, entry)
-        
+
         # Clear cache
         cache_invalidate()
-        
+
         # Verify cleared
         # (In full implementation, would verify directory is empty)
         import os
+
         if os.path.exists(".aio/cache/images"):
             assert len(os.listdir(".aio/cache/images")) == 0

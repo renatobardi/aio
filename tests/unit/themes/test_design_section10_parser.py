@@ -1,5 +1,6 @@
 """Unit tests for DESIGN.md section 10 parser."""
 
+
 class TestSection10Parser:
     """Test DESIGN.md section 10 parsing."""
 
