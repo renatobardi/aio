@@ -87,9 +87,11 @@ class PollinationsProvider(ImageProvider):
 
     def generate(self, prompt: str, width: int = 800, height: int = 450, seed: int | None = None) -> bytes:
         """Fetch from Pollinations.ai."""
+        import urllib.parse
         import urllib.request
 
-        url = f"https://image.pollinations.ai/prompt/{prompt}?width={width}&height={height}"
+        encoded_prompt = urllib.parse.quote(prompt)
+        url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={width}&height={height}"
         if seed is not None:
             url += f"&seed={seed}"
 
