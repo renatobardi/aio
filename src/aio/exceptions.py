@@ -65,19 +65,10 @@ class ThemeDataError(VisualsException):
 
 
 class ExternalURLError(AIOError):
-    """External URL detected in output (Article II violation)."""
-
-    def __init__(self, urls: list[str]) -> None:
-        msg = f"External URLs detected in output: {', '.join(urls)}"
-        super().__init__(msg)
-        self.urls = urls
-
-
-class ExternalURLError(AIOError):
     """External URL detected in build output (Art. II violation)."""
 
     def __init__(self, urls: list[str]) -> None:
-        super().__init__(f"External URLs found in output: {urls}. All assets must be inlined.")
+        super().__init__(f"External URLs found in output: {', '.join(urls)}. All assets must be inlined.")
         self.urls = urls
 
 

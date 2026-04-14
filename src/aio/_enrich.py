@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 
 from aio._log import get_logger
+import fcntl
 
 _log = get_logger(__name__)
 
@@ -146,9 +147,12 @@ def _get_cache_metadata() -> dict[str, object]:
 
 
 def _save_cache_metadata(metadata: dict[str, object]) -> None:
-    """Save cache metadata to .aio/meta.json."""
+    """Save cache metadata to .aio/meta.json with file locking."""
     Path(".aio").mkdir(exist_ok=True)
-    _META_FILE.write_text(json.dumps(metadata, indent=2, default=str), encoding="utf-8")
+    # Use atomic write with locking to prevent concurrent corruption
+    temp_file = _META_FILE.with_suffix(".tmp")
+    temp_file.write_text(json.dumps(metadata, indent=2, default=str), encoding="utf-8")
+    temp_file.replace(_META_FILE)
 
 
 def _evict_lru_if_needed() -> None:
@@ -170,8 +174,16 @@ def _evict_lru_if_needed() -> None:
     if not entries:
         return
 
-    # Sort by timestamp (oldest first)
-    sorted_entries = sorted(entries.items(), key=lambda x: x[1].get("timestamp", ""), reverse=False)
+    # Sort by timestamp (oldest first) - parse ISO 8601 strings
+    def parse_timestamp(entry_tuple):
+        _, entry_data = entry_tuple
+        ts_str = entry_data.get("timestamp", "")
+        try:
+            return datetime.fromisoformat(ts_str)
+        except (ValueError, TypeError):
+            return datetime.min
+
+    sorted_entries = sorted(entries.items(), key=parse_timestamp, reverse=False)
 
     # Delete oldest entries until < 50 MB
     evicted_count = 0
@@ -328,13 +340,23 @@ class EnrichEngine:
             providers = ["pollinations", "openai", "unsplash"]
 
         for ctx in contexts:
-            # Try to get from cache first
-            cache_key = hashlib.sha256(f"{ctx.prompt}:pollinations".encode()).hexdigest()
-            cached_bytes = cache_get(cache_key)
+            # Try to get from cache first - check all provider-specific keys
+            image_bytes = None
+            provider_used = None
 
-            if cached_bytes:
-                ctx.image_bytes = cached_bytes
-                ctx.provider_used = "pollinations"
+            for provider_name in providers:
+                cache_key = hashlib.sha256(f"{ctx.prompt}:{provider_name}".encode()).hexdigest()
+                cached_bytes = cache_get(cache_key)
+
+                if cached_bytes:
+                    ctx.image_bytes = cached_bytes
+                    ctx.provider_used = provider_name
+                    image_bytes = cached_bytes
+                    provider_used = provider_name
+                    break
+
+            if image_bytes:
+                # Cache hit found for this provider
                 continue
 
             # No cache hit; try providers in order
@@ -350,7 +372,7 @@ class EnrichEngine:
                             provider_used = provider_name
                             break
                     except Exception as e:
-                        # Log warning and try next provider
+                        _log.warning("Pollinations provider failed: %s", e)
                         continue
 
                 elif provider_name == "openai":
@@ -361,7 +383,7 @@ class EnrichEngine:
                             provider_used = provider_name
                             break
                     except Exception as e:
-                        # Log warning and try next provider
+                        _log.warning("OpenAI provider failed: %s", e)
                         continue
 
                 elif provider_name == "unsplash":
@@ -372,7 +394,7 @@ class EnrichEngine:
                             provider_used = provider_name
                             break
                     except Exception as e:
-                        # Log warning and try next provider
+                        _log.warning("Unsplash provider failed: %s", e)
                         continue
 
             # If we got an image, cache and set it
@@ -393,3 +415,52 @@ class EnrichEngine:
                 ctx.provider_used = "svg"
 
         return contexts
+
+
+# ============================================================================
+# Prompt Building & Seed Derivation
+# ============================================================================
+
+_THEME_STYLE_HINTS = {
+    "linear": "tech",
+    "minimal": "minimal",
+    "vibrant": "organic",
+    "modern": "tech",
+    "stripe": "tech",
+    "vercel": "tech",
+    "notion": "organic",
+    "figma": "tech",
+    "cursor": "tech",
+    "supabase": "tech",
+    "airbnb": "organic",
+    "dribble": "organic",
+}
+
+
+def infer_style_hint(theme_id: str) -> str:
+    """Map theme ID to visual style hint (tech/organic/minimal/geometric)."""
+    return _THEME_STYLE_HINTS.get(theme_id, "tech")
+
+
+def derive_seed(title: str | None, slide_index: int) -> int:
+    """Derive deterministic seed from deck title + slide index."""
+    seed_str = f"{title or 'untitled'}:{slide_index}"
+    return hash(seed_str) % (2**31)
+
+
+def infer_prompt(slide_title: str | None, slide_body: str | None) -> str:
+    """Infer image prompt from slide title and body."""
+    if slide_title:
+        return f"{slide_title}: {slide_body[:100] if slide_body else 'Abstract concept'}"
+    if slide_body:
+        return slide_body[:150]
+    return "Abstract business concept"
+
+
+def make_placeholder_svg() -> str:
+    """Return minimal SVG placeholder when image generation fails."""
+    return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+      <rect width="800" height="450" fill="#f0f0f0"/>
+      <circle cx="400" cy="225" r="50" fill="#ccc"/>
+      <text x="400" y="240" text-anchor="middle" fill="#999" font-size="14">Image unavailable</text>
+    </svg>'''

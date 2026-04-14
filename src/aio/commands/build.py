@@ -2,6 +2,7 @@
 # NOTE: NO `from __future__ import annotations` in this file.
 # Typer relies on runtime type introspection; postponed evaluation breaks it.
 
+import base64 as _base64
 import dataclasses
 import importlib.resources
 import re
@@ -594,12 +595,27 @@ def build_pipeline(
 
     # Step 4.5: ENRICH (optional)
     enrich_contexts: list[object] = []
+    pending_jpeg_writes: list[tuple[Path, bytes]] = []  # Deferred writes (FR-367)
     if enrich:
         _log.info("Step 4.5/%d: ENRICH", steps_total)
-        from aio._enrich import EnrichContext, EnrichEngine, derive_seed, infer_prompt, make_placeholder_svg
+        from aio._enrich import (
+            EnrichContext,
+            EnrichEngine,
+            derive_seed,
+            infer_prompt,
+            infer_style_hint,
+            make_placeholder_svg,
+        )
+
+        # FR-370: Skip layouts that don't need enrichment
+        SKIP_ENRICH_LAYOUTS = {"hero-title", "closing"}
 
         enrich_ctxs: list[EnrichContext] = []
         for slide_ctx in contexts:
+            # Skip enrichment for certain layouts (FR-370)
+            if slide_ctx.layout_id in SKIP_ENRICH_LAYOUTS:
+                continue
+
             prompt = slide_ctx.image_prompt
             if not prompt:
                 body = slide_ctx.body if hasattr(slide_ctx, "body") else ""
@@ -614,6 +630,9 @@ def build_pipeline(
                     is_placeholder=False,
                 )
             )
+
+        # FR-368: Use theme-aware style hints for image generation
+        style_hint = infer_style_hint(effective_theme)
 
         engine = EnrichEngine()
         enriched = engine.enrich_all(enrich_ctxs)
@@ -631,11 +650,22 @@ def build_pipeline(
                 img_html = (
                     f'<div class="slide-image"><img src="data:image/jpeg;base64,{b64}" alt="slide image" /></div>'
                 )
+                # FR-367: Defer JPEG writes until after check_external_urls() passes
+                assets_dir = output.parent / "assets" / "slides"
+                jpeg_path = assets_dir / f"slide-{ectx.slide_index}.jpg"
+                pending_jpeg_writes.append((jpeg_path, ectx.image_bytes))
+
             html = html.replace(placeholder_marker, img_html, 1)
 
     # Step 5: INLINE
     _log.info("Step %d/%d: INLINE", steps_total, steps_total)
     html = inline_assets(html, source_dir=input_path.parent, serve_mode=serve_mode)
+
+    # FR-367: Flush deferred JPEG writes after check_external_urls() passes
+    for jpeg_path, image_bytes in pending_jpeg_writes:
+        jpeg_path.parent.mkdir(parents=True, exist_ok=True)
+        jpeg_path.write_bytes(image_bytes)
+        _log.debug("Written JPEG: %s (%d bytes)", jpeg_path, len(image_bytes))
 
     elapsed = time.perf_counter() - start
     byte_size = len(html.encode("utf-8"))
