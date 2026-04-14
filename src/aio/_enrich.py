@@ -86,10 +86,16 @@ class PollinationsProvider(ImageProvider):
         return True
 
     def generate(self, prompt: str, width: int = 800, height: int = 450, seed: int | None = None) -> bytes:
-        """Fetch from Pollinations.ai (simplified mock for now)."""
-        # In full implementation, would call requests.get()
-        # For now, return stub PNG bytes
-        return b"\x89PNG\r\n\x1a\n"  # PNG header
+        """Fetch from Pollinations.ai."""
+        import urllib.request
+
+        url = f"https://image.pollinations.ai/prompt/{prompt}?width={width}&height={height}"
+        if seed is not None:
+            url += f"&seed={seed}"
+
+        with urllib.request.urlopen(url, timeout=self.timeout_seconds) as resp:
+            image_bytes = resp.read()
+        return image_bytes
 
 
 class OpenAIProvider(ImageProvider):
@@ -104,10 +110,35 @@ class OpenAIProvider(ImageProvider):
         return bool(self.api_key)
 
     def generate(self, prompt: str, width: int = 800, height: int = 450, seed: int | None = None) -> bytes:
-        """Call DALL-E 3 (simplified mock for now)."""
+        """Call DALL-E 3 API."""
+        import json
+        import urllib.request
+
         if not self.check_api():
             raise ValueError("OPENAI_API_KEY not set")
-        return b"\xff\xd8\xff"  # JPEG header
+
+        url = "https://api.openai.com/v1/images/generations"
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        data = json.dumps(
+            {
+                "prompt": prompt,
+                "model": self.model,
+                "n": 1,
+                "size": f"{width}x{height}",
+            }
+        ).encode("utf-8")
+
+        req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=self.timeout_seconds) as resp:
+            response_data = json.loads(resp.read().decode("utf-8"))
+
+        image_url = response_data["data"][0]["url"]
+        with urllib.request.urlopen(image_url, timeout=self.timeout_seconds) as resp:
+            image_bytes = resp.read()
+        return image_bytes
 
 
 class UnsplashProvider(ImageProvider):
@@ -121,10 +152,28 @@ class UnsplashProvider(ImageProvider):
         return bool(self.api_key)
 
     def generate(self, prompt: str, width: int = 800, height: int = 450, seed: int | None = None) -> bytes:
-        """Search Unsplash photos (simplified mock for now)."""
+        """Search Unsplash photos."""
+        import urllib.request
+        import urllib.parse
+
         if not self.check_api():
             raise ValueError("UNSPLASH_API_KEY not set")
-        return b"\xff\xd8\xff"  # JPEG header
+
+        query = urllib.parse.quote(prompt)
+        url = f"https://api.unsplash.com/search/photos?query={query}&w={width}&h={height}&client_id={self.api_key}"
+
+        with urllib.request.urlopen(url, timeout=self.timeout_seconds) as resp:
+            import json
+
+            response_data = json.loads(resp.read().decode("utf-8"))
+
+        if not response_data.get("results"):
+            raise ValueError(f"No Unsplash photos found for: {prompt}")
+
+        photo_url = response_data["results"][0]["urls"]["raw"]
+        with urllib.request.urlopen(f"{photo_url}?w={width}&h={height}", timeout=self.timeout_seconds) as resp:
+            image_bytes = resp.read()
+        return image_bytes
 
 
 # ============================================================================
