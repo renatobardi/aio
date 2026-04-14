@@ -11,7 +11,6 @@ import os
 from pathlib import Path
 
 from aio._log import get_logger
-import fcntl
 
 _log = get_logger(__name__)
 
