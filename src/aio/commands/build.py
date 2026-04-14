@@ -2,11 +2,9 @@
 # NOTE: NO `from __future__ import annotations` in this file.
 # Typer relies on runtime type introspection; postponed evaluation breaks it.
 
-import base64 as _base64
 import dataclasses
 import importlib.resources
 import re
-import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any

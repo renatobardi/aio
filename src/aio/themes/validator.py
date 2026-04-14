@@ -123,7 +123,13 @@ def validate_theme(theme_id: str, check_css: bool = False) -> list[str]:
     if len(sections) >= 10:
         section10 = sections[9]  # 0-indexed
         visual_config = extract_visual_style_config(sections)
-        if visual_config and all(k in visual_config for k in ["visual_style_preference", "pattern", "curvature", "animation_preference"]):
+        required_keys = [
+            "visual_style_preference",
+            "pattern",
+            "curvature",
+            "animation_preference",
+        ]
+        if visual_config and all(k in visual_config for k in required_keys):
             _log.debug("Theme '%s': Section 10 has complete visual config", theme_id)
         else:
             _log.debug("Theme '%s': Section 10 incomplete or missing; will use defaults", theme_id)

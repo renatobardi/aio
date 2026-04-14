@@ -98,7 +98,8 @@ class ThemeRecord:
                     )
             except Exception as exc:
                 _log.warning(
-                    "Theme '%s': could not parse DESIGN.md section 10: %s; using defaults (tech/geometric/sharp/static)",
+                    "Theme '%s': could not parse DESIGN.md section 10: %s; "
+                    "using defaults (tech/geometric/sharp/static)",
                     theme_id,
                     exc,
                 )

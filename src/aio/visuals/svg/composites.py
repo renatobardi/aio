@@ -200,10 +200,16 @@ class SVGComposer:
 
         if style == "organic":
             # Soft, flowing organic shape
-            return f'<ellipse cx="{width//2}" cy="{height//2}" rx="{width//3}" ry="{height//3}" fill="{c1}" opacity="0.15"/>'
+            return (
+                f'<ellipse cx="{width//2}" cy="{height//2}" rx="{width//3}" '
+                f'ry="{height//3}" fill="{c1}" opacity="0.15"/>'
+            )
         else:
             # Tech/geometric: sharp circle
-            return f'<circle cx="{width//2}" cy="{height//2}" r="{min(width, height)//3}" fill="{c1}" opacity="0.2"/>'
+            return (
+                f'<circle cx="{width//2}" cy="{height//2}" r="{min(width, height)//3}" '
+                f'fill="{c1}" opacity="0.2"/>'
+            )
 
     @staticmethod
     def _grid_pattern(colors: list[str], width: int, height: int, seed: int) -> str:
@@ -213,10 +219,18 @@ class SVGComposer:
         spacing = 100
         # Vertical lines
         for x in range(0, width + spacing, spacing):
-            lines.append(f'<line x1="{x}" y1="0" x2="{x}" y2="{height}" stroke="{c1}" stroke-width="1" opacity="0.1"/>')
+            line = (
+                f'<line x1="{x}" y1="0" x2="{x}" y2="{height}" '
+                f'stroke="{c1}" stroke-width="1" opacity="0.1"/>'
+            )
+            lines.append(line)
         # Horizontal lines
         for y in range(0, height + spacing, spacing):
-            lines.append(f'<line x1="0" y1="{y}" x2="{width}" y2="{y}" stroke="{c1}" stroke-width="1" opacity="0.1"/>')
+            line = (
+                f'<line x1="0" y1="{y}" x2="{width}" y2="{y}" '
+                f'stroke="{c1}" stroke-width="1" opacity="0.1"/>'
+            )
+            lines.append(line)
         return "\n".join(lines[:30])
 
     @staticmethod
@@ -226,10 +240,14 @@ class SVGComposer:
         # Simple wave using quadratic curves
         points = []
         for x in range(0, width + 100, 100):
-            y = height // 2 + int(50 * hashlib.sha256(f"{seed}{x}".encode()).hexdigest()[:4], 16) % 100 - 50
+            hash_val = hashlib.sha256(f"{seed}{x}".encode()).hexdigest()[:4]
+            y = height // 2 + int(50 * int(hash_val, 16)) % 100 - 50
             points.append(f"{x},{y}")
         path = " ".join(points)
-        return f'<polyline points="{path}" fill="none" stroke="{c1}" stroke-width="3" opacity="0.3" stroke-linecap="round"/>'
+        return (
+            f'<polyline points="{path}" fill="none" stroke="{c1}" '
+            f'stroke-width="3" opacity="0.3" stroke-linecap="round"/>'
+        )
 
     @staticmethod
     def _sparse_pattern(colors: list[str], width: int, height: int) -> str:
