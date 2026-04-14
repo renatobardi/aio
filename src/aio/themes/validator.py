@@ -121,7 +121,6 @@ def validate_theme(theme_id: str, check_css: bool = False) -> list[str]:
 
     # Validate section 10 (Visual Style Preference) — if present, should be complete
     if len(sections) >= 10:
-        section10 = sections[9]  # 0-indexed
         visual_config = extract_visual_style_config(sections)
         required_keys = [
             "visual_style_preference",

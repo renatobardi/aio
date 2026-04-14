@@ -109,7 +109,7 @@ class SVGComposer:
             )
             return svg
 
-        except Exception as e:
+        except Exception:
             # Return fallback SVG on error
             return SVGComposer._fallback_svg(dimensions)
 
@@ -236,7 +236,7 @@ class SVGComposer:
     @staticmethod
     def _wave_pattern(colors: list[str], width: int, height: int, seed: int) -> str:
         """Generate organic-style wave pattern with curves."""
-        c1, c2 = colors[0], (colors[1] if len(colors) > 1 else colors[0])
+        c1 = colors[0]
         # Simple wave using quadratic curves
         points = []
         for x in range(0, width + 100, 100):
