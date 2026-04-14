@@ -5,6 +5,7 @@
 import dataclasses
 import importlib.resources
 import re
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -628,9 +629,6 @@ def build_pipeline(
                     is_placeholder=False,
                 )
             )
-
-        # FR-368: Use theme-aware style hints for image generation
-        style_hint = infer_style_hint(effective_theme)
 
         engine = EnrichEngine()
         enriched = engine.enrich_all(enrich_ctxs)
