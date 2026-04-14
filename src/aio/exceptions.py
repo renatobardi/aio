@@ -48,6 +48,31 @@ class AgentError(AIOError):
     """Agent template loading failure."""
 
 
+class VisualsException(AIOError):
+    """Base exception for visual composition errors."""
+
+
+class SVGRenderError(VisualsException):
+    """SVG primitive rendering failed."""
+
+
+class SVGValidationError(VisualsException):
+    """SVG output not W3C valid."""
+
+
+class ThemeDataError(VisualsException):
+    """Theme palette or config malformed."""
+
+
+class ExternalURLError(AIOError):
+    """External URL detected in output (Article II violation)."""
+
+    def __init__(self, urls: list[str]) -> None:
+        msg = f"External URLs detected in output: {', '.join(urls)}"
+        super().__init__(msg)
+        self.urls = urls
+
+
 class ExternalURLError(AIOError):
     """External URL detected in build output (Art. II violation)."""
 
