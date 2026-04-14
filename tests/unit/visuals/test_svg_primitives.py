@@ -48,7 +48,7 @@ class TestSVGPrimitives:
         """Test default visual config is applied."""
         config = VisualStyleConfig.defaults()
         assert config.visual_style_preference == "tech"
-        assert config.pattern == "geometric"
+        assert config.pattern == "grid"
         assert config.curvature == "sharp"
         assert config.animation_preference == "static"
 

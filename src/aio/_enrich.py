@@ -452,17 +452,38 @@ def derive_seed(title: str | None, slide_index: int) -> int:
 
 def infer_prompt(slide_title: str | None, slide_body: str | None) -> str:
     """Infer image prompt from slide title and body."""
-    if slide_title:
-        return f"{slide_title}: {slide_body[:100] if slide_body else 'Abstract concept'}"
+    import re
+
+    # Strip HTML tags from body
     if slide_body:
+        slide_body = re.sub(r"<[^>]+>", "", slide_body).strip()
+
+    # If both title and body exist, combine them (limit to 100 total)
+    if slide_title and slide_body:
+        combined = f"{slide_title}: {slide_body}"
+        return combined[:100] if len(combined) > 100 else combined
+
+    # If only title, use it (up to 100 chars)
+    if slide_title:
+        title_clean = slide_title.strip()
+        if len(title_clean) >= 3:
+            return title_clean[:100]
+
+    # If only body, use it (up to 150 chars)
+    if slide_body and len(slide_body.strip()) >= 3:
         return slide_body[:150]
-    return "Abstract business concept"
+
+    # Fallback when everything is empty or too short
+    return "Abstract presentation slide"
 
 
 def make_placeholder_svg() -> str:
     """Return minimal SVG placeholder when image generation fails."""
-    return """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
-      <rect width="800" height="450" fill="#f0f0f0"/>
-      <circle cx="400" cy="225" r="50" fill="#ccc"/>
-      <text x="400" y="240" text-anchor="middle" fill="#999" font-size="14">Image unavailable</text>
-    </svg>"""
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450"><rect width="800" height="450" fill="#f0f0f0"/><circle cx="400" cy="225" r="50" fill="#ccc"/></svg>'
+
+
+def _is_valid_jpeg(data: bytes) -> bool:
+    """Check if bytes represent a valid JPEG by magic number."""
+    if len(data) < 3:
+        return False
+    return data[:3] == b"\xff\xd8\xff"
