@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, cast
 
 # ============================================================================
 # Data Models
@@ -16,16 +16,14 @@ class VisualStyleConfig:
     """Visual style preferences extracted from DESIGN.md section 10."""
 
     visual_style_preference: Literal["geometric", "organic", "tech", "minimal"] = "tech"
-    pattern: Literal["grid", "dots", "lines", "mesh", "noise", "flowing"] = "geometric"
+    pattern: Literal["grid", "dots", "lines", "mesh", "noise", "flowing"] = "grid"
     curvature: Literal["sharp", "soft", "mixed"] = "sharp"
     animation_preference: Literal["static", "subtle", "dynamic"] = "static"
 
     @classmethod
     def defaults(cls) -> VisualStyleConfig:
         """Return default visual config (tech/geometric/sharp/static) for legacy themes."""
-        return cls(
-            visual_style_preference="tech", pattern="geometric", curvature="sharp", animation_preference="static"
-        )
+        return cls(visual_style_preference="tech", pattern="grid", curvature="sharp", animation_preference="static")
 
 
 @dataclass
@@ -77,7 +75,7 @@ class SVGComposer:
     @staticmethod
     def compose(
         composite_type: str,
-        theme: dict,  # ThemeRecord with palette and visual_config
+        theme: dict[str, object],  # ThemeRecord with palette and visual_config
         dimensions: tuple[int, int] = (1920, 1080),
         seed: int | None = None,
     ) -> str:
@@ -87,8 +85,11 @@ class SVGComposer:
 
         try:
             # Extract configuration
-            visual_config = theme.get("visual_config") or VisualStyleConfig.defaults()
-            palette = theme.get("palette", {})
+            vc_raw = theme.get("visual_config")
+            visual_config: VisualStyleConfig | dict[str, object] = (
+                cast(VisualStyleConfig | dict[str, object], vc_raw) if vc_raw else VisualStyleConfig.defaults()
+            )
+            palette = cast(dict[str, str], theme.get("palette", {}))
             colors = SVGComposer._extract_colors(palette)
 
             # Derive seed if not provided
@@ -106,7 +107,7 @@ class SVGComposer:
             return SVGComposer._fallback_svg(dimensions)
 
     @staticmethod
-    def _extract_colors(palette: dict) -> list[str]:
+    def _extract_colors(palette: dict[str, str]) -> list[str]:
         """Extract primary colors from theme palette."""
         colors = []
         if "primary" in palette:
@@ -123,7 +124,7 @@ class SVGComposer:
     def _generate_svg(
         composite_type: str,
         colors: list[str],
-        visual_config: VisualStyleConfig | dict,
+        visual_config: VisualStyleConfig | dict[str, object],
         dimensions: tuple[int, int],
         seed: int,
     ) -> str:
@@ -185,7 +186,12 @@ class SVGComposer:
         )
 
     @staticmethod
-    def _hero_background(colors: list[str], width: int, height: int, visual_config: dict | None = None) -> str:
+    def _hero_background(
+        colors: list[str],
+        width: int,
+        height: int,
+        visual_config: dict[str, object] | None = None,
+    ) -> str:
         """Generate hero-background composition, varying by visual preference."""
         c1 = colors[0]
         style = (visual_config or {}).get("visual_style_preference", "tech") if visual_config else "tech"

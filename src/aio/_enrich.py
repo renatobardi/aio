@@ -8,7 +8,7 @@ import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal, cast
 
 from aio._log import get_logger
 
@@ -25,7 +25,7 @@ class VisualStyleConfig:
     """Visual style preferences (imported from visuals.svg.composites)."""
 
     visual_style_preference: Literal["geometric", "organic", "tech", "minimal"] = "tech"
-    pattern: Literal["grid", "dots", "lines", "mesh", "noise", "flowing"] = "geometric"
+    pattern: Literal["grid", "dots", "lines", "mesh", "noise", "flowing"] = "grid"
     curvature: Literal["sharp", "soft", "mixed"] = "sharp"
     animation_preference: Literal["static", "subtle", "dynamic"] = "static"
 
@@ -95,7 +95,7 @@ class PollinationsProvider(ImageProvider):
 class OpenAIProvider(ImageProvider):
     """OpenAI DALL-E provider (paid, requires API key)."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(api_key=os.environ.get("OPENAI_API_KEY"), timeout_seconds=30)
         self.model = "dall-e-3"
 
@@ -113,7 +113,7 @@ class OpenAIProvider(ImageProvider):
 class UnsplashProvider(ImageProvider):
     """Unsplash photo search provider (free, requires API key)."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(api_key=os.environ.get("UNSPLASH_API_KEY"), timeout_seconds=8)
 
     def check_api(self) -> bool:
@@ -137,17 +137,17 @@ _CACHE_MIN_SIZE = 50 * 1024 * 1024  # 50 MB (target after eviction)
 _META_FILE = Path(".aio/meta.json")
 
 
-def _get_cache_metadata() -> dict[str, object]:
+def _get_cache_metadata() -> dict[str, Any]:
     """Load cache metadata from .aio/meta.json."""
     if _META_FILE.exists():
         try:
-            return json.loads(_META_FILE.read_text(encoding="utf-8"))
+            return json.loads(_META_FILE.read_text(encoding="utf-8"))  # type: ignore[no-any-return]
         except Exception:
             return {"cache_entries": {}, "aio_version": "0.1.0"}
     return {"cache_entries": {}, "aio_version": "0.1.0"}
 
 
-def _save_cache_metadata(metadata: dict[str, object]) -> None:
+def _save_cache_metadata(metadata: dict[str, Any]) -> None:
     """Save cache metadata to .aio/meta.json with file locking."""
     Path(".aio").mkdir(exist_ok=True)
     # Use atomic write with locking to prevent concurrent corruption
@@ -176,7 +176,7 @@ def _evict_lru_if_needed() -> None:
         return
 
     # Sort by timestamp (oldest first) - parse ISO 8601 strings
-    def parse_timestamp(entry_tuple):
+    def parse_timestamp(entry_tuple: tuple[str, Any]) -> datetime:
         _, entry_data = entry_tuple
         ts_str = entry_data.get("timestamp", "")
         try:
@@ -352,9 +352,9 @@ class EnrichEngine:
 
                 if cached_bytes:
                     ctx.image_bytes = cached_bytes
-                    ctx.provider_used = provider_name
+                    ctx.provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_name)
                     image_bytes = cached_bytes
-                    provider_used = provider_name
+                    provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_name)
                     break
 
             if image_bytes:
@@ -371,7 +371,7 @@ class EnrichEngine:
                         provider = PollinationsProvider()
                         if provider.check_api():
                             image_bytes = provider.generate(ctx.prompt, seed=ctx.seed)
-                            provider_used = provider_name
+                            provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_name)
                             break
                     except Exception as e:
                         _log.warning("Pollinations provider failed: %s", e)
@@ -379,10 +379,10 @@ class EnrichEngine:
 
                 elif provider_name == "openai":
                     try:
-                        provider = OpenAIProvider()
-                        if provider.check_api():
-                            image_bytes = provider.generate(ctx.prompt, seed=ctx.seed)
-                            provider_used = provider_name
+                        openai_provider = OpenAIProvider()
+                        if openai_provider.check_api():
+                            image_bytes = openai_provider.generate(ctx.prompt, seed=ctx.seed)
+                            provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_name)
                             break
                     except Exception as e:
                         _log.warning("OpenAI provider failed: %s", e)
@@ -390,10 +390,10 @@ class EnrichEngine:
 
                 elif provider_name == "unsplash":
                     try:
-                        provider = UnsplashProvider()
-                        if provider.check_api():
-                            image_bytes = provider.generate(ctx.prompt, seed=ctx.seed)
-                            provider_used = provider_name
+                        unsplash_provider = UnsplashProvider()
+                        if unsplash_provider.check_api():
+                            image_bytes = unsplash_provider.generate(ctx.prompt, seed=ctx.seed)
+                            provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_name)
                             break
                     except Exception as e:
                         _log.warning("Unsplash provider failed: %s", e)
@@ -410,7 +410,7 @@ class EnrichEngine:
                 )
                 cache_set(cache_key, image_bytes, entry)
                 ctx.image_bytes = image_bytes
-                ctx.provider_used = provider_used
+                ctx.provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_used)
             else:
                 # All providers failed; use SVG fallback
                 ctx.is_placeholder = True
