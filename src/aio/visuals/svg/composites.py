@@ -131,13 +131,30 @@ class SVGComposer:
     def _generate_svg(
         composite_type: str,
         colors: list[str],
-        visual_config: VisualStyleConfig,
+        visual_config: VisualStyleConfig | dict,
         dimensions: tuple[int, int],
         seed: int,
     ) -> str:
-        """Generate SVG content based on type and configuration."""
+        """
+        Generate SVG content based on type and visual configuration.
+
+        visual_config heuristics:
+        - tech → grids, straight lines, sharp angles
+        - organic → curves, waves, soft edges
+        - minimal → sparse, high contrast
+        - geometric → structured, symmetrical
+        """
         width, height = dimensions
         gradient_id = f"grad_{seed % 1000}"
+
+        # Normalize visual_config to dict if it's a dataclass
+        if not isinstance(visual_config, dict):
+            visual_config = {
+                "visual_style_preference": getattr(visual_config, "visual_style_preference", "tech"),
+                "pattern": getattr(visual_config, "pattern", "geometric"),
+                "curvature": getattr(visual_config, "curvature", "sharp"),
+                "animation_preference": getattr(visual_config, "animation_preference", "static"),
+            }
 
         svg_parts = [
             f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}">',
@@ -147,10 +164,19 @@ class SVGComposer:
             f'<rect width="{width}" height="{height}" fill="url(#{gradient_id})" opacity="0.95"/>',
         ]
 
+        # Apply visual config heuristics based on style preference
+        style_pref = visual_config.get("visual_style_preference", "tech")
+
         if composite_type == "hero-background":
-            svg_parts.append(SVGComposer._hero_background(colors, width, height))
-        else:
-            svg_parts.append(SVGComposer._generic_pattern(colors, width, height))
+            svg_parts.append(SVGComposer._hero_background(colors, width, height, visual_config))
+        elif style_pref == "tech":
+            svg_parts.append(SVGComposer._grid_pattern(colors, width, height, seed))
+        elif style_pref == "organic":
+            svg_parts.append(SVGComposer._wave_pattern(colors, width, height, seed))
+        elif style_pref == "minimal":
+            svg_parts.append(SVGComposer._sparse_pattern(colors, width, height))
+        else:  # geometric
+            svg_parts.append(SVGComposer._geometric_pattern(colors, width, height, seed))
 
         svg_parts.append("</svg>")
         return "\n".join(svg_parts)
@@ -167,14 +193,76 @@ class SVGComposer:
         )
 
     @staticmethod
-    def _hero_background(colors: list[str], width: int, height: int) -> str:
-        """Generate hero-background composition."""
+    def _hero_background(colors: list[str], width: int, height: int, visual_config: dict | None = None) -> str:
+        """Generate hero-background composition, varying by visual preference."""
         c1 = colors[0]
-        return f'<circle cx="{width//2}" cy="{height//2}" r="{min(width, height)//3}" fill="{c1}" opacity="0.2"/>'
+        style = (visual_config or {}).get("visual_style_preference", "tech") if visual_config else "tech"
+
+        if style == "organic":
+            # Soft, flowing organic shape
+            return f'<ellipse cx="{width//2}" cy="{height//2}" rx="{width//3}" ry="{height//3}" fill="{c1}" opacity="0.15"/>'
+        else:
+            # Tech/geometric: sharp circle
+            return f'<circle cx="{width//2}" cy="{height//2}" r="{min(width, height)//3}" fill="{c1}" opacity="0.2"/>'
+
+    @staticmethod
+    def _grid_pattern(colors: list[str], width: int, height: int, seed: int) -> str:
+        """Generate tech-style grid pattern (straight lines, sharp angles)."""
+        c1 = colors[0]
+        lines = []
+        spacing = 100
+        # Vertical lines
+        for x in range(0, width + spacing, spacing):
+            lines.append(f'<line x1="{x}" y1="0" x2="{x}" y2="{height}" stroke="{c1}" stroke-width="1" opacity="0.1"/>')
+        # Horizontal lines
+        for y in range(0, height + spacing, spacing):
+            lines.append(f'<line x1="0" y1="{y}" x2="{width}" y2="{y}" stroke="{c1}" stroke-width="1" opacity="0.1"/>')
+        return "\n".join(lines[:30])
+
+    @staticmethod
+    def _wave_pattern(colors: list[str], width: int, height: int, seed: int) -> str:
+        """Generate organic-style wave pattern with curves."""
+        c1, c2 = colors[0], (colors[1] if len(colors) > 1 else colors[0])
+        # Simple wave using quadratic curves
+        points = []
+        for x in range(0, width + 100, 100):
+            y = height // 2 + int(50 * hashlib.sha256(f"{seed}{x}".encode()).hexdigest()[:4], 16) % 100 - 50
+            points.append(f"{x},{y}")
+        path = " ".join(points)
+        return f'<polyline points="{path}" fill="none" stroke="{c1}" stroke-width="3" opacity="0.3" stroke-linecap="round"/>'
+
+    @staticmethod
+    def _sparse_pattern(colors: list[str], width: int, height: int) -> str:
+        """Generate minimal-style sparse pattern (few elements, high contrast)."""
+        c1 = colors[0]
+        elements = []
+        # Just 4 strategic circles
+        positions = [
+            (width // 4, height // 4),
+            (3 * width // 4, height // 4),
+            (width // 4, 3 * height // 4),
+            (3 * width // 4, 3 * height // 4),
+        ]
+        for x, y in positions:
+            elements.append(f'<circle cx="{x}" cy="{y}" r="30" fill="{c1}" opacity="0.25"/>')
+        return "\n".join(elements)
+
+    @staticmethod
+    def _geometric_pattern(colors: list[str], width: int, height: int, seed: int) -> str:
+        """Generate geometric-style structured pattern (shapes, symmetry)."""
+        c1 = colors[0]
+        elements = []
+        # Regular grid of rectangles
+        size = 60
+        for y in range(0, height, size):
+            for x in range(0, width, size):
+                if (x // size + y // size) % 2 == 0:
+                    elements.append(f'<rect x="{x}" y="{y}" width="{size}" height="{size}" fill="{c1}" opacity="0.08"/>')
+        return "\n".join(elements[:40])
 
     @staticmethod
     def _generic_pattern(colors: list[str], width: int, height: int) -> str:
-        """Generate generic pattern."""
+        """Generate generic pattern (fallback)."""
         c1 = colors[0]
         dots = []
         for y in range(25, height, 50):

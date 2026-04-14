@@ -7,7 +7,7 @@ import re
 
 from aio._log import get_logger
 from aio.exceptions import DesignSectionParseError, DesignSectionValidationError, ThemeNotFoundError
-from aio.themes.parser import parse_design_md
+from aio.themes.parser import parse_design_md, extract_visual_style_config
 
 _log = get_logger(__name__)
 
@@ -118,6 +118,15 @@ def validate_theme(theme_id: str, check_css: bool = False) -> list[str]:
     for s in sections:
         if s.char_count == 0:
             errors.append(f"Section {s.section_number} ('{s.heading}') is empty.")
+
+    # Validate section 10 (Visual Style Preference) — if present, should be complete
+    if len(sections) >= 10:
+        section10 = sections[9]  # 0-indexed
+        visual_config = extract_visual_style_config(sections)
+        if visual_config and all(k in visual_config for k in ["visual_style_preference", "pattern", "curvature", "animation_preference"]):
+            _log.debug("Theme '%s': Section 10 has complete visual config", theme_id)
+        else:
+            _log.debug("Theme '%s': Section 10 incomplete or missing; will use defaults", theme_id)
 
     if errors:
         _log.warning("Theme '%s' has %d validation error(s)", theme_id, len(errors))

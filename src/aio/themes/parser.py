@@ -177,6 +177,96 @@ _DEFAULT_DECORATION_CSS = (
 )
 
 
+def create_default_visual_config() -> dict[str, object]:
+    """
+    Create default visual style config for legacy themes or missing section 10.
+
+    Returns:
+        Dict with keys: visual_style_preference, pattern, curvature, animation_preference
+    """
+    return {
+        "visual_style_preference": "tech",
+        "pattern": "geometric",
+        "curvature": "sharp",
+        "animation_preference": "static",
+    }
+
+
+def extract_visual_style_config(sections: list[DesignSection]) -> dict[str, object]:
+    """
+    Extract Visual Style Preference from DESIGN.md section 10.
+
+    Returns dict with keys:
+      - visual_style_preference: "geometric" | "organic" | "tech" | "minimal"
+      - pattern: "grid" | "dots" | "lines" | "mesh" | "noise" | "flowing"
+      - curvature: "sharp" | "soft" | "mixed"
+      - animation_preference: "static" | "subtle" | "dynamic"
+
+    If section 10 is missing or invalid, returns empty dict (caller uses defaults).
+    """
+    if len(sections) < 10:
+        _log.debug("Section 10 not found; will use defaults")
+        return {}
+
+    section10 = sections[9]  # 0-indexed, section_number == 10
+
+    # If section 10 has YAML data, return it directly
+    if section10.parsed_data:
+        config = {}
+        for key in ["visual_style_preference", "pattern", "curvature", "animation_preference"]:
+            if key in section10.parsed_data:
+                config[key] = section10.parsed_data[key]
+        if config:
+            return config
+
+    # Otherwise, try to extract from plain text
+    config = {}
+    raw = section10.raw_content.lower()
+
+    # Extract visual_style_preference
+    if "organic" in raw:
+        config["visual_style_preference"] = "organic"
+    elif "minimal" in raw:
+        config["visual_style_preference"] = "minimal"
+    elif "tech" in raw:
+        config["visual_style_preference"] = "tech"
+    else:
+        config["visual_style_preference"] = "geometric"
+
+    # Extract pattern
+    if "flowing" in raw:
+        config["pattern"] = "flowing"
+    elif "noise" in raw:
+        config["pattern"] = "noise"
+    elif "mesh" in raw:
+        config["pattern"] = "mesh"
+    elif "dots" in raw:
+        config["pattern"] = "dots"
+    elif "lines" in raw:
+        config["pattern"] = "lines"
+    else:
+        config["pattern"] = "grid"
+
+    # Extract curvature
+    if "soft" in raw:
+        config["curvature"] = "soft"
+    elif "mixed" in raw:
+        config["curvature"] = "mixed"
+    else:
+        config["curvature"] = "sharp"
+
+    # Extract animation_preference
+    if "dynamic" in raw:
+        config["animation_preference"] = "dynamic"
+    elif "subtle" in raw:
+        config["animation_preference"] = "subtle"
+    else:
+        config["animation_preference"] = "static"
+
+    _log.debug("Extracted visual config from section 10: %s", config)
+    return config
+
+
 def _parse_decoration_section(raw_content: str) -> list[DecorationSpec]:
     """Parse the raw content of DESIGN.md section 12 into DecorationSpec objects."""
     specs: list[DecorationSpec] = []
