@@ -6,7 +6,13 @@ from dataclasses import dataclass, field
 from typing import Literal
 from datetime import datetime
 import hashlib
+import json
 import os
+from pathlib import Path
+
+from aio._log import get_logger
+
+_log = get_logger(__name__)
 
 
 # ============================================================================
@@ -120,32 +126,178 @@ class UnsplashProvider(ImageProvider):
 
 
 # ============================================================================
-# Cache Functions
+# Cache Functions with LRU Eviction
 # ============================================================================
 
+_CACHE_DIR = Path(".aio/cache/images")
+_CACHE_MAX_SIZE = 100 * 1024 * 1024  # 100 MB
+_CACHE_MIN_SIZE = 50 * 1024 * 1024   # 50 MB (target after eviction)
+_META_FILE = Path(".aio/meta.json")
+
+
+def _get_cache_metadata() -> dict[str, object]:
+    """Load cache metadata from .aio/meta.json."""
+    if _META_FILE.exists():
+        try:
+            return json.loads(_META_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            return {"cache_entries": {}, "aio_version": "0.1.0"}
+    return {"cache_entries": {}, "aio_version": "0.1.0"}
+
+
+def _save_cache_metadata(metadata: dict[str, object]) -> None:
+    """Save cache metadata to .aio/meta.json."""
+    Path(".aio").mkdir(exist_ok=True)
+    _META_FILE.write_text(json.dumps(metadata, indent=2, default=str), encoding="utf-8")
+
+
+def _evict_lru_if_needed() -> None:
+    """Remove oldest cache entries if total size > 100 MB."""
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Calculate current cache size
+    total_size = sum(f.stat().st_size for f in _CACHE_DIR.glob("*.jpg") if f.is_file())
+
+    if total_size <= _CACHE_MAX_SIZE:
+        return
+
+    _log.warning("Cache size %.1f MB exceeds limit; evicting oldest entries", total_size / (1024 * 1024))
+
+    # Load metadata and sort by timestamp
+    metadata = _get_cache_metadata()
+    entries = metadata.get("cache_entries", {})
+
+    if not entries:
+        return
+
+    # Sort by timestamp (oldest first)
+    sorted_entries = sorted(entries.items(), key=lambda x: x[1].get("timestamp", ""), reverse=False)
+
+    # Delete oldest entries until < 50 MB
+    evicted_count = 0
+    for hash_key, entry_data in sorted_entries:
+        cache_file = _CACHE_DIR / f"{hash_key}.jpg"
+        if cache_file.exists():
+            file_size = cache_file.stat().st_size
+            cache_file.unlink()
+            total_size -= file_size
+            del entries[hash_key]
+            evicted_count += 1
+
+            if total_size <= _CACHE_MIN_SIZE:
+                break
+
+    metadata["cache_entries"] = entries
+    _save_cache_metadata(metadata)
+    _log.info("Evicted %d cache entries, new size: %.1f MB", evicted_count, total_size / (1024 * 1024))
+
+
 def cache_get(hash_key: str) -> bytes | None:
-    """Get cached image by hash."""
-    cache_path = f".aio/cache/images/{hash_key}.jpg"
-    if os.path.exists(cache_path):
-        with open(cache_path, "rb") as f:
-            return f.read()
+    """Get cached image by hash. Returns None if not found or version mismatch."""
+    # Check version compatibility
+    metadata = _get_cache_metadata()
+    current_version = metadata.get("aio_version", "0.1.0")
+    entries = metadata.get("cache_entries", {})
+
+    if hash_key not in entries:
+        _log.debug("Cache MISS: %s (not in metadata)", hash_key[:8])
+        return None
+
+    entry_data = entries[hash_key]
+    if entry_data.get("aio_version") != current_version:
+        # Version mismatch; invalidate
+        _log.debug("Cache MISS: %s (version mismatch: %s vs %s)",
+                   hash_key[:8], entry_data.get("aio_version"), current_version)
+        return None
+
+    cache_file = _CACHE_DIR / f"{hash_key}.jpg"
+    if cache_file.exists():
+        try:
+            image_bytes = cache_file.read_bytes()
+            _log.debug("Cache HIT: %s (%d bytes)", hash_key[:8], len(image_bytes))
+            return image_bytes
+        except Exception as e:
+            _log.warning("Cache read error: %s", e)
+            return None
+
+    _log.debug("Cache MISS: %s (file not found)", hash_key[:8])
     return None
 
 
 def cache_set(hash_key: str, image_bytes: bytes, entry: CacheEntry) -> None:
-    """Store image in cache."""
-    os.makedirs(".aio/cache/images", exist_ok=True)
-    cache_path = f".aio/cache/images/{hash_key}.jpg"
-    with open(cache_path, "wb") as f:
-        f.write(image_bytes)
+    """Store image in cache with metadata and LRU eviction."""
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Write image file
+    cache_file = _CACHE_DIR / f"{hash_key}.jpg"
+    cache_file.write_bytes(image_bytes)
+    _log.debug("Cache WRITE: %s (%d bytes)", hash_key[:8], len(image_bytes))
+
+    # Update metadata
+    metadata = _get_cache_metadata()
+    entries = metadata.get("cache_entries", {})
+    entries[hash_key] = {
+        "timestamp": entry.timestamp.isoformat(),
+        "size_bytes": len(image_bytes),
+        "aio_version": entry.aio_version,
+    }
+    metadata["cache_entries"] = entries
+    _save_cache_metadata(metadata)
+
+    # Evict oldest entries if cache too large
+    _evict_lru_if_needed()
 
 
 def cache_invalidate() -> None:
     """Clear image cache."""
     import shutil
-    if os.path.exists(".aio/cache/images"):
-        shutil.rmtree(".aio/cache/images")
-    os.makedirs(".aio/cache/images", exist_ok=True)
+    if _CACHE_DIR.exists():
+        shutil.rmtree(_CACHE_DIR)
+        _log.info("Cache INVALIDATED: all entries cleared")
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Reset metadata
+    metadata = {"cache_entries": {}, "aio_version": "0.1.0"}
+    _save_cache_metadata(metadata)
+
+
+def cache_get_stats() -> dict[str, object]:
+    """Return cache statistics: hit count, miss count, size, entry count."""
+    metadata = _get_cache_metadata()
+    entries = metadata.get("cache_entries", {})
+
+    total_size = 0
+    for entry_data in entries.values():
+        total_size += entry_data.get("size_bytes", 0)
+
+    return {
+        "entry_count": len(entries),
+        "total_size_bytes": total_size,
+        "total_size_mb": round(total_size / (1024 * 1024), 2),
+        "max_size_mb": _CACHE_MAX_SIZE / (1024 * 1024),
+        "aio_version": metadata.get("aio_version", "0.1.0"),
+    }
+
+
+def cache_init(aio_version: str = "0.1.0") -> None:
+    """Initialize cache directory structure and metadata."""
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Initialize or update metadata with current AIO version
+    metadata = _get_cache_metadata()
+    old_version = metadata.get("aio_version")
+
+    # Check version mismatch — invalidate cache if version changed
+    if old_version and old_version != aio_version:
+        # Version changed; clear cache
+        _log.warning("Cache INVALIDATION: version mismatch (%s → %s); clearing entries",
+                     old_version, aio_version)
+        metadata["cache_entries"] = {}
+
+    metadata["aio_version"] = aio_version
+    _save_cache_metadata(metadata)
+    _log.debug("Cache initialized: version %s, %d entries",
+               aio_version, len(metadata.get("cache_entries", {})))
 
 
 # ============================================================================
@@ -162,10 +314,82 @@ class EnrichEngine:
         timeout_per_image: int = 10,
         parallel_requests: int = 4,
     ) -> list[EnrichContext]:
-        """Enrich slides with images via multi-provider fallback."""
+        """
+        Enrich slides with images via multi-provider fallback with caching.
+
+        Flow:
+        1. Check cache for each context (SHA256(prompt + provider))
+        2. If cache hit, use cached image
+        3. If miss, try providers in order (Pollinations → OpenAI → Unsplash)
+        4. On provider success, cache result and return
+        5. On all provider failures, use SVG fallback (is_placeholder=True)
+        """
         if providers is None:
             providers = ["pollinations", "openai", "unsplash"]
 
-        # For now, simple implementation (no parallel)
-        # Full implementation would handle parallelization
+        for ctx in contexts:
+            # Try to get from cache first
+            cache_key = hashlib.sha256(f"{ctx.prompt}:pollinations".encode()).hexdigest()
+            cached_bytes = cache_get(cache_key)
+
+            if cached_bytes:
+                ctx.image_bytes = cached_bytes
+                ctx.provider_used = "pollinations"
+                continue
+
+            # No cache hit; try providers in order
+            image_bytes = None
+            provider_used = None
+
+            for provider_name in providers:
+                if provider_name == "pollinations":
+                    try:
+                        provider = PollinationsProvider()
+                        if provider.check_api():
+                            image_bytes = provider.generate(ctx.prompt, seed=ctx.seed)
+                            provider_used = provider_name
+                            break
+                    except Exception as e:
+                        # Log warning and try next provider
+                        continue
+
+                elif provider_name == "openai":
+                    try:
+                        provider = OpenAIProvider()
+                        if provider.check_api():
+                            image_bytes = provider.generate(ctx.prompt, seed=ctx.seed)
+                            provider_used = provider_name
+                            break
+                    except Exception as e:
+                        # Log warning and try next provider
+                        continue
+
+                elif provider_name == "unsplash":
+                    try:
+                        provider = UnsplashProvider()
+                        if provider.check_api():
+                            image_bytes = provider.generate(ctx.prompt, seed=ctx.seed)
+                            provider_used = provider_name
+                            break
+                    except Exception as e:
+                        # Log warning and try next provider
+                        continue
+
+            # If we got an image, cache and set it
+            if image_bytes:
+                cache_key = hashlib.sha256(f"{ctx.prompt}:{provider_used}".encode()).hexdigest()
+                entry = CacheEntry(
+                    hash=cache_key,
+                    timestamp=datetime.now(),
+                    size_bytes=len(image_bytes),
+                    aio_version="0.1.0",
+                )
+                cache_set(cache_key, image_bytes, entry)
+                ctx.image_bytes = image_bytes
+                ctx.provider_used = provider_used
+            else:
+                # All providers failed; use SVG fallback
+                ctx.is_placeholder = True
+                ctx.provider_used = "svg"
+
         return contexts
