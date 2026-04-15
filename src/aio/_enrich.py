@@ -521,7 +521,12 @@ def infer_prompt(slide_title: str | None, slide_body: str | None) -> str:
 
 def make_placeholder_svg() -> str:
     """Return minimal SVG placeholder when image generation fails."""
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450"><rect width="800" height="450" fill="#f0f0f0"/><circle cx="400" cy="225" r="50" fill="#ccc"/></svg>'
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">'
+        '<rect width="800" height="450" fill="#f0f0f0"/>'
+        '<circle cx="400" cy="225" r="50" fill="#ccc"/>'
+        "</svg>"
+    )
 
 
 def _is_valid_jpeg(data: bytes) -> bool:
