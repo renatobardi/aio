@@ -87,7 +87,7 @@ class TestEnrichIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Fallback Test\n---\n\n<!-- @image-prompt: Test prompt -->\n\n# Slide\n\nBody.",
+            "---\ntitle: Fallback Test\nimage-prompt: Test prompt\n---\n\n# Slide\n\nBody.",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"
@@ -95,7 +95,7 @@ class TestEnrichIntegration:
         def _failing_urlopen(url, timeout=30):
             raise urllib.error.URLError("simulated API failure")
 
-        with patch("urllib.request.urlopen", side_effect=_failing_urlopen):
+        with patch("aio._enrich.urllib.request.urlopen", side_effect=_failing_urlopen):
             build_pipeline(slides, output=out, enrich=True)
 
         html = out.read_text(encoding="utf-8")
@@ -111,7 +111,7 @@ class TestEnrichIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Warn Test\n---\n\n<!-- @image-prompt: test -->\n\n# Title\n\nText.",
+            "---\ntitle: Warn Test\nimage-prompt: test\n---\n\n# Title\n\nText.",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"
@@ -119,7 +119,7 @@ class TestEnrichIntegration:
         def _failing_urlopen(url, timeout=30):
             raise urllib.error.URLError("timeout")
 
-        with mock_patch("urllib.request.urlopen", side_effect=_failing_urlopen):
+        with mock_patch("aio._enrich.urllib.request.urlopen", side_effect=_failing_urlopen):
             with mock_patch.object(enrich_module._log, "warning") as mock_warn:
                 build_pipeline(slides, output=out, enrich=True)
         assert mock_warn.called
