@@ -1,0 +1,15 @@
+{
+  "cache_entries": {
+    "942a23da885dd9c56ada0b9dd0b020fa100c58c5d52e7dcb3ad5a6c466d02d6c": {
+      "timestamp": "2026-04-14T20:49:21.404927",
+      "size_bytes": 8,
+      "aio_version": "0.1.0"
+    },
+    "664b35fc1ab1900d256581f9ee410f13bcc71d3a758b9f85f612d6b925b0ce07": {
+      "timestamp": "2026-04-14T20:49:21.418255",
+      "size_bytes": 8,
+      "aio_version": "0.1.0"
+    }
+  },
+  "aio_version": "0.1.0"
+}

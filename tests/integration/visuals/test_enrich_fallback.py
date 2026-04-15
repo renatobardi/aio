@@ -1,7 +1,8 @@
 """Integration tests for provider fallback chain."""
 
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from aio._enrich import EnrichContext, EnrichEngine
 
