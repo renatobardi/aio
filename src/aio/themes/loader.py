@@ -11,7 +11,7 @@ from typing import Any
 
 from aio._log import get_logger
 from aio.exceptions import ThemeValidationError
-from aio.themes.parser import DecorationSpec, extract_visual_style_config, create_default_visual_config, parse_design_md
+from aio.themes.parser import DecorationSpec, create_default_visual_config, extract_visual_style_config, parse_design_md
 
 _log = get_logger(__name__)
 
@@ -98,7 +98,8 @@ class ThemeRecord:
                     )
             except Exception as exc:
                 _log.warning(
-                    "Theme '%s': could not parse DESIGN.md section 10: %s; using defaults (tech/geometric/sharp/static)",
+                    "Theme '%s': could not parse DESIGN.md section 10: %s; "
+                    "using defaults (tech/geometric/sharp/static)",
                     theme_id,
                     exc,
                 )

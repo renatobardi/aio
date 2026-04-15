@@ -1,7 +1,8 @@
 """Unit tests for gradient and pattern generation."""
 
 import pytest
-from aio.visuals.svg.composites import SVGComposer, VisualStyleConfig
+
+from aio.visuals.svg.composites import SVGComposer
 
 
 class TestGradientsAndPatterns:

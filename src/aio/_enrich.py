@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Literal
-from datetime import datetime
 import hashlib
 import json
 import os
+import urllib.parse
+import urllib.request
+from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
+from typing import Any, Literal, cast
 
 from aio._log import get_logger
-import fcntl
 
 _log = get_logger(__name__)
 
@@ -20,11 +21,13 @@ _log = get_logger(__name__)
 # Data Models
 # ============================================================================
 
+
 @dataclass
 class VisualStyleConfig:
     """Visual style preferences (imported from visuals.svg.composites)."""
+
     visual_style_preference: Literal["geometric", "organic", "tech", "minimal"] = "tech"
-    pattern: Literal["grid", "dots", "lines", "mesh", "noise", "flowing"] = "geometric"
+    pattern: Literal["grid", "dots", "lines", "mesh", "noise", "flowing"] = "grid"
     curvature: Literal["sharp", "soft", "mixed"] = "sharp"
     animation_preference: Literal["static", "subtle", "dynamic"] = "static"
 
@@ -46,7 +49,7 @@ class EnrichContext:
 class CacheEntry:
     """Cache metadata and versioning."""
 
-    hash: str              # SHA256(prompt + provider_name)
+    hash: str  # SHA256(prompt + provider_name)
     timestamp: datetime = field(default_factory=datetime.now)
     size_bytes: int = 0
     aio_version: str = "0.1.0"  # Will be replaced with actual version
@@ -85,16 +88,21 @@ class PollinationsProvider(ImageProvider):
         return True
 
     def generate(self, prompt: str, width: int = 800, height: int = 450, seed: int | None = None) -> bytes:
-        """Fetch from Pollinations.ai (simplified mock for now)."""
-        # In full implementation, would call requests.get()
-        # For now, return stub PNG bytes
-        return b"\x89PNG\r\n\x1a\n"  # PNG header
+        """Fetch from Pollinations.ai."""
+        encoded_prompt = urllib.parse.quote(prompt)
+        url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={width}&height={height}"
+        if seed is not None:
+            url += f"&seed={seed}"
+
+        with urllib.request.urlopen(url, timeout=self.timeout_seconds) as resp:
+            image_bytes = cast(bytes, resp.read())
+        return image_bytes
 
 
 class OpenAIProvider(ImageProvider):
     """OpenAI DALL-E provider (paid, requires API key)."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(api_key=os.environ.get("OPENAI_API_KEY"), timeout_seconds=30)
         self.model = "dall-e-3"
 
@@ -103,16 +111,38 @@ class OpenAIProvider(ImageProvider):
         return bool(self.api_key)
 
     def generate(self, prompt: str, width: int = 800, height: int = 450, seed: int | None = None) -> bytes:
-        """Call DALL-E 3 (simplified mock for now)."""
+        """Call DALL-E 3 API."""
         if not self.check_api():
             raise ValueError("OPENAI_API_KEY not set")
-        return b"\xff\xd8\xff"  # JPEG header
+
+        url = "https://api.openai.com/v1/images/generations"
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        data = json.dumps(
+            {
+                "prompt": prompt,
+                "model": self.model,
+                "n": 1,
+                "size": f"{width}x{height}",
+            }
+        ).encode("utf-8")
+
+        req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=self.timeout_seconds) as resp:
+            response_data = json.loads(resp.read().decode("utf-8"))
+
+        image_url = response_data["data"][0]["url"]
+        with urllib.request.urlopen(image_url, timeout=self.timeout_seconds) as resp:
+            image_bytes = cast(bytes, resp.read())
+        return image_bytes
 
 
 class UnsplashProvider(ImageProvider):
     """Unsplash photo search provider (free, requires API key)."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(api_key=os.environ.get("UNSPLASH_API_KEY"), timeout_seconds=8)
 
     def check_api(self) -> bool:
@@ -120,10 +150,23 @@ class UnsplashProvider(ImageProvider):
         return bool(self.api_key)
 
     def generate(self, prompt: str, width: int = 800, height: int = 450, seed: int | None = None) -> bytes:
-        """Search Unsplash photos (simplified mock for now)."""
+        """Search Unsplash photos."""
         if not self.check_api():
             raise ValueError("UNSPLASH_API_KEY not set")
-        return b"\xff\xd8\xff"  # JPEG header
+
+        query = urllib.parse.quote(prompt)
+        url = f"https://api.unsplash.com/search/photos?query={query}&w={width}&h={height}&client_id={self.api_key}"
+
+        with urllib.request.urlopen(url, timeout=self.timeout_seconds) as resp:
+            response_data = json.loads(resp.read().decode("utf-8"))
+
+        if not response_data.get("results"):
+            raise ValueError(f"No Unsplash photos found for: {prompt}")
+
+        photo_url = response_data["results"][0]["urls"]["raw"]
+        with urllib.request.urlopen(f"{photo_url}?w={width}&h={height}", timeout=self.timeout_seconds) as resp:
+            image_bytes = cast(bytes, resp.read())
+        return image_bytes
 
 
 # ============================================================================
@@ -132,21 +175,21 @@ class UnsplashProvider(ImageProvider):
 
 _CACHE_DIR = Path(".aio/cache/images")
 _CACHE_MAX_SIZE = 100 * 1024 * 1024  # 100 MB
-_CACHE_MIN_SIZE = 50 * 1024 * 1024   # 50 MB (target after eviction)
+_CACHE_MIN_SIZE = 50 * 1024 * 1024  # 50 MB (target after eviction)
 _META_FILE = Path(".aio/meta.json")
 
 
-def _get_cache_metadata() -> dict[str, object]:
+def _get_cache_metadata() -> dict[str, Any]:
     """Load cache metadata from .aio/meta.json."""
     if _META_FILE.exists():
         try:
-            return json.loads(_META_FILE.read_text(encoding="utf-8"))
+            return json.loads(_META_FILE.read_text(encoding="utf-8"))  # type: ignore[no-any-return]
         except Exception:
             return {"cache_entries": {}, "aio_version": "0.1.0"}
     return {"cache_entries": {}, "aio_version": "0.1.0"}
 
 
-def _save_cache_metadata(metadata: dict[str, object]) -> None:
+def _save_cache_metadata(metadata: dict[str, Any]) -> None:
     """Save cache metadata to .aio/meta.json with file locking."""
     Path(".aio").mkdir(exist_ok=True)
     # Use atomic write with locking to prevent concurrent corruption
@@ -175,7 +218,7 @@ def _evict_lru_if_needed() -> None:
         return
 
     # Sort by timestamp (oldest first) - parse ISO 8601 strings
-    def parse_timestamp(entry_tuple):
+    def parse_timestamp(entry_tuple: tuple[str, Any]) -> datetime:
         _, entry_data = entry_tuple
         ts_str = entry_data.get("timestamp", "")
         try:
@@ -218,8 +261,9 @@ def cache_get(hash_key: str) -> bytes | None:
     entry_data = entries[hash_key]
     if entry_data.get("aio_version") != current_version:
         # Version mismatch; invalidate
-        _log.debug("Cache MISS: %s (version mismatch: %s vs %s)",
-                   hash_key[:8], entry_data.get("aio_version"), current_version)
+        _log.debug(
+            "Cache MISS: %s (version mismatch: %s vs %s)", hash_key[:8], entry_data.get("aio_version"), current_version
+        )
         return None
 
     cache_file = _CACHE_DIR / f"{hash_key}.jpg"
@@ -263,6 +307,7 @@ def cache_set(hash_key: str, image_bytes: bytes, entry: CacheEntry) -> None:
 def cache_invalidate() -> None:
     """Clear image cache."""
     import shutil
+
     if _CACHE_DIR.exists():
         shutil.rmtree(_CACHE_DIR)
         _log.info("Cache INVALIDATED: all entries cleared")
@@ -302,19 +347,18 @@ def cache_init(aio_version: str = "0.1.0") -> None:
     # Check version mismatch — invalidate cache if version changed
     if old_version and old_version != aio_version:
         # Version changed; clear cache
-        _log.warning("Cache INVALIDATION: version mismatch (%s → %s); clearing entries",
-                     old_version, aio_version)
+        _log.warning("Cache INVALIDATION: version mismatch (%s → %s); clearing entries", old_version, aio_version)
         metadata["cache_entries"] = {}
 
     metadata["aio_version"] = aio_version
     _save_cache_metadata(metadata)
-    _log.debug("Cache initialized: version %s, %d entries",
-               aio_version, len(metadata.get("cache_entries", {})))
+    _log.debug("Cache initialized: version %s, %d entries", aio_version, len(metadata.get("cache_entries", {})))
 
 
 # ============================================================================
 # EnrichEngine
 # ============================================================================
+
 
 class EnrichEngine:
     """Orchestrates image generation with multi-provider fallback."""
@@ -350,9 +394,9 @@ class EnrichEngine:
 
                 if cached_bytes:
                     ctx.image_bytes = cached_bytes
-                    ctx.provider_used = provider_name
+                    ctx.provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_name)
                     image_bytes = cached_bytes
-                    provider_used = provider_name
+                    provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_name)
                     break
 
             if image_bytes:
@@ -369,7 +413,7 @@ class EnrichEngine:
                         provider = PollinationsProvider()
                         if provider.check_api():
                             image_bytes = provider.generate(ctx.prompt, seed=ctx.seed)
-                            provider_used = provider_name
+                            provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_name)
                             break
                     except Exception as e:
                         _log.warning("Pollinations provider failed: %s", e)
@@ -377,10 +421,10 @@ class EnrichEngine:
 
                 elif provider_name == "openai":
                     try:
-                        provider = OpenAIProvider()
-                        if provider.check_api():
-                            image_bytes = provider.generate(ctx.prompt, seed=ctx.seed)
-                            provider_used = provider_name
+                        openai_provider = OpenAIProvider()
+                        if openai_provider.check_api():
+                            image_bytes = openai_provider.generate(ctx.prompt, seed=ctx.seed)
+                            provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_name)
                             break
                     except Exception as e:
                         _log.warning("OpenAI provider failed: %s", e)
@@ -388,10 +432,10 @@ class EnrichEngine:
 
                 elif provider_name == "unsplash":
                     try:
-                        provider = UnsplashProvider()
-                        if provider.check_api():
-                            image_bytes = provider.generate(ctx.prompt, seed=ctx.seed)
-                            provider_used = provider_name
+                        unsplash_provider = UnsplashProvider()
+                        if unsplash_provider.check_api():
+                            image_bytes = unsplash_provider.generate(ctx.prompt, seed=ctx.seed)
+                            provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_name)
                             break
                     except Exception as e:
                         _log.warning("Unsplash provider failed: %s", e)
@@ -408,9 +452,11 @@ class EnrichEngine:
                 )
                 cache_set(cache_key, image_bytes, entry)
                 ctx.image_bytes = image_bytes
-                ctx.provider_used = provider_used
+                ctx.provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_used)
             else:
                 # All providers failed; use SVG fallback
+                svg_str = make_placeholder_svg()
+                ctx.image_bytes = svg_str.encode("utf-8")
                 ctx.is_placeholder = True
                 ctx.provider_used = "svg"
 
@@ -450,17 +496,43 @@ def derive_seed(title: str | None, slide_index: int) -> int:
 
 def infer_prompt(slide_title: str | None, slide_body: str | None) -> str:
     """Infer image prompt from slide title and body."""
-    if slide_title:
-        return f"{slide_title}: {slide_body[:100] if slide_body else 'Abstract concept'}"
+    import re
+
+    # Strip HTML tags from body
     if slide_body:
+        slide_body = re.sub(r"<[^>]+>", "", slide_body).strip()
+
+    # If both title and body exist, combine them (limit to 100 total)
+    if slide_title and slide_body:
+        combined = f"{slide_title}: {slide_body}"
+        return combined[:100] if len(combined) > 100 else combined
+
+    # If only title, use it (up to 100 chars)
+    if slide_title:
+        title_clean = slide_title.strip()
+        if len(title_clean) >= 3:
+            return title_clean[:100]
+
+    # If only body, use it (up to 150 chars)
+    if slide_body and len(slide_body.strip()) >= 3:
         return slide_body[:150]
-    return "Abstract business concept"
+
+    # Fallback when everything is empty or too short
+    return "Abstract presentation slide"
 
 
 def make_placeholder_svg() -> str:
     """Return minimal SVG placeholder when image generation fails."""
-    return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
-      <rect width="800" height="450" fill="#f0f0f0"/>
-      <circle cx="400" cy="225" r="50" fill="#ccc"/>
-      <text x="400" y="240" text-anchor="middle" fill="#999" font-size="14">Image unavailable</text>
-    </svg>'''
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">'
+        '<rect width="800" height="450" fill="#f0f0f0"/>'
+        '<circle cx="400" cy="225" r="50" fill="#ccc"/>'
+        "</svg>"
+    )
+
+
+def _is_valid_jpeg(data: bytes) -> bool:
+    """Check if bytes represent a valid JPEG by magic number."""
+    if len(data) < 3:
+        return False
+    return data[:3] == b"\xff\xd8\xff"

@@ -1,6 +1,7 @@
 """Unit tests for deterministic seed-based generation."""
 
 import pytest
+
 from aio.visuals.svg.composites import SVGComposer
 
 

@@ -1,6 +1,7 @@
 """Integration tests for SVG fallback behavior."""
 
 import pytest
+
 from aio.visuals.svg.composites import SVGComposer
 
 

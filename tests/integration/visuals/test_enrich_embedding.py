@@ -1,7 +1,8 @@
 """Integration tests for data-URI base64 embedding."""
 
-import pytest
 import base64
+
+import pytest
 
 
 class TestDataURIEmbedding:

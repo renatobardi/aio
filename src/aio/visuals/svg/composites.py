@@ -2,33 +2,28 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Literal
 import hashlib
-
+from dataclasses import dataclass
+from typing import Literal, cast
 
 # ============================================================================
 # Data Models
 # ============================================================================
+
 
 @dataclass
 class VisualStyleConfig:
     """Visual style preferences extracted from DESIGN.md section 10."""
 
     visual_style_preference: Literal["geometric", "organic", "tech", "minimal"] = "tech"
-    pattern: Literal["grid", "dots", "lines", "mesh", "noise", "flowing"] = "geometric"
+    pattern: Literal["grid", "dots", "lines", "mesh", "noise", "flowing"] = "grid"
     curvature: Literal["sharp", "soft", "mixed"] = "sharp"
     animation_preference: Literal["static", "subtle", "dynamic"] = "static"
 
     @classmethod
     def defaults(cls) -> VisualStyleConfig:
         """Return default visual config (tech/geometric/sharp/static) for legacy themes."""
-        return cls(
-            visual_style_preference="tech",
-            pattern="geometric",
-            curvature="sharp",
-            animation_preference="static"
-        )
+        return cls(visual_style_preference="tech", pattern="grid", curvature="sharp", animation_preference="static")
 
 
 @dataclass
@@ -62,6 +57,7 @@ class SVGComposite:
 # SVGComposer Interface
 # ============================================================================
 
+
 class SVGComposer:
     """Main composer for generating deterministic SVG compositions."""
 
@@ -79,7 +75,7 @@ class SVGComposer:
     @staticmethod
     def compose(
         composite_type: str,
-        theme: dict,  # ThemeRecord with palette and visual_config
+        theme: dict[str, object],  # ThemeRecord with palette and visual_config
         dimensions: tuple[int, int] = (1920, 1080),
         seed: int | None = None,
     ) -> str:
@@ -89,8 +85,11 @@ class SVGComposer:
 
         try:
             # Extract configuration
-            visual_config = theme.get("visual_config") or VisualStyleConfig.defaults()
-            palette = theme.get("palette", {})
+            vc_raw = theme.get("visual_config")
+            visual_config: VisualStyleConfig | dict[str, object] = (
+                cast(VisualStyleConfig | dict[str, object], vc_raw) if vc_raw else VisualStyleConfig.defaults()
+            )
+            palette = cast(dict[str, str], theme.get("palette", {}))
             colors = SVGComposer._extract_colors(palette)
 
             # Derive seed if not provided
@@ -100,21 +99,15 @@ class SVGComposer:
                 seed = int(hashlib.sha256(seed_str.encode()).hexdigest(), 16) % (2**31)
 
             # Generate SVG based on type
-            svg = SVGComposer._generate_svg(
-                composite_type,
-                colors,
-                visual_config,
-                dimensions,
-                seed
-            )
+            svg = SVGComposer._generate_svg(composite_type, colors, visual_config, dimensions, seed)
             return svg
 
-        except Exception as e:
+        except Exception:
             # Return fallback SVG on error
             return SVGComposer._fallback_svg(dimensions)
 
     @staticmethod
-    def _extract_colors(palette: dict) -> list[str]:
+    def _extract_colors(palette: dict[str, str]) -> list[str]:
         """Extract primary colors from theme palette."""
         colors = []
         if "primary" in palette:
@@ -131,7 +124,7 @@ class SVGComposer:
     def _generate_svg(
         composite_type: str,
         colors: list[str],
-        visual_config: VisualStyleConfig | dict,
+        visual_config: VisualStyleConfig | dict[str, object],
         dimensions: tuple[int, int],
         seed: int,
     ) -> str:
@@ -193,17 +186,28 @@ class SVGComposer:
         )
 
     @staticmethod
-    def _hero_background(colors: list[str], width: int, height: int, visual_config: dict | None = None) -> str:
+    def _hero_background(
+        colors: list[str],
+        width: int,
+        height: int,
+        visual_config: dict[str, object] | None = None,
+    ) -> str:
         """Generate hero-background composition, varying by visual preference."""
         c1 = colors[0]
         style = (visual_config or {}).get("visual_style_preference", "tech") if visual_config else "tech"
 
         if style == "organic":
             # Soft, flowing organic shape
-            return f'<ellipse cx="{width//2}" cy="{height//2}" rx="{width//3}" ry="{height//3}" fill="{c1}" opacity="0.15"/>'
+            return (
+                f'<ellipse cx="{width // 2}" cy="{height // 2}" rx="{width // 3}" '
+                f'ry="{height // 3}" fill="{c1}" opacity="0.15"/>'
+            )
         else:
             # Tech/geometric: sharp circle
-            return f'<circle cx="{width//2}" cy="{height//2}" r="{min(width, height)//3}" fill="{c1}" opacity="0.2"/>'
+            return (
+                f'<circle cx="{width // 2}" cy="{height // 2}" r="{min(width, height) // 3}" '
+                f'fill="{c1}" opacity="0.2"/>'
+            )
 
     @staticmethod
     def _grid_pattern(colors: list[str], width: int, height: int, seed: int) -> str:
@@ -213,23 +217,29 @@ class SVGComposer:
         spacing = 100
         # Vertical lines
         for x in range(0, width + spacing, spacing):
-            lines.append(f'<line x1="{x}" y1="0" x2="{x}" y2="{height}" stroke="{c1}" stroke-width="1" opacity="0.1"/>')
+            line = f'<line x1="{x}" y1="0" x2="{x}" y2="{height}" stroke="{c1}" stroke-width="1" opacity="0.1"/>'
+            lines.append(line)
         # Horizontal lines
         for y in range(0, height + spacing, spacing):
-            lines.append(f'<line x1="0" y1="{y}" x2="{width}" y2="{y}" stroke="{c1}" stroke-width="1" opacity="0.1"/>')
+            line = f'<line x1="0" y1="{y}" x2="{width}" y2="{y}" stroke="{c1}" stroke-width="1" opacity="0.1"/>'
+            lines.append(line)
         return "\n".join(lines[:30])
 
     @staticmethod
     def _wave_pattern(colors: list[str], width: int, height: int, seed: int) -> str:
         """Generate organic-style wave pattern with curves."""
-        c1, c2 = colors[0], (colors[1] if len(colors) > 1 else colors[0])
+        c1 = colors[0]
         # Simple wave using quadratic curves
         points = []
         for x in range(0, width + 100, 100):
-            y = height // 2 + int(50 * hashlib.sha256(f"{seed}{x}".encode()).hexdigest()[:4], 16) % 100 - 50
+            hash_val = hashlib.sha256(f"{seed}{x}".encode()).hexdigest()[:4]
+            y = height // 2 + int(50 * int(hash_val, 16)) % 100 - 50
             points.append(f"{x},{y}")
         path = " ".join(points)
-        return f'<polyline points="{path}" fill="none" stroke="{c1}" stroke-width="3" opacity="0.3" stroke-linecap="round"/>'
+        return (
+            f'<polyline points="{path}" fill="none" stroke="{c1}" '
+            f'stroke-width="3" opacity="0.3" stroke-linecap="round"/>'
+        )
 
     @staticmethod
     def _sparse_pattern(colors: list[str], width: int, height: int) -> str:
@@ -257,7 +267,8 @@ class SVGComposer:
         for y in range(0, height, size):
             for x in range(0, width, size):
                 if (x // size + y // size) % 2 == 0:
-                    elements.append(f'<rect x="{x}" y="{y}" width="{size}" height="{size}" fill="{c1}" opacity="0.08"/>')
+                    rect = f'<rect x="{x}" y="{y}" width="{size}" height="{size}" fill="{c1}" opacity="0.08"/>'
+                    elements.append(rect)
         return "\n".join(elements[:40])
 
     @staticmethod
@@ -279,7 +290,7 @@ class SVGComposer:
             '<defs><linearGradient id="fallback" x1="0%" y1="0%" x2="100%" y2="100%">'
             '<stop offset="0%" style="stop-color:#F3F4F6;stop-opacity:1" />'
             '<stop offset="100%" style="stop-color:#E5E7EB;stop-opacity:1" />'
-            '</linearGradient></defs>'
+            "</linearGradient></defs>"
             f'<rect width="{width}" height="{height}" fill="url(#fallback)"/>'
-            '</svg>'
+            "</svg>"
         )

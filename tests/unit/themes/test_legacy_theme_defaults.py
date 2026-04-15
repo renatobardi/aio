@@ -7,10 +7,10 @@ class TestLegacyThemeDefaults:
     """Test auto-generation of defaults for legacy themes."""
 
     def test_default_config_tech_geometric_sharp(self):
-        """Test defaults are tech/geometric/sharp/static."""
+        """Test defaults are tech/grid/sharp/static."""
         config = VisualStyleConfig.defaults()
         assert config.visual_style_preference == "tech"
-        assert config.pattern == "geometric"
+        assert config.pattern == "grid"
         assert config.curvature == "sharp"
         assert config.animation_preference == "static"
 

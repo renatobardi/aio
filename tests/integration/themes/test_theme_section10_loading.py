@@ -20,30 +20,22 @@ class TestSVGVisualConfigImpact:
     def test_tech_vs_organic_differ(self):
         """Test tech and organic configs produce different output."""
         from aio.visuals.svg.composites import SVGComposer
-        
+
         theme_tech = {
             "id": "tech-theme",
             "palette": {"primary": "#0EA5E9"},
-            "visual_config": VisualStyleConfig(
-                visual_style_preference="tech",
-                pattern="geometric",
-                curvature="sharp"
-            )
+            "visual_config": VisualStyleConfig(visual_style_preference="tech", pattern="geometric", curvature="sharp"),
         }
-        
+
         theme_organic = {
             "id": "organic-theme",
             "palette": {"primary": "#0EA5E9"},
-            "visual_config": VisualStyleConfig(
-                visual_style_preference="organic",
-                pattern="flowing",
-                curvature="soft"
-            )
+            "visual_config": VisualStyleConfig(visual_style_preference="organic", pattern="flowing", curvature="soft"),
         }
-        
+
         svg_tech = SVGComposer.compose("abstract-art", theme_tech)
         svg_organic = SVGComposer.compose("abstract-art", theme_organic)
-        
+
         # Both should be valid SVG
         assert "<svg" in svg_tech
         assert "<svg" in svg_organic

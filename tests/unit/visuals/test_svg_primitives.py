@@ -1,6 +1,7 @@
 """Unit tests for SVG primitives (rect, circle, path, gradient, wave, grid)."""
 
 import pytest
+
 from aio.visuals.svg.composites import SVGComposer, VisualStyleConfig
 
 
@@ -47,7 +48,7 @@ class TestSVGPrimitives:
         """Test default visual config is applied."""
         config = VisualStyleConfig.defaults()
         assert config.visual_style_preference == "tech"
-        assert config.pattern == "geometric"
+        assert config.pattern == "grid"
         assert config.curvature == "sharp"
         assert config.animation_preference == "static"
 
