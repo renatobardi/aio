@@ -129,6 +129,15 @@ See `docs/image-generation-troubleshooting.md` for debugging and `specs/004-svg-
 
 ## Development
 
+### Setup
+
+```bash
+pip install -e ".[dev]"        # core + dev/test deps
+pip install -e ".[enrich]"     # for extract + image enrichment
+```
+
+### Code Quality
+
 ```bash
 ruff check src/ tests/ && ruff format src/ tests/
 mypy src/aio/
@@ -136,6 +145,40 @@ pytest tests/unit/ -v
 pytest tests/integration/ -v
 pytest --cov=src/aio --cov-report=term-missing   # CI gate: ≥ 20%; aspirational target: 80%
 pytest -k "test_infer_title_layout" -v            # single test
+```
+
+### Contributing & Guardrails
+
+This project uses **hapai** — automated git hooks protecting code quality and safety:
+
+```bash
+# Install hapai globally (one-time)
+cd ~/Projetos/hapai && git pull origin main
+sudo ln -sf ~/Projetos/hapai/bin/hapai /usr/local/bin/hapai
+source ~/.zshrc
+
+# Configure hapai for this repo
+cd ~/Projetos/aio
+hapai install
+hapai status   # verify hooks active
+```
+
+**Hapai enforces:**
+- ✅ Branch naming: `feat/`, `fix/`, `docs/`, `refactor/`, `test/`, `chore/`, `perf/`, etc.
+- ✅ No direct commits to `main` or `master`
+- ✅ No `Co-Authored-By: Claude ...` in commits
+- ✅ No `.env` or lockfile edits without explicit approval
+- ✅ No destructive commands: `rm -rf`, `git reset --hard`, `DROP TABLE`, etc.
+
+**Before pushing:**
+
+```bash
+# Full validation
+ruff check src/ tests/
+mypy src/aio/
+pytest tests/ -v --cov=src/aio --cov-fail-under=20
+
+# Hapai runs automatically on git commit/push — it will block violations
 ```
 
 ---
