@@ -201,15 +201,70 @@ specs/main/
     └── cli-contract.md  — Full CLI command contracts (args, options, exit codes, stdout/stderr)
 ```
 
-<!-- MANUAL ADDITIONS START -->
-<!-- MANUAL ADDITIONS END -->
+---
 
-## Active Technologies
-- **Runtime**: Python 3.12+ (primary; 3.10+ tolerated)
-- **Core deps**: typer 0.12.0, jinja2 3.1.2, mistune 3.0.2, pyyaml 6.0.1, rich 13.7.0, click 8.1.7, pygments, watchdog, starlette, uvicorn
-- **Storage**: Local filesystem — `.aio/` config dir, `~/.aio/logs/`
-- Python 3.12+ (primary runtime per Art. I) + mistune 3.0.2, Jinja2 3.1.2, typer 0.12.0, pyyaml 6.0.1, rich 13.7.0, watchdog, starlette, uvicorn — no new core deps; `pillow` (already in `[enrich]`) used for JPEG validation in `_enrich.py` (003-visual-enrichment)
-- Local filesystem (`~/.aio/logs/`, project `.aio/`) (003-visual-enrichment)
+## Image Enrichment & Caching
 
-## Recent Changes
-- 003-visual-enrichment: Added Python 3.12+ (primary runtime per Art. I) + mistune 3.0.2, Jinja2 3.1.2, typer 0.12.0, pyyaml 6.0.1, rich 13.7.0, watchdog, starlette, uvicorn — no new core deps; `pillow` (already in `[enrich]`) used for JPEG validation in `_enrich.py`
+When you build with `--enrich`, AIO automatically generates images for slides using a multi-provider fallback:
+
+1. **Pollinations** (default, free, no API key) — <8s per image
+2. **OpenAI DALL-E** (paid, requires `OPENAI_API_KEY`)
+3. **Unsplash** (free, requires `UNSPLASH_API_KEY`)
+4. **SVG fallback** (free, automatic) — <500ms
+
+All images are cached locally in `.aio/cache/images/` and reused on rebuilds:
+
+```bash
+# Build with image generation
+aio build slides.md --enrich
+
+# Check cache stats
+aio build slides.md --cache-stats
+
+# Clear cache
+aio build slides.md --cache-clear
+```
+
+**Cache Behavior:**
+- Entries are created automatically under `.aio/cache/images/`
+- LRU eviction: when cache exceeds 100 MB, oldest entries deleted until < 50 MB
+- Version-locked: cache invalidates if AIO version changes
+- Per-provider keys: same prompt on different providers = different cache entries
+
+---
+
+## Project Configuration
+
+Per-project settings live in `.aio/`:
+
+```
+.aio/
+├── config.yaml           # Project-specific settings (theme, output defaults)
+├── meta.json             # Project metadata (creation date, last modified)
+└── themes/
+    └── registry.json     # Selected themes only (NOT the full global registry)
+```
+
+Example `config.yaml`:
+
+```yaml
+theme: minimal
+output: out.html
+cache_size_mb: 100
+enrich_provider: pollinations  # or openai, unsplash
+```
+
+<!-- hapai:start -->
+## Hapai Guardrails (enforced by hooks)
+
+These rules are deterministically enforced by hapai hooks. Violations are blocked before execution.
+
+- NEVER commit directly to protected branches (main, master)
+- NEVER add Co-Authored-By or mention AI/Claude/Anthropic in commits, PRs, or docs
+- NEVER run destructive commands (rm -rf, force-push, git reset --hard, DROP TABLE)
+- NEVER edit .env, lockfiles, or CI workflow files without explicit permission
+- ALWAYS create a feature branch before making changes
+- ALWAYS keep commits focused — avoid touching many files/packages in a single commit
+- ALWAYS use taxonomy prefix when creating branches: feat/, fix/, chore/, docs/, refactor/, test/, perf/, style/, ci/, build/, release/, hotfix/
+- ALWAYS follow trunk-based workflow: short-lived branches from main, merged back to main via PR — no long-lived branches
+<!-- hapai:end -->
