@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import urllib.parse
+import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -87,9 +89,6 @@ class PollinationsProvider(ImageProvider):
 
     def generate(self, prompt: str, width: int = 800, height: int = 450, seed: int | None = None) -> bytes:
         """Fetch from Pollinations.ai."""
-        import urllib.parse
-        import urllib.request
-
         encoded_prompt = urllib.parse.quote(prompt)
         url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={width}&height={height}"
         if seed is not None:
@@ -113,9 +112,6 @@ class OpenAIProvider(ImageProvider):
 
     def generate(self, prompt: str, width: int = 800, height: int = 450, seed: int | None = None) -> bytes:
         """Call DALL-E 3 API."""
-        import json
-        import urllib.request
-
         if not self.check_api():
             raise ValueError("OPENAI_API_KEY not set")
 
@@ -155,9 +151,6 @@ class UnsplashProvider(ImageProvider):
 
     def generate(self, prompt: str, width: int = 800, height: int = 450, seed: int | None = None) -> bytes:
         """Search Unsplash photos."""
-        import urllib.request
-        import urllib.parse
-
         if not self.check_api():
             raise ValueError("UNSPLASH_API_KEY not set")
 
@@ -165,8 +158,6 @@ class UnsplashProvider(ImageProvider):
         url = f"https://api.unsplash.com/search/photos?query={query}&w={width}&h={height}&client_id={self.api_key}"
 
         with urllib.request.urlopen(url, timeout=self.timeout_seconds) as resp:
-            import json
-
             response_data = json.loads(resp.read().decode("utf-8"))
 
         if not response_data.get("results"):
