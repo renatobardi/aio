@@ -87,7 +87,7 @@ class TestEnrichIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Fallback Test\nimage-prompt: Test prompt\n---\n\n# Slide\n\nBody.",
+            "---\ntitle: Fallback Test\n---\n\n<!-- @image-prompt: Test prompt -->\n\n# Slide\n\nBody.",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"
@@ -111,7 +111,7 @@ class TestEnrichIntegration:
 
         slides = tmp_path / "slides.md"
         slides.write_text(
-            "---\ntitle: Warn Test\nimage-prompt: test\n---\n\n# Title\n\nText.",
+            "---\ntitle: Warn Test\n---\n\n<!-- @image-prompt: test -->\n\n# Title\n\nText.",
             encoding="utf-8",
         )
         out = tmp_path / "out.html"
