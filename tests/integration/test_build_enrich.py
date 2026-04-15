@@ -95,7 +95,10 @@ class TestEnrichIntegration:
         def _failing_urlopen(url, timeout=30):
             raise urllib.error.URLError("simulated API failure")
 
-        with patch("aio._enrich.urllib.request.urlopen", side_effect=_failing_urlopen):
+        with (
+            patch("aio._enrich.cache_get", return_value=None),
+            patch("aio._enrich.urllib.request.urlopen", side_effect=_failing_urlopen),
+        ):
             build_pipeline(slides, output=out, enrich=True)
 
         html = out.read_text(encoding="utf-8")
@@ -119,9 +122,12 @@ class TestEnrichIntegration:
         def _failing_urlopen(url, timeout=30):
             raise urllib.error.URLError("timeout")
 
-        with mock_patch("aio._enrich.urllib.request.urlopen", side_effect=_failing_urlopen):
-            with mock_patch.object(enrich_module._log, "warning") as mock_warn:
-                build_pipeline(slides, output=out, enrich=True)
+        with (
+            mock_patch("aio._enrich.cache_get", return_value=None),
+            mock_patch("aio._enrich.urllib.request.urlopen", side_effect=_failing_urlopen),
+            mock_patch.object(enrich_module._log, "warning") as mock_warn,
+        ):
+            build_pipeline(slides, output=out, enrich=True)
         assert mock_warn.called
 
     @pytest.mark.slow
