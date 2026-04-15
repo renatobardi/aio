@@ -95,7 +95,7 @@ class PollinationsProvider(ImageProvider):
             url += f"&seed={seed}"
 
         with urllib.request.urlopen(url, timeout=self.timeout_seconds) as resp:
-            image_bytes = resp.read()
+            image_bytes = cast(bytes, resp.read())
         return image_bytes
 
 
@@ -135,7 +135,7 @@ class OpenAIProvider(ImageProvider):
 
         image_url = response_data["data"][0]["url"]
         with urllib.request.urlopen(image_url, timeout=self.timeout_seconds) as resp:
-            image_bytes = resp.read()
+            image_bytes = cast(bytes, resp.read())
         return image_bytes
 
 
@@ -165,7 +165,7 @@ class UnsplashProvider(ImageProvider):
 
         photo_url = response_data["results"][0]["urls"]["raw"]
         with urllib.request.urlopen(f"{photo_url}?w={width}&h={height}", timeout=self.timeout_seconds) as resp:
-            image_bytes = resp.read()
+            image_bytes = cast(bytes, resp.read())
         return image_bytes
 
 
