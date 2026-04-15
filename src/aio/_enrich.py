@@ -455,6 +455,8 @@ class EnrichEngine:
                 ctx.provider_used = cast(Literal["pollinations", "openai", "unsplash", "svg"], provider_used)
             else:
                 # All providers failed; use SVG fallback
+                svg_str = make_placeholder_svg()
+                ctx.image_bytes = svg_str.encode("utf-8")
                 ctx.is_placeholder = True
                 ctx.provider_used = "svg"
 
