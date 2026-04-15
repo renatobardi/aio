@@ -12,6 +12,7 @@ class TestFallbackChain:
 
     def test_enrich_all_returns_contexts(self):
         """Test enrich_all returns enriched contexts."""
+
         # Mock urllib.request.urlopen to avoid real API calls
         def mock_urlopen(url, timeout=30):
             raise Exception("API unavailable in test")

@@ -10,6 +10,7 @@ class TestCacheHit:
 
     def test_cache_hit_speed_improvement(self):
         """Cache hit should be much faster than cache miss."""
+
         # Mock urllib.request.urlopen to avoid real API calls
         def mock_urlopen(url, timeout=30):
             raise Exception("API unavailable in test")
